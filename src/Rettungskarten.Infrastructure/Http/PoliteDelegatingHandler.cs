@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using Rettungskarten.Core.Localization;
 
 namespace Rettungskarten.Infrastructure.Http;
 
@@ -15,7 +16,14 @@ public sealed class PoliteDelegatingHandler(
     {
         var host = request.RequestUri?.Host ?? string.Empty;
         var delay = options.GetDelayFor(host);
-        logger.LogDebug("Warte auf Rate-Limit-Slot für {Host} (min. {Delay})", host, delay);
+
+        // This runs on every outgoing request, so avoid the resource-lookup + string.Format cost of
+        // Strings.Get(...) on the (default, non-verbose) common path where Debug logging is disabled.
+        if (logger.IsEnabled(LogLevel.Debug))
+        {
+            logger.LogDebug("{Message}", Strings.Get("Http_WaitingForRateLimitSlot", host, delay));
+        }
+
         await rateLimiter.WaitAsync(host, delay, cancellationToken);
         return await base.SendAsync(request, cancellationToken);
     }

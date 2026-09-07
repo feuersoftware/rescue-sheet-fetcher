@@ -1,6 +1,7 @@
 using AngleSharp;
 using Microsoft.Extensions.Logging;
 using Rettungskarten.Core.Abstractions;
+using Rettungskarten.Core.Localization;
 using Rettungskarten.Core.Models;
 using Rettungskarten.Infrastructure.Http;
 using Rettungskarten.Infrastructure.RescueCards.Parsing;
@@ -47,7 +48,7 @@ public sealed class AudiRescueCardSource(
             entries.Add(new RescueCardEntry(Brand.Audi, PageUrl, absoluteUrl, Path.GetFileName(new Uri(absoluteUrl).AbsolutePath), parsed));
         }
 
-        logger.LogInformation("Audi: {Count} deutschsprachige Rettungskarten entdeckt", entries.Count);
+        logger.LogInformation("{Message}", Strings.Get("RescueCards_Audi_DiscoveredCount", entries.Count));
         return entries;
     }
 

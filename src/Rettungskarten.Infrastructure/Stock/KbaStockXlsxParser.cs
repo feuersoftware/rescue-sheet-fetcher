@@ -1,4 +1,5 @@
 using ClosedXML.Excel;
+using Rettungskarten.Core.Localization;
 using Rettungskarten.Core.Models;
 
 namespace Rettungskarten.Infrastructure.Stock;
@@ -29,29 +30,27 @@ public static class KbaStockXlsxParser
 
         if (worksheet is null)
         {
-            throw new InvalidOperationException(
-                $"Kein Arbeitsblatt '{SheetName}' in der FZ12-{year}-Datei gefunden - Layout hat sich vermutlich geändert.");
+            throw new InvalidOperationException(Strings.Get("Stock_WorksheetNotFound", SheetName, year));
         }
 
         var range = worksheet.RangeUsed();
         if (range is null)
         {
-            throw new InvalidOperationException($"Arbeitsblatt '{worksheet.Name}' in der FZ12-{year}-Datei ist leer.");
+            throw new InvalidOperationException(Strings.Get("Stock_WorksheetEmpty", worksheet.Name, year));
         }
 
         var rowCount = range.RowCount();
         var headerRow = FindHeaderRow(range, rowCount);
         if (headerRow < 0)
         {
-            throw new InvalidOperationException(
-                $"Kopfzeile ('Segment'/'Modellreihe') in FZ12-{year} nicht gefunden - Layout hat sich vermutlich geändert.");
+            throw new InvalidOperationException(Strings.Get("Stock_HeaderRowNotFound", year));
         }
 
         var warnings = new List<string>();
         var headerText = range.Cell(headerRow, 3).GetString();
         if (!headerText.Contains(year.ToString(), StringComparison.Ordinal))
         {
-            warnings.Add($"Kopfzeile der Anzahl-Spalte ('{headerText}') enthält nicht das erwartete Jahr {year}.");
+            warnings.Add(Strings.Get("Stock_HeaderYearMismatch", headerText, year));
         }
 
         var rows = ParseDataRows(range, headerRow + 2, rowCount, warnings);
@@ -101,7 +100,7 @@ public static class KbaStockXlsxParser
             var countCell = range.Cell(r, 3);
             if (countCell.DataType != XLDataType.Number)
             {
-                warnings.Add($"Zeile {r}: Anzahl für '{modelCell}' ist keine Zahl ('{countCell.GetString()}') - übersprungen.");
+                warnings.Add(Strings.Get("Stock_RowNotANumber", r, modelCell, countCell.GetString()));
                 continue;
             }
 

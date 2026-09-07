@@ -1,3 +1,4 @@
+using Rettungskarten.Core.Localization;
 using Rettungskarten.Core.Models;
 
 namespace Rettungskarten.Cli.Commands;
@@ -6,21 +7,35 @@ public static class RunSummaryPrinter
 {
     public static void Print(IReadOnlyList<BrandRunResult> results)
     {
+        var brandCol = Strings.Get("Summary_Column_Brand");
+        var statusCol = Strings.Get("Summary_Column_Status");
+        var discoveredCol = Strings.Get("Summary_Column_Discovered");
+        var downloadedCol = Strings.Get("Summary_Column_Downloaded");
+        var metadataOnlyCol = Strings.Get("Summary_Column_MetadataOnly");
+        var noteCol = Strings.Get("Summary_Column_Note");
+
+        // The Status column's fixed width must fit whichever language is actually rendered - German
+        // outcome text ("Discovery fehlgeschlagen") runs noticeably longer than the English source
+        // ("Discovery failed"), so a width sized for one language silently misaligns every column
+        // that follows it under the other. Compute it from the actual header/values instead.
+        var statuses = results.Select(r => DisplayText.For(r.Outcome)).ToList();
+        var statusWidth = Math.Max(statusCol.Length, statuses.Count == 0 ? 0 : statuses.Max(s => s.Length));
+
         Console.WriteLine();
-        Console.WriteLine($"{"Marke",-10} {"Status",-16} {"Entdeckt",8} {"Geladen",8} {"Nur Metadaten",14} {"Hinweis",-40}");
+        Console.WriteLine($"{brandCol,-10} {statusCol.PadRight(statusWidth)} {discoveredCol,8} {downloadedCol,8} {metadataOnlyCol,14} {noteCol,-40}");
         Console.WriteLine(new string('-', 100));
 
         foreach (var r in results)
         {
             var note = r.Outcome switch
             {
-                BrandRunOutcome.NotImplemented => r.Note ?? "nicht implementiert",
-                BrandRunOutcome.DiscoveryFailed => r.Note ?? "Discovery fehlgeschlagen",
+                BrandRunOutcome.NotImplemented => r.Note ?? Strings.Get("Summary_Note_NotImplemented"),
+                BrandRunOutcome.DiscoveryFailed => r.Note ?? Strings.Get("Summary_Note_DiscoveryFailed"),
                 _ => string.Empty
             };
 
             Console.WriteLine(
-                $"{r.Brand,-10} {r.Outcome,-16} {r.Discovered,8} {r.Downloaded,8} {r.MetadataOnly,14} {Truncate(note, 40),-40}");
+                $"{r.Brand,-10} {DisplayText.For(r.Outcome).PadRight(statusWidth)} {r.Discovered,8} {r.Downloaded,8} {r.MetadataOnly,14} {Truncate(note, 40),-40}");
         }
 
         Console.WriteLine();

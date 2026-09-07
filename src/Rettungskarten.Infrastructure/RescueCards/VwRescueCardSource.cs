@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 using Rettungskarten.Core.Abstractions;
+using Rettungskarten.Core.Localization;
 using Rettungskarten.Core.Models;
 using Rettungskarten.Infrastructure.Http;
 using Rettungskarten.Infrastructure.RescueCards.Parsing;
@@ -33,7 +34,7 @@ public sealed class VwRescueCardSource(
 
         if (string.IsNullOrEmpty(baseUrl) || germanBucket?.Files is null)
         {
-            logger.LogWarning("VW: Konnte den deutschsprachigen Sprach-Bucket im JSON-Feed nicht finden.");
+            logger.LogWarning("{Message}", Strings.Get("RescueCards_Vw_LanguageBucketNotFound"));
             return [];
         }
 
@@ -45,9 +46,7 @@ public sealed class VwRescueCardSource(
             entries.Add(new RescueCardEntry(Brand.VW, FeedUrl, downloadUrl, fileName, parsed));
         }
 
-        logger.LogInformation(
-            "VW: {Count} deutschsprachige Rettungskarten entdeckt (Download ist bekanntermaßen mit HTTP 403 blockiert)",
-            entries.Count);
+        logger.LogInformation("{Message}", Strings.Get("RescueCards_Vw_DiscoveredCount", entries.Count));
 
         return entries;
     }

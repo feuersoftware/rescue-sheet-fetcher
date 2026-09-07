@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Rettungskarten.Core.Abstractions;
 using Rettungskarten.Core.Config;
+using Rettungskarten.Core.Localization;
 using Rettungskarten.Core.Models;
 using Rettungskarten.Core.Naming;
 
@@ -24,7 +25,7 @@ public sealed class RescueCardOrchestrator(
         var source = sources.FirstOrDefault(s => s.Brand == brand);
         if (source is null)
         {
-            return BrandRunResult.NotImplemented(brand, "Keine Quelle für diese Marke registriert.");
+            return BrandRunResult.NotImplemented(brand, Strings.Get("Orchestrator_NoSourceRegistered"));
         }
 
         IReadOnlyList<RescueCardEntry> entries;
@@ -34,12 +35,12 @@ public sealed class RescueCardOrchestrator(
         }
         catch (NotSupportedException ex)
         {
-            logger.LogInformation("{Brand}: nicht implementiert - {Message}", brand, ex.Message);
+            logger.LogInformation("{Message}", Strings.Get("Orchestrator_NotImplementedLog", brand, ex.Message));
             return BrandRunResult.NotImplemented(brand, ex.Message);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            logger.LogWarning(ex, "{Brand}: Discovery fehlgeschlagen", brand);
+            logger.LogWarning(ex, "{Message}", Strings.Get("Orchestrator_DiscoveryFailedLog", brand));
             return BrandRunResult.DiscoveryFailed(brand, ex);
         }
 
@@ -51,9 +52,9 @@ public sealed class RescueCardOrchestrator(
             ct.ThrowIfCancellationRequested();
 
             var download = entry.DownloadUrl is null
-                ? RescueCardDownloadResult.Fail("Keine Download-URL entdeckt")
+                ? RescueCardDownloadResult.Fail(Strings.Get("FailureReason_NoDownloadUrl"))
                 : dryRun
-                    ? RescueCardDownloadResult.Fail("dry-run: Download übersprungen")
+                    ? RescueCardDownloadResult.Fail(Strings.Get("FailureReason_DryRunSkipped"))
                     : await TryDownloadAsync(source, entry, ct);
 
             var status = entry.DownloadUrl is null
@@ -106,7 +107,7 @@ public sealed class RescueCardOrchestrator(
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            logger.LogWarning(ex, "{Brand}: Download fehlgeschlagen für {Entry}", entry.Brand, entry.RawFileNameOrLabel);
+            logger.LogWarning(ex, "{Message}", Strings.Get("Orchestrator_DownloadFailedLog", entry.Brand, entry.RawFileNameOrLabel));
             return RescueCardDownloadResult.Fail(ex.Message);
         }
     }

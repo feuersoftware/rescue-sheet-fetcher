@@ -3,6 +3,7 @@ using AngleSharp;
 using AngleSharp.Dom;
 using Microsoft.Extensions.Logging;
 using Rettungskarten.Core.Abstractions;
+using Rettungskarten.Core.Localization;
 using Rettungskarten.Core.Models;
 using Rettungskarten.Infrastructure.Http;
 using Rettungskarten.Infrastructure.RescueCards.Parsing;
@@ -55,7 +56,7 @@ public sealed class SkodaRescueCardSource(
             }
         }
 
-        logger.LogInformation("Škoda: {Count} Modellseiten entdeckt", modelLinks.Count);
+        logger.LogInformation("{Message}", Strings.Get("RescueCards_Skoda_ModelPagesFound", modelLinks.Count));
 
         var entries = new List<RescueCardEntry>();
         foreach (var (modelName, pageUrl) in modelLinks)
@@ -67,7 +68,7 @@ public sealed class SkodaRescueCardSource(
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
-                logger.LogWarning(ex, "Škoda: Modellseite {Url} konnte nicht gelesen werden", pageUrl);
+                logger.LogWarning(ex, "{Message}", Strings.Get("RescueCards_Skoda_ModelPageReadFailed", pageUrl));
             }
         }
 

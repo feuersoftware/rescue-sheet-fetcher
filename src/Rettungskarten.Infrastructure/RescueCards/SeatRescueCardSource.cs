@@ -1,6 +1,7 @@
 using AngleSharp;
 using Microsoft.Extensions.Logging;
 using Rettungskarten.Core.Abstractions;
+using Rettungskarten.Core.Localization;
 using Rettungskarten.Core.Models;
 using Rettungskarten.Infrastructure.Http;
 using Rettungskarten.Infrastructure.RescueCards.Parsing;
@@ -16,6 +17,7 @@ public sealed class SeatRescueCardSource(
     IHttpClientFactory httpClientFactory, ILogger<SeatRescueCardSource> logger) : IRescueCardSource
 {
     private const string OverviewUrl = "https://www.seat.de/kontakt/downloads/rettungsblaetter";
+    private const string GeneralGuideModelName = "General Guide";
 
     public Brand Brand => Brand.Seat;
 
@@ -39,8 +41,11 @@ public sealed class SeatRescueCardSource(
             }
 
             var absoluteUrl = HttpDownloadHelper.ResolveUrl(OverviewUrl, href);
+            // ModelName is domain data (it feeds RescueCardIdBuilder's id/folder-name and
+            // BundlePriorityCalculator's KBA matching), not display text - it must stay invariant
+            // across --lang, or the same real-world PDF would get a different id per language.
             var parsed = new ParsedModelInfo(
-                ModelName: "Allgemeiner Leitfaden", Variant: null, BodyType: null,
+                ModelName: GeneralGuideModelName, Variant: null, BodyType: null,
                 BuildYearFrom: null, BuildYearTo: null, Doors: null, FuelType: null,
                 LanguageCode: "DE", ParseConfidence.High);
             entries.Add(new RescueCardEntry(Brand.Seat, OverviewUrl, absoluteUrl, "seat-emergency-response-guide-de.pdf", parsed));
@@ -54,7 +59,7 @@ public sealed class SeatRescueCardSource(
             .Distinct()
             .ToList();
 
-        logger.LogInformation("SEAT: {Count} Modellseiten entdeckt", modelPageUrls.Count);
+        logger.LogInformation("{Message}", Strings.Get("RescueCards_Seat_ModelPagesFound", modelPageUrls.Count));
 
         foreach (var modelPageUrl in modelPageUrls)
         {
@@ -85,7 +90,7 @@ public sealed class SeatRescueCardSource(
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
-                logger.LogWarning(ex, "SEAT: Modellseite {Url} konnte nicht gelesen werden", modelPageUrl);
+                logger.LogWarning(ex, "{Message}", Strings.Get("RescueCards_Seat_ModelPageReadFailed", modelPageUrl));
             }
         }
 

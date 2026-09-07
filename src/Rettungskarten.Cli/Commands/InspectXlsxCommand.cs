@@ -1,5 +1,6 @@
 using System.CommandLine;
 using ClosedXML.Excel;
+using Rettungskarten.Core.Localization;
 
 namespace Rettungskarten.Cli.Commands;
 
@@ -12,10 +13,10 @@ public static class InspectXlsxCommand
 {
     public static Command Build()
     {
-        var pathArgument = new Argument<string>("path") { Description = "Pfad zur XLSX-Datei" };
-        var rowsOption = new Option<int>("--rows") { Description = "Maximale Zeilenanzahl je Arbeitsblatt", DefaultValueFactory = _ => 15 };
+        var pathArgument = new Argument<string>("path") { Description = Strings.Get("Argument_XlsxPath_Description") };
+        var rowsOption = new Option<int>("--rows") { Description = Strings.Get("Option_Rows_Description"), DefaultValueFactory = _ => 15 };
 
-        var command = new Command("xlsx", "Zeigt Arbeitsblätter/Zeilen einer XLSX-Datei zur Schema-Prüfung an");
+        var command = new Command("xlsx", Strings.Get("Command_InspectXlsx_Description"));
         command.Add(pathArgument);
         command.Add(rowsOption);
 

@@ -1,6 +1,7 @@
 using AngleSharp;
 using Microsoft.Extensions.Logging;
 using Rettungskarten.Core.Abstractions;
+using Rettungskarten.Core.Localization;
 using Rettungskarten.Core.Models;
 using Rettungskarten.Infrastructure.Http;
 
@@ -31,22 +32,20 @@ public sealed class KbaVehicleStockSource(
         var client = httpClientFactory.CreateClient(RettungskartenHttpClient.Name);
 
         var downloadUrl = await ResolveDownloadUrlAsync(client, year, ct)
-            ?? throw new InvalidOperationException($"Kein Download-Link für FZ12 {year} auf der KBA-Produktseite gefunden.");
+            ?? throw new InvalidOperationException(Strings.Get("Stock_NoDownloadLinkFound", year));
 
         if (!downloadUrl.Contains(".xlsx", StringComparison.OrdinalIgnoreCase))
         {
-            throw new NotSupportedException(
-                $"FZ12 {year} liegt nicht im XLSX-Format vor ({downloadUrl}) - " +
-                "ältere Formate (.xls/.pdf) werden derzeit nicht unterstützt.");
+            throw new NotSupportedException(Strings.Get("Stock_UnsupportedFormat", year, downloadUrl));
         }
 
-        logger.LogInformation("Lade FZ12 {Year} von {Url}", year, downloadUrl);
+        logger.LogInformation("{Message}", Strings.Get("Stock_Downloading", year, downloadUrl));
         var bytes = await client.GetByteArrayAsync(downloadUrl, ct);
         var parsed = KbaStockXlsxParser.Parse(bytes, year, downloadUrl);
 
         foreach (var warning in parsed.UnparsedRowWarnings)
         {
-            logger.LogWarning("FZ12 {Year}: {Warning}", year, warning);
+            logger.LogWarning("{Message}", Strings.Get("Stock_RowWarningLog", year, warning));
         }
 
         var fileName = $"fz12_{year}{Path.GetExtension(new Uri(downloadUrl).AbsolutePath)}";

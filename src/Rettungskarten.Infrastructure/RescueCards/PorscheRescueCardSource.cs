@@ -1,4 +1,5 @@
 using Rettungskarten.Core.Abstractions;
+using Rettungskarten.Core.Localization;
 using Rettungskarten.Core.Models;
 
 namespace Rettungskarten.Infrastructure.RescueCards;
@@ -13,7 +14,7 @@ public sealed class PorscheRescueCardSource : IRescueCardSource
     public Brand Brand => Brand.Porsche;
 
     public Task<IReadOnlyList<RescueCardEntry>> DiscoverAsync(CancellationToken ct) =>
-        throw new NotSupportedException("Porsche: keine bestätigte öffentliche Quelle für Rettungsdatenblätter gefunden (Stand 2026-09).");
+        throw new NotSupportedException(Strings.Get("RescueCards_Porsche_NotSupported"));
 
     public Task<RescueCardDownloadResult> DownloadAsync(RescueCardEntry entry, CancellationToken ct) =>
         throw new NotSupportedException();

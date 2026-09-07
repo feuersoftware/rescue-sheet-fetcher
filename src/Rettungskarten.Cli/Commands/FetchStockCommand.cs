@@ -1,5 +1,6 @@
 using System.CommandLine;
 using Microsoft.Extensions.DependencyInjection;
+using Rettungskarten.Core.Localization;
 using Rettungskarten.Infrastructure.Stock;
 using Rettungskarten.Infrastructure.Storage;
 
@@ -9,14 +10,14 @@ public static class FetchStockCommand
 {
     public static Command Build(Option<bool> verboseOption)
     {
-        var yearOption = new Option<int>("--year") { Description = "Bezugsjahr (Stichtag 1. Januar)", Required = true };
+        var yearOption = new Option<int>("--year") { Description = Strings.Get("Option_Year_Description"), Required = true };
         var outputOption = new Option<string>("--output")
         {
-            Description = "Zielverzeichnis für den Fahrzeugbestand",
+            Description = Strings.Get("Option_Output_Stock_Description"),
             DefaultValueFactory = _ => Path.Combine("data", "stock")
         };
 
-        var command = new Command("stock", "Lädt den KBA-Fahrzeugbestand (FZ12) für ein Jahr");
+        var command = new Command("stock", Strings.Get("Command_Stock_Description"));
         command.Add(yearOption);
         command.Add(outputOption);
 
@@ -36,19 +37,19 @@ public static class FetchStockCommand
                 await store.SaveAsync(fetch.Parsed, fetch.RawContent, fetch.RawFileName, ct);
 
                 Console.WriteLine();
-                Console.WriteLine($"FZ12 {year}: {fetch.Parsed.Rows.Count} Modellreihen geladen, {fetch.Parsed.UnparsedRowWarnings.Count} Warnung(en).");
-                Console.WriteLine($"Quelle: {fetch.Parsed.SourceUrl}");
-                Console.WriteLine($"Lizenz: {fetch.Parsed.License}");
+                Console.WriteLine(Strings.Get("Stock_Result", year, fetch.Parsed.Rows.Count, fetch.Parsed.UnparsedRowWarnings.Count));
+                Console.WriteLine(Strings.Get("Stock_Source", fetch.Parsed.SourceUrl));
+                Console.WriteLine(Strings.Get("Stock_License", fetch.Parsed.License));
                 return 0;
             }
             catch (NotSupportedException ex)
             {
-                Console.Error.WriteLine($"Nicht unterstützt: {ex.Message}");
+                Console.Error.WriteLine(Strings.Get("Stock_NotSupportedPrefix", ex.Message));
                 return 1;
             }
             catch (InvalidOperationException ex)
             {
-                Console.Error.WriteLine($"Fehler: {ex.Message}");
+                Console.Error.WriteLine(Strings.Get("Stock_ErrorPrefix", ex.Message));
                 return 2;
             }
         });

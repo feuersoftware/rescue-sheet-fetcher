@@ -1,6 +1,7 @@
 using System.CommandLine;
 using System.Text.Json;
 using Rettungskarten.Core.Config;
+using Rettungskarten.Core.Localization;
 using Rettungskarten.Core.Models;
 using Rettungskarten.Core.Priority;
 using Rettungskarten.Infrastructure.Config;
@@ -14,23 +15,25 @@ public static class PrioritizeCommand
     {
         var rescueCardsPathOption = new Option<string>("--rescue-cards-path")
         {
+            Description = Strings.Get("Option_RescueCardsPath_Description"),
             DefaultValueFactory = _ => Path.Combine("data", "rescue-cards")
         };
         var stockPathOption = new Option<string>("--stock-path")
         {
+            Description = Strings.Get("Option_StockPath_Description"),
             DefaultValueFactory = _ => Path.Combine("data", "stock")
         };
         var stockYearOption = new Option<int?>("--stock-year")
         {
-            Description = "Bestandsjahr (Standard: neuestes vorhandenes)"
+            Description = Strings.Get("Option_StockYear_Description")
         };
         var aliasesOption = new Option<string>("--aliases")
         {
+            Description = Strings.Get("Option_Aliases_Description"),
             DefaultValueFactory = _ => ConfigLoader.DefaultModelAliasesPath()
         };
 
-        var command = new Command(
-            "prioritize", "Ordnet Rettungskarten anhand des KBA-Fahrzeugbestands eine Bündel-Priorität zu");
+        var command = new Command("prioritize", Strings.Get("Command_Prioritize_Description"));
         command.Add(rescueCardsPathOption);
         command.Add(stockPathOption);
         command.Add(stockYearOption);
@@ -49,7 +52,7 @@ public static class PrioritizeCommand
             var stock = await stockStore.LoadAsync(stockYear, ct);
             if (stock is null)
             {
-                Console.Error.WriteLine("Kein Fahrzeugbestand gefunden - zuerst 'fetch stock --year <jahr>' ausführen.");
+                Console.Error.WriteLine(Strings.Get("Prioritize_NoStockFound"));
                 return 1;
             }
 
@@ -69,11 +72,11 @@ public static class PrioritizeCommand
 
             await WriteReportAsync(rescueCardsPath, updated, ct);
 
-            Console.WriteLine($"{updated.Count} Rettungskarten priorisiert (Bestand: FZ12 {stock.Year}).");
+            Console.WriteLine(Strings.Get("Prioritize_Result", updated.Count, stock.Year));
             var byPriority = updated.GroupBy(c => c.BundlePriority).ToDictionary(g => g.Key, g => g.Count());
             foreach (var priority in Enum.GetValues<BundlePriority>())
             {
-                Console.WriteLine($"  {priority}: {byPriority.GetValueOrDefault(priority)}");
+                Console.WriteLine($"  {DisplayText.For(priority)}: {byPriority.GetValueOrDefault(priority)}");
             }
 
             return 0;
@@ -99,6 +102,6 @@ public static class PrioritizeCommand
         await using var stream = File.Create(reportPath);
         await JsonSerializer.SerializeAsync(stream, report, JsonDefaults.Options, ct);
 
-        Console.WriteLine($"Report: {reportPath}");
+        Console.WriteLine(Strings.Get("Prioritize_ReportLabel", reportPath));
     }
 }

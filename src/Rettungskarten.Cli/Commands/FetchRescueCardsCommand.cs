@@ -2,6 +2,7 @@ using System.CommandLine;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Rettungskarten.Core.Abstractions;
+using Rettungskarten.Core.Localization;
 using Rettungskarten.Core.Models;
 using Rettungskarten.Core.Orchestration;
 using Rettungskarten.Infrastructure.Config;
@@ -15,29 +16,29 @@ public static class FetchRescueCardsCommand
     {
         var brandOption = new Option<string>("--brand")
         {
-            Description = "Marke (vw, audi, skoda, seat, cupra, porsche, all)",
+            Description = Strings.Get("Option_Brand_Description"),
             DefaultValueFactory = _ => "all"
         };
         brandOption.AcceptOnlyFromAmong("vw", "audi", "skoda", "seat", "cupra", "porsche", "all");
 
         var outputOption = new Option<string>("--output")
         {
-            Description = "Zielverzeichnis für Rettungskarten",
+            Description = Strings.Get("Option_Output_RescueCards_Description"),
             DefaultValueFactory = _ => Path.Combine("data", "rescue-cards")
         };
 
         var dryRunOption = new Option<bool>("--dry-run")
         {
-            Description = "Nur Discovery + Metadaten, keine PDF-Downloads"
+            Description = Strings.Get("Option_DryRun_Description")
         };
 
         var siblingConfigOption = new Option<string>("--sibling-config")
         {
-            Description = "Pfad zur sibling-models.json (Standard: mitgelieferte Datei)",
+            Description = Strings.Get("Option_SiblingConfig_Description"),
             DefaultValueFactory = _ => ConfigLoader.DefaultSiblingModelsPath()
         };
 
-        var command = new Command("rescue-cards", "Lädt Rettungskarten für Fahrzeugmarken der VW-Gruppe (nur Deutsch)");
+        var command = new Command("rescue-cards", Strings.Get("Command_RescueCards_Description"));
         command.Add(brandOption);
         command.Add(outputOption);
         command.Add(dryRunOption);
@@ -65,7 +66,7 @@ public static class FetchRescueCardsCommand
             var results = new List<BrandRunResult>();
             foreach (var brand in brands)
             {
-                logger.LogInformation("Starte {Brand}...", brand);
+                logger.LogInformation("{Message}", Strings.Get("Log_StartingBrand", brand));
                 results.Add(await orchestrator.RunForBrandAsync(brand, dryRun, ct));
             }
 
@@ -84,6 +85,6 @@ public static class FetchRescueCardsCommand
         "seat" => Brand.Seat,
         "cupra" => Brand.Cupra,
         "porsche" => Brand.Porsche,
-        _ => throw new ArgumentOutOfRangeException(nameof(value), value, "Unbekannte Marke")
+        _ => throw new ArgumentOutOfRangeException(nameof(value), value, Strings.Get("Error_UnknownBrand"))
     };
 }
