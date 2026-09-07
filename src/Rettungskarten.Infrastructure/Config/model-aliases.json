@@ -1,0 +1,9 @@
+{
+  "aliases": [
+    { "brand": "VW", "modelName": "ID.3", "kbaModelSeries": "ID.3" },
+    { "brand": "VW", "modelName": "ID.4", "kbaModelSeries": "ID.4, ID.5" },
+    { "brand": "VW", "modelName": "ID.5", "kbaModelSeries": "ID.4, ID.5" },
+    { "brand": "VW", "modelName": "T-Roc", "kbaModelSeries": "T-ROC" },
+    { "brand": "VW", "modelName": "T-Cross", "kbaModelSeries": "T-CROSS" }
+  ]
+}
