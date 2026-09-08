@@ -5,15 +5,24 @@ namespace Rettungskarten.Infrastructure.RescueCards.Parsing;
 public readonly record struct YearRange(int? From, int? To);
 
 /// <summary>
-/// Shared helper for turning German generation/year-range phrases from rescue-card link text or
-/// titles into a from/to year pair, e.g. "(2016-2021)" -> (2016, 2021), "ab 2021" -> (2021, null),
-/// "bis 2021" -> (null, 2021), or a single bare year "2024" -> (2024, 2024).
+/// Shared helper for turning generation/year-range phrases from rescue-card link text or titles into
+/// a from/to year pair, e.g. "(2016-2021)" -> (2016, 2021), "ab 2021" -> (2021, null),
+/// "bis 2021" -> (null, 2021), a single bare year "2024" -> (2024, 2024), or Porsche's English
+/// "Model Year 2003 to Model Year 2005" / "from Model Year 2011" phrasing.
 /// </summary>
 public static class ModelYearRangeTextHelper
 {
     private static readonly Regex RangePattern = new(@"(19|20)\d{2}\s*-\s*(19|20)\d{2}", RegexOptions.Compiled);
     private static readonly Regex AbPattern = new(@"\bab\s+((?:19|20)\d{2})\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly Regex BisPattern = new(@"\bbis\s+((?:19|20)\d{2})\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex ModelYearRangePattern = new(
+        @"(?:from\s+)?Model\s+Year\s+((?:19|20)\d{2})\s+to\s+(?:Model\s+Year\s+)?((?:19|20)\d{2})",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    // No \b anchors: PdfPig-extracted text sometimes glues adjacent words together with no space in
+    // either direction (e.g. "SUVfrom Model Year 2011Page 1"), and \b never matches between two
+    // "word" characters - which includes digit-to-letter transitions like "2011" -> "Page".
+    private static readonly Regex FromModelYearPattern = new(
+        @"from\s+Model\s+Year\s+((?:19|20)\d{2})", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly Regex SingleYearPattern = new(@"(19|20)\d{2}", RegexOptions.Compiled);
 
     public static YearRange Extract(string text)
@@ -23,6 +32,13 @@ public static class ModelYearRangeTextHelper
         {
             var parts = rangeMatch.Value.Split('-', StringSplitOptions.TrimEntries);
             return new YearRange(int.Parse(parts[0]), int.Parse(parts[1]));
+        }
+
+        var modelYearRangeMatch = ModelYearRangePattern.Match(text);
+        if (modelYearRangeMatch.Success)
+        {
+            return new YearRange(
+                int.Parse(modelYearRangeMatch.Groups[1].Value), int.Parse(modelYearRangeMatch.Groups[2].Value));
         }
 
         var abMatch = AbPattern.Match(text);
@@ -35,6 +51,12 @@ public static class ModelYearRangeTextHelper
         if (bisMatch.Success)
         {
             return new YearRange(null, int.Parse(bisMatch.Groups[1].Value));
+        }
+
+        var fromModelYearMatch = FromModelYearPattern.Match(text);
+        if (fromModelYearMatch.Success)
+        {
+            return new YearRange(int.Parse(fromModelYearMatch.Groups[1].Value), null);
         }
 
         var singleMatch = SingleYearPattern.Match(text);

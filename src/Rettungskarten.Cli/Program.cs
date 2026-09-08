@@ -62,6 +62,9 @@ listCommand.Add(ListBrandsCommand.Build());
 var inspectCommand = new Command("inspect", Strings.Get("Command_Inspect_Description"));
 inspectCommand.Add(InspectXlsxCommand.Build());
 
+var splitCommand = new Command("split", Strings.Get("Command_Split_Description"));
+splitCommand.Add(SplitPorscheCommand.Build());
+
 var rootCommand = new RootCommand(Strings.Get("App_Description"));
 rootCommand.Add(verboseOption);
 rootCommand.Add(langOption);
@@ -69,6 +72,7 @@ rootCommand.Add(fetchCommand);
 rootCommand.Add(PrioritizeCommand.Build());
 rootCommand.Add(listCommand);
 rootCommand.Add(inspectCommand);
+rootCommand.Add(splitCommand);
 
 var parseResult = rootCommand.Parse(args);
 return await parseResult.InvokeAsync();

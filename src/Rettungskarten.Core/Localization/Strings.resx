@@ -68,6 +68,14 @@
   <data name="Option_StockYear_Description" xml:space="preserve"><value>Stock year (default: latest available)</value></data>
   <data name="Option_Aliases_Description" xml:space="preserve"><value>Path to model-aliases.json (default: bundled file)</value></data>
 
+  <!-- split porsche -->
+  <data name="Command_Split_Description" xml:space="preserve"><value>Post-processes already-downloaded rescue cards</value></data>
+  <data name="Command_SplitPorsche_Description" xml:space="preserve"><value>Splits Porsche's combined all-models PDF(s) into one file per model</value></data>
+  <data name="Split_Porsche_NoCombinedEntriesFound" xml:space="preserve"><value>No downloaded Porsche entries found - run 'fetch rescue-cards --brand porsche' first.</value></data>
+  <data name="Split_Porsche_NoModelsDetected" xml:space="preserve"><value>Could not detect any models in '{0}' - the document layout may have changed.</value></data>
+  <data name="Split_Porsche_Result" xml:space="preserve"><value>{0} combined document(s) split into {1} per-model rescue card(s).</value></data>
+  <data name="Split_Porsche_DocumentFailed" xml:space="preserve"><value>Failed to split '{0}': {1}</value></data>
+
   <!-- list brands -->
   <data name="Command_List_Description" xml:space="preserve"><value>Lists information</value></data>
   <data name="Command_ListBrands_Description" xml:space="preserve"><value>Lists supported brands and their implementation status</value></data>
@@ -118,8 +126,8 @@
   <data name="Brand_Seat_Source" xml:space="preserve"><value>seat.de model pages</value></data>
   <data name="Brand_Cupra_Status" xml:space="preserve"><value>Fully functional (Switzerland source only)</value></data>
   <data name="Brand_Cupra_Source" xml:space="preserve"><value>cupraofficial.ch static HTML page</value></data>
-  <data name="Brand_Porsche_Status" xml:space="preserve"><value>Not implemented</value></data>
-  <data name="Brand_Porsche_Source" xml:space="preserve"><value>no confirmed public source found</value></data>
+  <data name="Brand_Porsche_Status" xml:space="preserve"><value>Fully functional (2 combined PDFs, not per-model)</value></data>
+  <data name="Brand_Porsche_Source" xml:space="preserve"><value>porsche.com official documents page</value></data>
 
   <!-- Infrastructure: KBA stock -->
   <data name="Stock_NoDownloadLinkFound" xml:space="preserve"><value>No download link for FZ12 {0} found on the KBA product page.</value></data>
@@ -132,6 +140,7 @@
   <data name="Stock_Downloading" xml:space="preserve"><value>Downloading FZ12 {0} from {1}</value></data>
   <data name="Stock_RowWarningLog" xml:space="preserve"><value>FZ12 {0}: {1}</value></data>
   <data name="Http_WaitingForRateLimitSlot" xml:space="preserve"><value>Waiting for rate-limit slot for {0} (min. {1})</value></data>
+  <data name="Http_UnexpectedContentType" xml:space="preserve"><value>Unexpected Content-Type '{0}' instead of PDF (possibly an auth-gateway redirect)</value></data>
 
   <!-- Infrastructure: rescue card sources -->
   <data name="RescueCards_Skoda_ModelPagesFound" xml:space="preserve"><value>Škoda: {0} model pages discovered</value></data>
@@ -142,7 +151,8 @@
   <data name="RescueCards_Cupra_DiscoveredCount" xml:space="preserve"><value>Cupra: {0} German-language rescue cards discovered (Switzerland)</value></data>
   <data name="RescueCards_Vw_DiscoveredCount" xml:space="preserve"><value>VW: {0} German-language rescue cards discovered (download is known to be blocked with HTTP 403)</value></data>
   <data name="RescueCards_Vw_LanguageBucketNotFound" xml:space="preserve"><value>VW: could not find the German-language bucket in the JSON feed.</value></data>
-  <data name="RescueCards_Porsche_NotSupported" xml:space="preserve"><value>Porsche: no confirmed public source for rescue data sheets found (as of 2026-09).</value></data>
+  <data name="RescueCards_Porsche_DiscoveredCount" xml:space="preserve"><value>Porsche: {0} rescue data sheet document(s) discovered (combined, covers all models)</value></data>
+  <data name="RescueCards_Porsche_TemplateNotFound" xml:space="preserve"><value>Porsche: app-template script block not found - page layout has likely changed.</value></data>
 
   <!-- Core: orchestration -->
   <data name="Orchestrator_NotImplementedLog" xml:space="preserve"><value>{0}: not implemented - {1}</value></data>

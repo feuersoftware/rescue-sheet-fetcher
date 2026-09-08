@@ -40,6 +40,37 @@ public sealed class FileSystemRescueCardStore(RescueCardStoreOptions options) : 
     public async Task UpdateMetadataAsync(RescueCardMetadata metadata, CancellationToken ct) =>
         await WriteJsonAsync(GetMetadataPath(metadata), metadata, ct);
 
+    public string? GetPdfPath(RescueCardMetadata metadata) =>
+        metadata.LocalPdfRelativePath is null
+            ? null
+            : Path.Combine(options.RootPath, metadata.LocalPdfRelativePath.Replace('/', Path.DirectorySeparatorChar));
+
+    public Task DeleteAsync(RescueCardMetadata metadata, CancellationToken ct)
+    {
+        var jsonPath = GetMetadataPath(metadata);
+        if (File.Exists(jsonPath))
+        {
+            File.Delete(jsonPath);
+        }
+
+        var pdfPath = GetPdfPath(metadata);
+        if (pdfPath is not null && File.Exists(pdfPath))
+        {
+            File.Delete(pdfPath);
+        }
+
+        // Deleting an entry's files can leave its model folder empty (e.g. `split porsche` removes
+        // the combined "all-models" entry once every page has been redistributed into per-model
+        // folders) - clean that up rather than leaving a stray empty directory behind.
+        var modelFolder = GetModelFolder(metadata.Brand, metadata.ModelName);
+        if (Directory.Exists(modelFolder) && !Directory.EnumerateFileSystemEntries(modelFolder).Any())
+        {
+            Directory.Delete(modelFolder);
+        }
+
+        return Task.CompletedTask;
+    }
+
     public async Task WriteBrandManifestAsync(Brand brand, CancellationToken ct)
     {
         var brandFolder = GetBrandFolder(brand);

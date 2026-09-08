@@ -1,3 +1,4 @@
+using Rettungskarten.Core.Localization;
 using Rettungskarten.Core.Models;
 
 namespace Rettungskarten.Infrastructure.Http;
@@ -26,7 +27,7 @@ public static class HttpDownloadHelper
             {
                 // Some gated downloads (e.g. Cupra AT) return 200 with an HTML login/redirect page
                 // instead of a real PDF - treat that as a failure rather than saving garbage bytes.
-                return RescueCardDownloadResult.Fail($"Unerwarteter Content-Type '{contentType}' statt PDF (evtl. Auth-Gateway-Weiterleitung)");
+                return RescueCardDownloadResult.Fail(Strings.Get("Http_UnexpectedContentType", contentType));
             }
 
             return RescueCardDownloadResult.Ok(bytes);
