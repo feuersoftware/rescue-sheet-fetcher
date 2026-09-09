@@ -11,9 +11,12 @@ namespace Rettungskarten.Infrastructure.RescueCards;
 
 /// <summary>
 /// VW's model-search widget loads its data from a public JSON feed (no auth needed to read the file
-/// list), bucketed by language. Actually downloading a PDF from the feed's base_url returned HTTP 403
-/// in research (likely a signed-URL/session requirement not yet identified) - discovery still succeeds
-/// so every model's metadata is captured, but downloads are expected to fail and land as MetadataOnly.
+/// list), bucketed by language. The PDF's actual S3 key is <c>{base_url}/{languageBucketName}/{fileName}</c>,
+/// not <c>{base_url}/{fileName}</c> - the feed's flat file list omits that path segment, and the bucket
+/// returns a generic "AccessDenied" (not "NoSuchKey") for the wrong path, which made this look like an
+/// auth/session problem rather than the URL-construction bug it actually is. Found by intercepting the
+/// network request VW's own rescue-data widget makes (volkswagen.de/de/besitzer-und-service/ueber-ihr-auto/
+/// kundeninformationen/rechtliches/rescue-data.html) when downloading a card manually.
 /// </summary>
 public sealed class VwRescueCardSource(
     IHttpClientFactory httpClientFactory, ILogger<VwRescueCardSource> logger) : IRescueCardSource
@@ -32,7 +35,7 @@ public sealed class VwRescueCardSource(
         var baseUrl = root?.Config?.BaseUrl;
         var germanBucket = root?.Languages?.FirstOrDefault(l => (l.Name ?? string.Empty).Contains(".DE", StringComparison.OrdinalIgnoreCase));
 
-        if (string.IsNullOrEmpty(baseUrl) || germanBucket?.Files is null)
+        if (string.IsNullOrEmpty(baseUrl) || germanBucket?.Files is null || string.IsNullOrEmpty(germanBucket.Name))
         {
             logger.LogWarning("{Message}", Strings.Get("RescueCards_Vw_LanguageBucketNotFound"));
             return [];
@@ -41,7 +44,7 @@ public sealed class VwRescueCardSource(
         var entries = new List<RescueCardEntry>(germanBucket.Files.Count);
         foreach (var fileName in germanBucket.Files)
         {
-            var downloadUrl = baseUrl.TrimEnd('/') + "/" + fileName;
+            var downloadUrl = $"{baseUrl.TrimEnd('/')}/{germanBucket.Name}/{fileName}";
             var parsed = VwAudiCupraFilenameParser.Parse(fileName);
             entries.Add(new RescueCardEntry(Brand.VW, FeedUrl, downloadUrl, fileName, parsed));
         }

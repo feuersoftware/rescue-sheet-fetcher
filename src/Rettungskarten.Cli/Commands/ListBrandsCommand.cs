@@ -8,7 +8,7 @@ public static class ListBrandsCommand
 {
     private static (Brand Brand, string Status, string Source)[] BuildInfo() =>
     [
-        (Brand.VW, Strings.Get("Brand_VW_Status"), Strings.Get("Brand_VW_Source")),
+        (Brand.VW, Strings.Get("Status_FullyFunctional"), Strings.Get("Brand_VW_Source")),
         (Brand.Audi, Strings.Get("Status_FullyFunctional"), Strings.Get("Brand_Audi_Source")),
         (Brand.Skoda, Strings.Get("Status_FullyFunctional"), Strings.Get("Brand_Skoda_Source")),
         (Brand.Seat, Strings.Get("Status_FullyFunctional"), Strings.Get("Brand_Seat_Source")),

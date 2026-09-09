@@ -5,8 +5,8 @@ namespace Rettungskarten.Infrastructure.Http;
 
 /// <summary>
 /// Shared "download a PDF, turn HTTP/network failures into a result instead of an exception" logic
-/// used by every brand source, since a single model's download failing (VW's 403, Cupra AT's auth
-/// gateway redirect) must never bubble up as an exception - see <c>IRescueCardSource.DownloadAsync</c>.
+/// used by every brand source, since a single model's download failing (e.g. Cupra AT's auth gateway
+/// redirect) must never bubble up as an exception - see <c>IRescueCardSource.DownloadAsync</c>.
 /// </summary>
 public static class HttpDownloadHelper
 {

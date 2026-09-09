@@ -20,7 +20,7 @@ No manufacturer publishes a stable official API for this — every brand's page 
 
 | Brand | Status | Source |
 |---|---|---|
-| VW | Discovery works, PDF download blocked with HTTP 403 (unresolved, see code comments) | JSON feed on `assets.feature-app.io` |
+| VW | Fully functional | JSON feed on `assets.feature-app.io` |
 | Audi | Fully functional | Static HTML page on `audi.com` |
 | Škoda | Fully functional | Model pages on `skoda-auto.de` |
 | SEAT | Fully functional | Model pages on `seat.de` |
@@ -117,7 +117,6 @@ See `CLAUDE.md` for the project's contribution rules (English-only code/commits/
 
 ### Known limitations
 
-- **VW**: rescue-card metadata is fully discovered, but the actual PDF download returns HTTP 403 (likely a signed-URL or session requirement not yet reverse-engineered). Cards are stored with `status: metadataOnly`.
 - **Porsche**: unlike every other brand, the source has no per-model file — Porsche publishes one combined PDF covering all current models (~55MB) plus a second for classic models, both served from Porsche's own CDN (`assets-v2.porsche.com`). `fetch rescue-cards --brand porsche` downloads those two files as-is (needing longer HTTP timeouts than the other brands, configured in `PoliteHttpClientFactory`); running `split porsche` afterwards splits them into one file per model by detecting model boundaries in the page text (grouped by the document's own "ID no." footer, since there's no PDF outline) and replaces the two combined entries with the per-model ones. The document's actual language is English, not German (Porsche doesn't offer a separate German file here), and its content is in English (`languageCode: "EN"` on these entries, unlike every other brand). Model names/years are parsed heuristically from free text; a handful of entries where that parsing fails altogether fall back to the document's own internal ID as the "model name" (`parseConfidence: "unparsed"`) rather than being dropped.
 - **Cupra**: only the Swiss site is wired up; the Austrian site's downloads redirect to an identity/auth gateway.
 - Rescue card filenames/link text are parsed heuristically (no brand publishes structured metadata) — see `ParseConfidence` on each entry.
@@ -145,7 +144,7 @@ Kein Hersteller veröffentlicht dafür eine stabile offizielle API — die Seite
 
 | Marke | Status | Quelle |
 |---|---|---|
-| VW | Discovery funktioniert, PDF-Download mit HTTP 403 blockiert (ungeklärt, siehe Code-Kommentare) | JSON-Feed auf `assets.feature-app.io` |
+| VW | Voll funktionsfähig | JSON-Feed auf `assets.feature-app.io` |
 | Audi | Voll funktionsfähig | Statische HTML-Seite auf `audi.com` |
 | Škoda | Voll funktionsfähig | Modellseiten auf `skoda-auto.de` |
 | SEAT | Voll funktionsfähig | Modellseiten auf `seat.de` |
@@ -242,7 +241,6 @@ Die Mitwirkungsregeln des Projekts (Code/Commits/PRs auf Englisch, Build+Test+Re
 
 ### Bekannte Einschränkungen
 
-- **VW**: Rettungskarten-Metadaten werden vollständig entdeckt, aber der eigentliche PDF-Download liefert HTTP 403 (vermutlich eine signierte URL oder Session-Anforderung, die noch nicht reverse-engineered wurde). Karten werden mit `status: metadataOnly` gespeichert.
 - **Porsche**: anders als bei jeder anderen Marke hat die Quelle keine Datei pro Modell — Porsche veröffentlicht eine kombinierte PDF für alle aktuellen Modelle (~55MB) plus eine zweite für klassische Modelle, beide von Porsches eigenem CDN (`assets-v2.porsche.com`). `fetch rescue-cards --brand porsche` lädt diese zwei Dateien unverändert (benötigt längere HTTP-Timeouts als bei den anderen Marken, konfiguriert in `PoliteHttpClientFactory`); `split porsche` teilt sie anschließend anhand von Modellgrenzen im Seitentext (gruppiert über die dokumenteigene "ID no."-Fußzeile, da keine PDF-Gliederung existiert) in je eine Datei pro Modell auf und ersetzt die zwei kombinierten Einträge durch die Modell-Einträge. Die tatsächliche Sprache des Dokuments ist Englisch, nicht Deutsch (Porsche bietet hierfür keine eigene deutsche Datei an) - der Inhalt ist auf Englisch (`languageCode: "EN"` bei diesen Einträgen, anders als bei jeder anderen Marke). Modellnamen/-jahre werden heuristisch aus Fließtext geparst; einige wenige Einträge, bei denen das komplett fehlschlägt, fallen auf die dokumenteigene interne ID als "Modellname" zurück (`parseConfidence: "unparsed"`), statt verworfen zu werden.
 - **Cupra**: nur die Schweiz-Seite ist angebunden; die Downloads der österreichischen Seite leiten auf ein Identity-/Auth-Gateway um.
 - Dateinamen/Linktexte der Rettungskarten werden heuristisch geparst (keine Marke veröffentlicht strukturierte Metadaten) — siehe `ParseConfidence` je Eintrag.

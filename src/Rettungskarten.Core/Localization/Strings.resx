@@ -119,7 +119,6 @@
   <!-- list brands table -->
   <data name="ListBrands_Column_Source" xml:space="preserve"><value>Source</value></data>
   <data name="Status_FullyFunctional" xml:space="preserve"><value>Fully functional</value></data>
-  <data name="Brand_VW_Status" xml:space="preserve"><value>Discovery OK, download blocked (HTTP 403)</value></data>
   <data name="Brand_VW_Source" xml:space="preserve"><value>assets.feature-app.io JSON feed</value></data>
   <data name="Brand_Audi_Source" xml:space="preserve"><value>audi.com static HTML page</value></data>
   <data name="Brand_Skoda_Source" xml:space="preserve"><value>skoda-auto.de model pages</value></data>
@@ -151,7 +150,7 @@
 <data name="RescueCards_Seat_ModelPageReadFailed" xml:space="preserve"><value>SEAT: could not read model page {0}</value></data>
   <data name="RescueCards_Audi_DiscoveredCount" xml:space="preserve"><value>Audi: {0} German-language rescue cards discovered</value></data>
   <data name="RescueCards_Cupra_DiscoveredCount" xml:space="preserve"><value>Cupra: {0} German-language rescue cards discovered (Switzerland)</value></data>
-  <data name="RescueCards_Vw_DiscoveredCount" xml:space="preserve"><value>VW: {0} German-language rescue cards discovered (download is known to be blocked with HTTP 403)</value></data>
+  <data name="RescueCards_Vw_DiscoveredCount" xml:space="preserve"><value>VW: {0} German-language rescue cards discovered</value></data>
   <data name="RescueCards_Vw_LanguageBucketNotFound" xml:space="preserve"><value>VW: could not find the German-language bucket in the JSON feed.</value></data>
   <data name="RescueCards_Porsche_DiscoveredCount" xml:space="preserve"><value>Porsche: {0} rescue data sheet document(s) discovered (combined, covers all models)</value></data>
   <data name="RescueCards_Porsche_TemplateNotFound" xml:space="preserve"><value>Porsche: app-template script block not found - page layout has likely changed.</value></data>

@@ -43,8 +43,8 @@ public static class RunSummaryPrinter
 
     /// <summary>
     /// True if any brand failed unexpectedly (discovery broke, likely a site layout change) - as
-    /// opposed to expected steady-state conditions like VW's known 403 or a brand stub, which should
-    /// not make the process exit non-zero.
+    /// opposed to expected steady-state conditions like Cupra AT's known auth-gateway redirect or a
+    /// brand stub, which should not make the process exit non-zero.
     /// </summary>
     public static bool HasUnexpectedFailures(IReadOnlyList<BrandRunResult> results) =>
         results.Any(r => r.Outcome == BrandRunOutcome.DiscoveryFailed);
