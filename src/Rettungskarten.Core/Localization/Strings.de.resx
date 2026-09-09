@@ -83,6 +83,10 @@
   <!-- inspect xlsx -->
   <data name="Command_Inspect_Description" xml:space="preserve"><value>Entwicklerwerkzeuge</value></data>
   <data name="Command_InspectXlsx_Description" xml:space="preserve"><value>Zeigt Arbeitsblätter/Zeilen einer XLSX-Datei zur Schema-Prüfung an</value></data>
+  <data name="Command_InspectQuality_Description" xml:space="preserve"><value>Prüft bereits geladene Rettungskarten-Metadaten auf Auffälligkeiten (z. B. eine Karosserieform, die wie eine Jahreszahl aussieht, eine Kraftstoffart aus reinen Ziffern, doppelte IDs)</value></data>
+  <data name="InspectQuality_NoIssuesFound" xml:space="preserve"><value>Keine Datenqualitätsprobleme gefunden ({0} Karten geprüft).</value></data>
+  <data name="InspectQuality_IssueLine" xml:space="preserve"><value>[{0}] {1}: {2}</value></data>
+  <data name="InspectQuality_IssuesFound" xml:space="preserve"><value>{0} Datenqualitätsproblem(e) gefunden ({1} Karten geprüft).</value></data>
   <data name="Argument_XlsxPath_Description" xml:space="preserve"><value>Pfad zur XLSX-Datei</value></data>
   <data name="Option_Rows_Description" xml:space="preserve"><value>Maximale Zeilenanzahl je Arbeitsblatt</value></data>
 

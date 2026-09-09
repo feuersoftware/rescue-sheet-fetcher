@@ -61,6 +61,7 @@ listCommand.Add(ListBrandsCommand.Build());
 
 var inspectCommand = new Command("inspect", Strings.Get("Command_Inspect_Description"));
 inspectCommand.Add(InspectXlsxCommand.Build());
+inspectCommand.Add(InspectQualityCommand.Build());
 
 var splitCommand = new Command("split", Strings.Get("Command_Split_Description"));
 splitCommand.Add(SplitPorscheCommand.Build());

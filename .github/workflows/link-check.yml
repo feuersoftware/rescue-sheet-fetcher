@@ -44,6 +44,15 @@ jobs:
           dotnet run --project src/Rettungskarten.Cli --no-build --configuration Release --
           fetch rescue-cards --brand all --dry-run --output "${{ runner.temp }}/rescue-cards"
 
+      # Discovery (even in --dry-run) already populates BodyType/FuelType/Doors from each source's
+      # free text, so this runs straight against the previous step's output with no extra downloads.
+      # Catches the class of bug a "did discovery return results" check can't - see
+      # DataQualityChecker for what's checked and the real Audi filename-parsing bug that motivated it.
+      - name: Check rescue-card data quality
+        run: >
+          dotnet run --project src/Rettungskarten.Cli --no-build --configuration Release --
+          inspect quality --rescue-cards-path "${{ runner.temp }}/rescue-cards"
+
       # Resolves and downloads the current year's KBA FZ12 stock file. KbaVehicleStockSource scrapes
       # the real download link (including its unpredictable `v=` query parameter) from the KBA
       # product page rather than hardcoding it, so this also catches KBA restructuring that page.

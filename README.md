@@ -63,6 +63,9 @@ dotnet run --project src/Rettungskarten.Cli -- list brands
 
 # Developer tool: inspect an XLSX file's schema
 dotnet run --project src/Rettungskarten.Cli -- inspect xlsx path/to/file.xlsx
+
+# Check already-fetched rescue-card metadata for anomalies (see "Data quality checks" below)
+dotnet run --project src/Rettungskarten.Cli -- inspect quality --rescue-cards-path ./data/rescue-cards
 ```
 
 Every command supports `--verbose` for detailed logs.
@@ -104,10 +107,12 @@ data/
 
 **Splitting a combined multi-model PDF** (Porsche's case, and a template if another brand ever turns out to work the same way): `Rettungskarten.Infrastructure/RescueCards/Splitting/PorscheCombinedPdfSplitter.cs` uses `PdfPig` to find model boundaries in the page text (no PDF outline/bookmarks exist in Porsche's file) and `PDFsharp` to copy the matched page ranges into standalone PDFs. It's invoked by the separate `split porsche` command rather than by `fetch` itself, so re-running it doesn't re-download the large source file — the same reasoning `prioritize` already follows as its own post-processing step.
 
+**Data quality checks**: `inspect quality --rescue-cards-path <path>` (`Rettungskarten.Core/Quality/DataQualityChecker.cs`) checks already-fetched metadata for anomalies that a "did discovery return results" check can't catch — a `bodyType` that's actually a year (the shape of a real bug once found in Audi's parsing: a shifted field silently corrupted `BodyType`/`BuildYearFrom` for several cards), a `fuelType` that's just digits, a duplicate `id`, or one entire brand stuck at `bundlePriority: unknown` while others matched real stock data (the shape of the real Cupra/KBA brand-matching bug found this session — that last check only means anything once `prioritize` has actually run, so it won't fire from `link-check.yml`'s dry-run-only flow, only when run locally after the full `fetch` → `prioritize` pipeline). Since discovery already populates `bodyType`/`fuelType` even in `--dry-run` mode, the other checks run straight against dry-run output with no extra downloads — see the `link-check.yml` step below.
+
 **Continuous integration** (`.github/workflows/`):
 
 - `ci.yml` — build, test, and a `list brands` smoke test under both `en-US` and `de-DE` locales, on every push and PR.
-- `link-check.yml` — a scheduled (weekly, Mondays) discovery-only run against every live source (`fetch rescue-cards --brand all --dry-run` plus `fetch stock`), so a manufacturer or KBA moving/restructuring a page is caught within a week instead of silently rotting; also runnable on demand from the Actions tab. See `CLAUDE.md` for what to do when adding a source that this workflow should also cover.
+- `link-check.yml` — a scheduled (weekly, Mondays) discovery-only run against every live source (`fetch rescue-cards --brand all --dry-run` plus `fetch stock`), followed by an `inspect quality` pass over the dry-run's output, so a manufacturer/KBA site change *or* a parsing regression is caught within a week instead of silently rotting; also runnable on demand from the Actions tab. See `CLAUDE.md` for what to do when adding a source that this workflow should also cover.
 
 **Running tests**:
 
@@ -193,6 +198,9 @@ dotnet run --project src/Rettungskarten.Cli -- list brands
 
 # Entwicklerwerkzeug: Schema einer XLSX-Datei prüfen
 dotnet run --project src/Rettungskarten.Cli -- inspect xlsx pfad/zur/datei.xlsx
+
+# Bereits geladene Rettungskarten-Metadaten auf Auffälligkeiten prüfen (siehe „Datenqualitäts-Prüfung" unten)
+dotnet run --project src/Rettungskarten.Cli -- inspect quality --rescue-cards-path ./data/rescue-cards
 ```
 
 Jeder Befehl unterstützt `--verbose` für ausführliche Logs.
@@ -234,10 +242,12 @@ data/
 
 **Eine kombinierte Multi-Modell-PDF aufteilen** (Porsches Fall, als Vorlage falls eine andere Marke sich je genauso verhält): `Rettungskarten.Infrastructure/RescueCards/Splitting/PorscheCombinedPdfSplitter.cs` nutzt `PdfPig`, um Modellgrenzen im Seitentext zu finden (Porsches Datei hat keine PDF-Bookmarks/Gliederung), und `PDFsharp`, um die passenden Seitenbereiche in eigenständige PDFs zu kopieren. Aufgerufen wird das über den separaten `split porsche`-Befehl statt direkt durch `fetch`, damit ein erneuter Lauf nicht die große Quelldatei erneut herunterlädt — dieselbe Überlegung, die `prioritize` bereits als eigener Nachbearbeitungsschritt befolgt.
 
+**Datenqualitäts-Prüfung**: `inspect quality --rescue-cards-path <pfad>` (`Rettungskarten.Core/Quality/DataQualityChecker.cs`) prüft bereits geladene Metadaten auf Auffälligkeiten, die eine reine „hat Discovery überhaupt Ergebnisse geliefert"-Prüfung nicht erkennt — eine `bodyType`, die eigentlich eine Jahreszahl ist (genau die Form eines echten Bugs, der einmal bei Audi gefunden wurde: ein verschobenes Feld hat `BodyType`/`BuildYearFrom` bei mehreren Karten stillschweigend verfälscht), eine `fuelType` aus reinen Ziffern, eine doppelte `id`, oder eine ganze Marke, die bei `bundlePriority: unknown` feststeckt, während andere Marken echte Bestandsdaten zugeordnet bekommen haben (genau die Form des echten Cupra/KBA-Markenabgleich-Bugs aus dieser Session — diese letzte Prüfung ergibt erst etwas, nachdem `prioritize` tatsächlich gelaufen ist, greift also nicht im reinen Dry-Run-Ablauf von `link-check.yml`, sondern nur bei lokaler Ausführung nach der vollständigen `fetch` → `prioritize`-Pipeline). Da Discovery `bodyType`/`fuelType` auch im `--dry-run`-Modus schon befüllt, laufen die übrigen Prüfungen direkt gegen die Dry-Run-Ausgabe, ohne zusätzliche Downloads — siehe den `link-check.yml`-Schritt unten.
+
 **Continuous integration** (`.github/workflows/`):
 
 - `ci.yml` — Build, Test und ein `list brands`-Smoke-Test unter den Locales `en-US` und `de-DE`, bei jedem Push und PR.
-- `link-check.yml` — ein wöchentlich geplanter (montags), rein entdeckender Lauf gegen alle Live-Quellen (`fetch rescue-cards --brand all --dry-run` plus `fetch stock`), damit eine von Hersteller oder KBA umgebaute/verschobene Seite innerhalb einer Woche auffällt statt stillschweigend zu veralten; auch manuell über den Actions-Tab startbar. Was bei einer neuen Quelle zu tun ist, damit dieser Workflow sie mit abdeckt, steht in `CLAUDE.md`.
+- `link-check.yml` — ein wöchentlich geplanter (montags), rein entdeckender Lauf gegen alle Live-Quellen (`fetch rescue-cards --brand all --dry-run` plus `fetch stock`), gefolgt von einem `inspect quality`-Durchlauf über die Dry-Run-Ausgabe, damit sowohl eine umgebaute/verschobene Herstellerseite als auch eine Parsing-Regression innerhalb einer Woche auffällt statt stillschweigend zu veralten; auch manuell über den Actions-Tab startbar. Was bei einer neuen Quelle zu tun ist, damit dieser Workflow sie mit abdeckt, steht in `CLAUDE.md`.
 
 **Tests ausführen**:
 

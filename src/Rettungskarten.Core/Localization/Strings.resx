@@ -83,6 +83,10 @@
   <!-- inspect xlsx -->
   <data name="Command_Inspect_Description" xml:space="preserve"><value>Developer tools</value></data>
   <data name="Command_InspectXlsx_Description" xml:space="preserve"><value>Shows worksheets/rows of an XLSX file for schema inspection</value></data>
+  <data name="Command_InspectQuality_Description" xml:space="preserve"><value>Checks already-fetched rescue-card metadata for anomalies (e.g. a body type that looks like a year, a fuel type that's just digits, duplicate ids)</value></data>
+  <data name="InspectQuality_NoIssuesFound" xml:space="preserve"><value>No data quality issues found ({0} cards checked).</value></data>
+  <data name="InspectQuality_IssueLine" xml:space="preserve"><value>[{0}] {1}: {2}</value></data>
+  <data name="InspectQuality_IssuesFound" xml:space="preserve"><value>{0} data quality issue(s) found ({1} cards checked).</value></data>
   <data name="Argument_XlsxPath_Description" xml:space="preserve"><value>Path to the XLSX file</value></data>
   <data name="Option_Rows_Description" xml:space="preserve"><value>Maximum number of rows per worksheet</value></data>
 
