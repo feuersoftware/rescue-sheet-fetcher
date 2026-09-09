@@ -127,6 +127,9 @@
   <data name="Brand_Cupra_Source" xml:space="preserve"><value>cupraofficial.ch static HTML page</value></data>
   <data name="Brand_Porsche_Status" xml:space="preserve"><value>Fully functional (2 combined PDFs, not per-model)</value></data>
   <data name="Brand_Porsche_Source" xml:space="preserve"><value>porsche.com official documents page</value></data>
+  <data name="Brand_Bentley_Source" xml:space="preserve"><value>bentleymotors.com static HTML page</value></data>
+  <data name="Brand_Lamborghini_Status" xml:space="preserve"><value>Fully functional (English-language documents only)</value></data>
+  <data name="Brand_Lamborghini_Source" xml:space="preserve"><value>lamborghini.com static HTML page</value></data>
 
   <!-- Infrastructure: KBA stock -->
   <data name="Stock_NoDownloadLinkFound" xml:space="preserve"><value>No download link for FZ12 {0} found on the KBA product page.</value></data>
@@ -153,6 +156,9 @@
   <data name="RescueCards_Vw_DiscoveredCount" xml:space="preserve"><value>VW: {0} German-language rescue cards discovered</value></data>
   <data name="RescueCards_Vw_LanguageBucketNotFound" xml:space="preserve"><value>VW: could not find the German-language bucket in the JSON feed.</value></data>
   <data name="RescueCards_Porsche_DiscoveredCount" xml:space="preserve"><value>Porsche: {0} rescue data sheet document(s) discovered (combined, covers all models)</value></data>
+  <data name="RescueCards_Bentley_DiscoveredCount" xml:space="preserve"><value>Bentley: {0} German-language rescue cards discovered</value></data>
+  <data name="RescueCards_Bentley_AmbiguousGermanLink" xml:space="preserve"><value>Bentley: '{0}' skipped - its "DEUTSCHE" link shares a URL with a differently-labelled language button, which looks like a mislabeling bug on Bentley's own page rather than a real German document</value></data>
+  <data name="RescueCards_Lamborghini_DiscoveredCount" xml:space="preserve"><value>Lamborghini: {0} rescue data sheets discovered</value></data>
   <data name="RescueCards_Porsche_TemplateNotFound" xml:space="preserve"><value>Porsche: app-template script block not found - page layout has likely changed.</value></data>
 
   <!-- Core: orchestration -->

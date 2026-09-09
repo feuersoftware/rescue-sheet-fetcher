@@ -20,7 +20,9 @@ public static class BrandNames
         [Brand.Skoda] = ["SKODA", "ŠKODA"],
         [Brand.Seat] = ["SEAT"],
         [Brand.Cupra] = ["CUPRA", "SEAT"],
-        [Brand.Porsche] = ["PORSCHE"]
+        [Brand.Porsche] = ["PORSCHE"],
+        [Brand.Bentley] = ["BENTLEY"],
+        [Brand.Lamborghini] = ["LAMBORGHINI"]
     };
 
     public static bool Matches(Brand brand, string brandLabel)

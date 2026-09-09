@@ -36,6 +36,8 @@ public static class CompositionRoot
         services.AddTransient<IRescueCardSource, SeatRescueCardSource>();
         services.AddTransient<IRescueCardSource, CupraRescueCardSource>();
         services.AddTransient<IRescueCardSource, PorscheRescueCardSource>();
+        services.AddTransient<IRescueCardSource, BentleyRescueCardSource>();
+        services.AddTransient<IRescueCardSource, LamborghiniRescueCardSource>();
 
         services.AddTransient<KbaVehicleStockSource>();
 

@@ -7,5 +7,7 @@ public enum Brand
     Skoda,
     Seat,
     Cupra,
-    Porsche
+    Porsche,
+    Bentley,
+    Lamborghini
 }

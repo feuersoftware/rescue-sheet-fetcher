@@ -10,7 +10,7 @@
 
 A .NET 10 console application for German fire brigades that:
 
-1. Downloads **rescue data sheets** ("Rettungskarten"/"Rettungsdatenblätter" — PDFs showing airbag locations, cut zones, and fuel/battery placement for a specific vehicle model) for **Volkswagen Group brands**: VW, Audi, Škoda, SEAT, Cupra, Porsche.
+1. Downloads **rescue data sheets** ("Rettungskarten"/"Rettungsdatenblätter" — PDFs showing airbag locations, cut zones, and fuel/battery placement for a specific vehicle model) for **Volkswagen Group brands**: VW, Audi, Škoda, SEAT, Cupra, Porsche, Bentley, Lamborghini.
 2. Downloads the **KBA vehicle stock statistic (FZ12)** — how many vehicles of each model series are actually registered in Germany — and uses it to **prioritize** which rescue cards are common enough to bundle directly into a field app vs. only fetch on demand.
 3. Stores everything in a predictable folder structure on disk, with a JSON metadata sidecar per rescue card (build year, model, manufacturer, sibling/platform-sharing models, estimated fleet size, bundle priority).
 
@@ -26,6 +26,8 @@ No manufacturer publishes a stable official API for this — every brand's page 
 | SEAT | Fully functional | Model pages on `seat.de` |
 | Cupra | Fully functional (Swiss site only; the Austrian site's downloads are gated behind an auth redirect) | Static HTML page on `cupraofficial.ch` |
 | Porsche | Fully functional. Source is 2 combined PDFs (current + classic models); `fetch` downloads them as-is, then `split porsche` splits them into one file per model, same as every other brand | `porsche.com` official documents page (Vue SSR template embedded in a `<script type="text/x-template">` block) |
+| Bentley | Fully functional | Static HTML page on `bentleymotors.com` |
+| Lamborghini | Fully functional (English-language documents only; Lamborghini doesn't offer a separate German file) | Static HTML page on `lamborghini.com` |
 
 Run `list brands` any time for the current status.
 
@@ -94,7 +96,7 @@ data/
 **Solution layout** (4 projects, `Rettungskarten.slnx`):
 
 - `Rettungskarten.Core` — domain models, interfaces (`IRescueCardSource`, `IVehicleStockSource`, ...), orchestration, priority-matching logic, and the shared localization strings. No I/O.
-- `Rettungskarten.Infrastructure` — HTTP client setup (with per-host rate limiting), AngleSharp-based HTML parsing, ClosedXML-based XLSX parsing, the six brand sources, the KBA stock source, and file-system storage.
+- `Rettungskarten.Infrastructure` — HTTP client setup (with per-host rate limiting), AngleSharp-based HTML parsing, ClosedXML-based XLSX parsing, the eight brand sources, the KBA stock source, and file-system storage.
 - `Rettungskarten.Cli` — `System.CommandLine`-based entry point and command implementations.
 - `Rettungskarten.Tests` — xUnit tests, including a regression suite that runs the KBA XLSX parser against a real downloaded file (`tests/Rettungskarten.Tests/Fixtures/fz12_2026.xlsx`).
 
@@ -119,6 +121,8 @@ See `CLAUDE.md` for the project's contribution rules (English-only code/commits/
 
 - **Porsche**: unlike every other brand, the source has no per-model file — Porsche publishes one combined PDF covering all current models (~55MB) plus a second for classic models, both served from Porsche's own CDN (`assets-v2.porsche.com`). `fetch rescue-cards --brand porsche` downloads those two files as-is (needing longer HTTP timeouts than the other brands, configured in `PoliteHttpClientFactory`); running `split porsche` afterwards splits them into one file per model by detecting model boundaries in the page text (grouped by the document's own "ID no." footer, since there's no PDF outline) and replaces the two combined entries with the per-model ones. The document's actual language is English, not German (Porsche doesn't offer a separate German file here), and its content is in English (`languageCode: "EN"` on these entries, unlike every other brand). Model names/years are parsed heuristically from free text; a handful of entries where that parsing fails altogether fall back to the document's own internal ID as the "model name" (`parseConfidence: "unparsed"`) rather than being dropped. `bodyType` is also extracted from this free text (e.g. "Cabriolet", "SUV"); `doors`/`fuelType` are not, since Porsche's header text never states a door count and folds any fuel/drivetrain info (e.g. "E-Hybrid") into the model name itself rather than stating it separately.
 - **Cupra**: only the Swiss site is wired up; the Austrian site's downloads redirect to an identity/auth gateway.
+- **Bentley**: each model's per-language PDF links use a *different* URL naming scheme depending on when that model's sheet was published (plain, spelled-out-language, `_Web` suffix, dated suffix, ...) - there's no single URL shape that reliably means "German". `BentleyRescueCardSource` filters on the link's own visible button label ("DEUTSCHE") instead, which is consistent across every scheme found.
+- **Lamborghini**: like Porsche, the documents are English only - Lamborghini doesn't publish a separate German file.
 - Rescue card filenames/link text are parsed heuristically (no brand publishes structured metadata) — see `ParseConfidence` on each entry. For VW/SEAT/Cupra this is the shared `VwSeatCupraFilenameParser`; Audi gets its own `AudiFilenameParser` instead, since its CMS occasionally emits filenames the shared parser can't handle correctly (see that class's doc comment). Škoda's `bodyType`/`doors`/`fuelType` are likewise extracted from its model-page titles where stated (e.g. "Fabia Combi", "Citigo 3-Türer", "Octavia CNG") — only ~30% of titles state these explicitly, so most entries correctly leave them `null` rather than guessing.
 - KBA's FZ12 file only lists model series with ≥1,000 registered vehicles (their own publication threshold); rarer models fall back to `bundlePriority: unknown`, which is the correct "fetch on demand" signal for this tool's purpose.
 - KBA's FZ12 does not track Cupra as its own brand at all — every Cupra model is counted under "SEAT" instead (`BrandNames` matches Cupra cards against SEAT-labelled stock rows to account for this). This means a Cupra card's `estimatedFleetSize` is the combined SEAT+Cupra registration count for that model name, not a Cupra-only figure — the best available approximation given KBA's granularity, not an exact count.
@@ -136,7 +140,7 @@ KBA vehicle stock data (FZ12) is published under "Datenlizenz Deutschland – Na
 
 Eine .NET 10 Konsolenanwendung für deutsche Feuerwehren, die:
 
-1. **Rettungsdatenblätter** ("Rettungskarten" — PDFs mit Airbag-Positionen, Schneidzonen und Kraftstoff-/Batterie-Lage für ein bestimmtes Fahrzeugmodell) für **Marken der Volkswagen-Gruppe** herunterlädt: VW, Audi, Škoda, SEAT, Cupra, Porsche.
+1. **Rettungsdatenblätter** ("Rettungskarten" — PDFs mit Airbag-Positionen, Schneidzonen und Kraftstoff-/Batterie-Lage für ein bestimmtes Fahrzeugmodell) für **Marken der Volkswagen-Gruppe** herunterlädt: VW, Audi, Škoda, SEAT, Cupra, Porsche, Bentley, Lamborghini.
 2. Die **KBA-Fahrzeugbestandsstatistik (FZ12)** herunterlädt — wie viele Fahrzeuge jeder Modellreihe tatsächlich in Deutschland zugelassen sind — und damit **priorisiert**, welche Rettungskarten verbreitet genug sind, um direkt in eine Einsatz-App gebündelt zu werden, statt nur auf Abruf verfügbar zu sein.
 3. Alles in einer vorhersehbaren Ordnerstruktur auf der Festplatte ablegt, mit einer JSON-Metadaten-Datei je Rettungskarte (Baujahr, Modell, Hersteller, Schwestermodelle/Plattform-Geschwister, geschätzte Bestandsgröße, Bündel-Priorität).
 
@@ -152,6 +156,8 @@ Kein Hersteller veröffentlicht dafür eine stabile offizielle API — die Seite
 | SEAT | Voll funktionsfähig | Modellseiten auf `seat.de` |
 | Cupra | Voll funktionsfähig (nur Schweiz-Seite; Downloads der österreichischen Seite sind hinter einem Auth-Redirect) | Statische HTML-Seite auf `cupraofficial.ch` |
 | Porsche | Voll funktionsfähig. Quelle sind 2 kombinierte PDFs (aktuelle + klassische Modelle); `fetch` lädt sie unverändert, `split porsche` teilt sie anschließend in je eine Datei pro Modell auf, wie bei jeder anderen Marke | `porsche.com` offizielle Dokumente-Seite (Vue-SSR-Template eingebettet in einem `<script type="text/x-template">`-Block) |
+| Bentley | Voll funktionsfähig | Statische HTML-Seite auf `bentleymotors.com` |
+| Lamborghini | Voll funktionsfähig (nur englischsprachige Dokumente; Lamborghini bietet hierfür keine eigene deutsche Datei an) | Statische HTML-Seite auf `lamborghini.com` |
 
 `list brands` zeigt jederzeit den aktuellen Status.
 
@@ -220,7 +226,7 @@ data/
 **Solution-Aufbau** (4 Projekte, `Rettungskarten.slnx`):
 
 - `Rettungskarten.Core` — Domänenmodelle, Schnittstellen (`IRescueCardSource`, `IVehicleStockSource`, ...), Orchestrierung, Priorisierungslogik und die gemeinsamen Lokalisierungs-Strings. Keine I/O.
-- `Rettungskarten.Infrastructure` — HTTP-Client-Setup (mit Rate-Limiting pro Host), AngleSharp-basiertes HTML-Parsing, ClosedXML-basiertes XLSX-Parsing, die sechs Marken-Quellen, die KBA-Bestandsquelle und Dateisystem-Speicherung.
+- `Rettungskarten.Infrastructure` — HTTP-Client-Setup (mit Rate-Limiting pro Host), AngleSharp-basiertes HTML-Parsing, ClosedXML-basiertes XLSX-Parsing, die acht Marken-Quellen, die KBA-Bestandsquelle und Dateisystem-Speicherung.
 - `Rettungskarten.Cli` — Einstiegspunkt und Befehle auf Basis von `System.CommandLine`.
 - `Rettungskarten.Tests` — xUnit-Tests, inklusive einer Regressionssuite, die den KBA-XLSX-Parser gegen eine echte heruntergeladene Datei prüft (`tests/Rettungskarten.Tests/Fixtures/fz12_2026.xlsx`).
 
@@ -245,6 +251,8 @@ Die Mitwirkungsregeln des Projekts (Code/Commits/PRs auf Englisch, Build+Test+Re
 
 - **Porsche**: anders als bei jeder anderen Marke hat die Quelle keine Datei pro Modell — Porsche veröffentlicht eine kombinierte PDF für alle aktuellen Modelle (~55MB) plus eine zweite für klassische Modelle, beide von Porsches eigenem CDN (`assets-v2.porsche.com`). `fetch rescue-cards --brand porsche` lädt diese zwei Dateien unverändert (benötigt längere HTTP-Timeouts als bei den anderen Marken, konfiguriert in `PoliteHttpClientFactory`); `split porsche` teilt sie anschließend anhand von Modellgrenzen im Seitentext (gruppiert über die dokumenteigene "ID no."-Fußzeile, da keine PDF-Gliederung existiert) in je eine Datei pro Modell auf und ersetzt die zwei kombinierten Einträge durch die Modell-Einträge. Die tatsächliche Sprache des Dokuments ist Englisch, nicht Deutsch (Porsche bietet hierfür keine eigene deutsche Datei an) - der Inhalt ist auf Englisch (`languageCode: "EN"` bei diesen Einträgen, anders als bei jeder anderen Marke). Modellnamen/-jahre werden heuristisch aus Fließtext geparst; einige wenige Einträge, bei denen das komplett fehlschlägt, fallen auf die dokumenteigene interne ID als "Modellname" zurück (`parseConfidence: "unparsed"`), statt verworfen zu werden. `bodyType` wird ebenfalls aus diesem Fließtext extrahiert (z. B. „Cabriolet", „SUV"); `doors`/`fuelType` nicht, da Porsches Header-Text nie eine Türzahl nennt und Antriebs-/Kraftstoffinformationen (z. B. „E-Hybrid") in den Modellnamen selbst einfließen, statt separat angegeben zu werden.
 - **Cupra**: nur die Schweiz-Seite ist angebunden; die Downloads der österreichischen Seite leiten auf ein Identity-/Auth-Gateway um.
+- **Bentley**: die Pro-Sprache-PDF-Links jedes Modells verwenden je nach Veröffentlichungszeitpunkt ein *anderes* URL-Namensschema (schlicht, ausgeschriebene Sprache, `_Web`-Suffix, datiertes Suffix, ...) — es gibt kein einheitliches URL-Muster, das zuverlässig „Deutsch" bedeutet. `BentleyRescueCardSource` filtert stattdessen auf das sichtbare Button-Label des Links („DEUTSCHE"), das über alle gefundenen Schemata hinweg konsistent ist.
+- **Lamborghini**: wie bei Porsche sind die Dokumente nur auf Englisch — Lamborghini veröffentlicht hierfür keine eigene deutsche Datei.
 - Dateinamen/Linktexte der Rettungskarten werden heuristisch geparst (keine Marke veröffentlicht strukturierte Metadaten) — siehe `ParseConfidence` je Eintrag. Bei VW/SEAT/Cupra übernimmt das der gemeinsame `VwSeatCupraFilenameParser`; Audi hat einen eigenen `AudiFilenameParser`, da dessen CMS gelegentlich Dateinamen erzeugt, die der gemeinsame Parser nicht korrekt verarbeiten kann (siehe Doc-Kommentar dieser Klasse). Auch Škodas `bodyType`/`doors`/`fuelType` werden aus den Modellseiten-Titeln extrahiert, wo angegeben (z. B. „Fabia Combi", „Citigo 3-Türer", „Octavia CNG") — nur ca. 30 % der Titel geben das explizit an, der Rest bleibt korrekterweise `null` statt geraten zu werden.
 - Die FZ12-Datei des KBA listet nur Modellreihen mit ≥1.000 zugelassenen Fahrzeugen (deren eigene Veröffentlichungsschwelle); seltenere Modelle fallen auf `bundlePriority: unknown` zurück — genau das richtige "nur auf Abruf"-Signal für den Zweck dieses Werkzeugs.
 - Die FZ12-Datei des KBA führt Cupra überhaupt nicht als eigene Marke — jedes Cupra-Modell wird stattdessen unter „SEAT" gezählt (`BrandNames` gleicht Cupra-Karten deshalb gegen SEAT-beschriftete Bestandszeilen ab). Das bedeutet: `estimatedFleetSize` einer Cupra-Karte ist die kombinierte SEAT+Cupra-Zulassungszahl für dieses Modell, keine reine Cupra-Zahl — die bestmögliche Näherung angesichts der KBA-Granularität, keine exakte Zählung.

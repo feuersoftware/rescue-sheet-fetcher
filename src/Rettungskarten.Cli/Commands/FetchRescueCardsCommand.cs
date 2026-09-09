@@ -19,7 +19,8 @@ public static class FetchRescueCardsCommand
             Description = Strings.Get("Option_Brand_Description"),
             DefaultValueFactory = _ => "all"
         };
-        brandOption.AcceptOnlyFromAmong("vw", "audi", "skoda", "seat", "cupra", "porsche", "all");
+        brandOption.AcceptOnlyFromAmong(
+            "vw", "audi", "skoda", "seat", "cupra", "porsche", "bentley", "lamborghini", "all");
 
         var outputOption = new Option<string>("--output")
         {
@@ -85,6 +86,8 @@ public static class FetchRescueCardsCommand
         "seat" => Brand.Seat,
         "cupra" => Brand.Cupra,
         "porsche" => Brand.Porsche,
+        "bentley" => Brand.Bentley,
+        "lamborghini" => Brand.Lamborghini,
         _ => throw new ArgumentOutOfRangeException(nameof(value), value, Strings.Get("Error_UnknownBrand"))
     };
 }

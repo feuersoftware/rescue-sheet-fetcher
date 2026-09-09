@@ -127,6 +127,9 @@
   <data name="Brand_Cupra_Source" xml:space="preserve"><value>cupraofficial.ch statische HTML-Seite</value></data>
   <data name="Brand_Porsche_Status" xml:space="preserve"><value>Voll funktionsfähig (2 kombinierte PDFs, nicht pro Modell)</value></data>
   <data name="Brand_Porsche_Source" xml:space="preserve"><value>porsche.com offizielle Dokumente-Seite</value></data>
+  <data name="Brand_Bentley_Source" xml:space="preserve"><value>bentleymotors.com statische HTML-Seite</value></data>
+  <data name="Brand_Lamborghini_Status" xml:space="preserve"><value>Voll funktionsfähig (nur englischsprachige Dokumente)</value></data>
+  <data name="Brand_Lamborghini_Source" xml:space="preserve"><value>lamborghini.com statische HTML-Seite</value></data>
 
   <!-- Infrastructure: KBA stock -->
   <data name="Stock_NoDownloadLinkFound" xml:space="preserve"><value>Kein Download-Link für FZ12 {0} auf der KBA-Produktseite gefunden.</value></data>
@@ -153,6 +156,9 @@
   <data name="RescueCards_Vw_DiscoveredCount" xml:space="preserve"><value>VW: {0} deutschsprachige Rettungskarten entdeckt</value></data>
   <data name="RescueCards_Vw_LanguageBucketNotFound" xml:space="preserve"><value>VW: Konnte den deutschsprachigen Sprach-Bucket im JSON-Feed nicht finden.</value></data>
   <data name="RescueCards_Porsche_DiscoveredCount" xml:space="preserve"><value>Porsche: {0} Rettungsdatenblatt-Dokument(e) entdeckt (kombiniert, deckt alle Modelle ab)</value></data>
+  <data name="RescueCards_Bentley_DiscoveredCount" xml:space="preserve"><value>Bentley: {0} deutschsprachige Rettungskarten entdeckt</value></data>
+  <data name="RescueCards_Bentley_AmbiguousGermanLink" xml:space="preserve"><value>Bentley: '{0}' übersprungen - der "DEUTSCHE"-Link teilt sich eine URL mit einem anders beschrifteten Sprach-Button, was eher nach einem Beschriftungsfehler auf Bentleys eigener Seite aussieht als nach einem echten deutschen Dokument</value></data>
+  <data name="RescueCards_Lamborghini_DiscoveredCount" xml:space="preserve"><value>Lamborghini: {0} Rettungsdatenblätter entdeckt</value></data>
   <data name="RescueCards_Porsche_TemplateNotFound" xml:space="preserve"><value>Porsche: app-template Script-Block nicht gefunden - Seitenlayout hat sich vermutlich geändert.</value></data>
 
   <!-- Core: orchestration -->

@@ -7,8 +7,9 @@ public readonly record struct YearRange(int? From, int? To);
 /// <summary>
 /// Shared helper for turning generation/year-range phrases from rescue-card link text or titles into
 /// a from/to year pair, e.g. "(2016-2021)" -> (2016, 2021), "ab 2021" -> (2021, null),
-/// "bis 2021" -> (null, 2021), a single bare year "2024" -> (2024, 2024), or Porsche's English
-/// "Model Year 2003 to Model Year 2005" / "from Model Year 2011" phrasing.
+/// "bis 2021" -> (null, 2021), a single bare year "2024" -> (2024, 2024), Porsche's English
+/// "Model Year 2003 to Model Year 2005" / "from Model Year 2011" phrasing, or Bentley's
+/// "(2021 - )" open-ended-dash phrasing for a model still in production.
 /// </summary>
 public static class ModelYearRangeTextHelper
 {
@@ -23,6 +24,11 @@ public static class ModelYearRangeTextHelper
     // "word" characters - which includes digit-to-letter transitions like "2011" -> "Page".
     private static readonly Regex FromModelYearPattern = new(
         @"from\s+Model\s+Year\s+((?:19|20)\d{2})", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    // A year immediately followed by a dash with no second year after it, e.g. Bentley's
+    // "(2021 - )" - the negative lookahead is a safety net (RangePattern above already handles a real
+    // "YYYY - YYYY" range and is checked first), not load-bearing on its own.
+    private static readonly Regex OpenEndedDashPattern = new(
+        @"((?:19|20)\d{2})\s*-\s*(?!(?:19|20)\d{2})", RegexOptions.Compiled);
     private static readonly Regex SingleYearPattern = new(@"(19|20)\d{2}", RegexOptions.Compiled);
 
     public static YearRange Extract(string text)
@@ -57,6 +63,12 @@ public static class ModelYearRangeTextHelper
         if (fromModelYearMatch.Success)
         {
             return new YearRange(int.Parse(fromModelYearMatch.Groups[1].Value), null);
+        }
+
+        var openEndedDashMatch = OpenEndedDashPattern.Match(text);
+        if (openEndedDashMatch.Success)
+        {
+            return new YearRange(int.Parse(openEndedDashMatch.Groups[1].Value), null);
         }
 
         var singleMatch = SingleYearPattern.Match(text);
