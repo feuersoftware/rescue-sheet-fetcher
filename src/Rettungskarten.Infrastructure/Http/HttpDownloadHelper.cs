@@ -17,7 +17,9 @@ public static class HttpDownloadHelper
             using var response = await client.GetAsync(url, ct);
             if (!response.IsSuccessStatusCode)
             {
-                return RescueCardDownloadResult.Fail($"HTTP {(int)response.StatusCode} {response.ReasonPhrase}", (int)response.StatusCode);
+                return RescueCardDownloadResult.Fail(
+                    Strings.Get("Http_UnexpectedStatusCode", (int)response.StatusCode, response.ReasonPhrase ?? string.Empty),
+                    (int)response.StatusCode);
             }
 
             var contentType = response.Content.Headers.ContentType?.MediaType;
@@ -38,7 +40,7 @@ public static class HttpDownloadHelper
         }
         catch (TaskCanceledException ex) when (!ct.IsCancellationRequested)
         {
-            return RescueCardDownloadResult.Fail($"Timeout: {ex.Message}");
+            return RescueCardDownloadResult.Fail(Strings.Get("Http_Timeout", ex.Message));
         }
     }
 

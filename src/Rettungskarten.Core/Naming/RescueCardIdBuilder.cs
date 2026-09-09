@@ -13,7 +13,7 @@ namespace Rettungskarten.Core.Naming;
 public static class RescueCardIdBuilder
 {
     public static string BuildModelFolderSlug(string? modelName) =>
-        Slugify(string.IsNullOrWhiteSpace(modelName) ? "unbekannt" : modelName);
+        Slugify(string.IsNullOrWhiteSpace(modelName) ? "unknown" : modelName);
 
     public static string BuildId(Brand brand, ParsedModelInfo parsed, string rawFileNameOrLabel)
     {
@@ -62,7 +62,7 @@ public static class RescueCardIdBuilder
             sb.Length--;
         }
 
-        return sb.Length == 0 ? "unbekannt" : sb.ToString();
+        return sb.Length == 0 ? "unknown" : sb.ToString();
     }
 
     private static string ShortHash(string value)

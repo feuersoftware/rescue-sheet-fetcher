@@ -141,6 +141,8 @@
   <data name="Stock_RowWarningLog" xml:space="preserve"><value>FZ12 {0}: {1}</value></data>
   <data name="Http_WaitingForRateLimitSlot" xml:space="preserve"><value>Waiting for rate-limit slot for {0} (min. {1})</value></data>
   <data name="Http_UnexpectedContentType" xml:space="preserve"><value>Unexpected Content-Type '{0}' instead of PDF (possibly an auth-gateway redirect)</value></data>
+  <data name="Http_UnexpectedStatusCode" xml:space="preserve"><value>HTTP {0} {1}</value></data>
+  <data name="Http_Timeout" xml:space="preserve"><value>Timeout: {0}</value></data>
 
   <!-- Infrastructure: rescue card sources -->
   <data name="RescueCards_Skoda_ModelPagesFound" xml:space="preserve"><value>Škoda: {0} model pages discovered</value></data>

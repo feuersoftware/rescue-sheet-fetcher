@@ -19,7 +19,7 @@ public sealed record PolitenessOptions
     /// Identifies this tool to the sites it fetches from. Override via appsettings.json with a real
     /// contact URL/address before running this against production sites, per good scraping etiquette.
     /// </summary>
-    public string UserAgent { get; init; } = "RettungskartenTool/1.0 (Feuerwehr-Datenabruf; Kontakt bitte in appsettings.json eintragen)";
+    public string UserAgent { get; init; } = "RettungskartenTool/1.0 (fire-brigade rescue-data fetcher; set a real contact URL/address in appsettings.json)";
 
     public TimeSpan GetDelayFor(string host) => PerHostDelay.GetValueOrDefault(host, DefaultDelay);
 }
