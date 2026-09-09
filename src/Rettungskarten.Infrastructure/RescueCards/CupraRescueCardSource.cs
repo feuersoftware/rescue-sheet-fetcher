@@ -40,7 +40,7 @@ public sealed class CupraRescueCardSource(
             }
 
             var absoluteUrl = HttpDownloadHelper.ResolveUrl(PageUrl, href);
-            var parsed = VwAudiCupraFilenameParser.Parse(absoluteUrl);
+            var parsed = VwSeatCupraFilenameParser.Parse(absoluteUrl);
 
             if (!string.Equals(parsed.LanguageCode, "DE", StringComparison.OrdinalIgnoreCase))
             {

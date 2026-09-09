@@ -45,7 +45,7 @@ public sealed class VwRescueCardSource(
         foreach (var fileName in germanBucket.Files)
         {
             var downloadUrl = $"{baseUrl.TrimEnd('/')}/{germanBucket.Name}/{fileName}";
-            var parsed = VwAudiCupraFilenameParser.Parse(fileName);
+            var parsed = VwSeatCupraFilenameParser.Parse(fileName);
             entries.Add(new RescueCardEntry(Brand.VW, FeedUrl, downloadUrl, fileName, parsed));
         }
 

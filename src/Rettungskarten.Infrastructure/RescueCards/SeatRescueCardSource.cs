@@ -78,7 +78,7 @@ public sealed class SeatRescueCardSource(
                     }
 
                     var absoluteUrl = HttpDownloadHelper.ResolveUrl(modelPageUrl, href);
-                    var parsed = VwAudiCupraFilenameParser.Parse(absoluteUrl);
+                    var parsed = VwSeatCupraFilenameParser.Parse(absoluteUrl);
 
                     if (!string.Equals(parsed.LanguageCode, "DE", StringComparison.OrdinalIgnoreCase))
                     {

@@ -30,6 +30,15 @@ public static class PorscheCombinedPdfSplitter
     private const string HeaderMarker = "Porsche AG,";
     private const int HeaderWindowLength = 200;
 
+    // Every body style actually seen across a real production run of both combined PDFs (current +
+    // classic models) - see VehicleAttributeTextHelper for why the *last* match in the header wins.
+    private static readonly string[] BodyTypeVocabulary =
+    [
+        "Sport Turismo", "Stationwagon", "Hardtop-Cabriolet", "Convertible-D (Hardtop)",
+        "Cabriolet", "Roadster", "Convertible", "Coupé", "Coupe", "Targa", "Spyder", "Saloon",
+        "Sedan", "SUV"
+    ];
+
     /// <summary>One model's extracted rescue-data pages, already assembled into a standalone PDF.
     /// <paramref name="DocumentId"/> is the document's own internal id (e.g. "ENUS-01-710-0004") - it
     /// is guaranteed unique per group by construction (it's literally the grouping key), unlike
@@ -132,27 +141,49 @@ public static class PorscheCombinedPdfSplitter
     {
         if (string.IsNullOrWhiteSpace(headerText))
         {
-            // A continuation-only group whose first page's header we never saw (shouldn't normally
-            // happen, but the document's structure is discovered heuristically, not guaranteed) -
-            // fall back to the document's own id rather than losing the entry entirely.
+            // A handful of real documents in the combined PDF (E-Hybrid identification/safety-marking
+            // supplement pages, e.g. for the Panamera and Cayenne E-Hybrid) never carry the "Porsche
+            // AG," header at all on any page - the model name only appears deep in the body text, e.g.
+            // "...Vehicle identification and marking[Model] identification features...". This was
+            // investigated (not just assumed): that text is NOT safely extractable because PdfPig's
+            // page.Text word ordering visibly scrambles multi-column content on these specific pages
+            // (one real example glued "Panamera" and "Cayenne E-Hybrid" - two different models -
+            // directly together with no separator, which a naive "text before 'identification
+            // features'" pattern would misreport as the model name). Guessing wrong here is worse than
+            // this honest fallback to the document's own id: a firefighter trusting a mislabeled
+            // rescue card is a real safety risk that an "unparsed" card asking for manual lookup is
+            // not. The PDF content itself is still complete and correctly saved either way.
             return new ParsedModelInfo(id, null, null, null, null, null, null, "EN", ParseConfidence.Unparsed);
         }
 
         var yearRange = ModelYearRangeTextHelper.Extract(headerText);
         var modelName = ExtractModelName(headerText);
+        var bodyType = VehicleAttributeTextHelper.ExtractLastVocabularyMatch(headerText, BodyTypeVocabulary);
 
+        // Doors and fuel type aren't available as separate data here: unlike VW/Audi/SEAT/Cupra's
+        // filenames, Porsche's header text never states a door count, and any fuel/drivetrain
+        // information (e.g. "E-Hybrid") is already baked into the free-text model name itself rather
+        // than appearing as its own field - so there's nothing further to safely extract.
         return new ParsedModelInfo(
-            ModelName: modelName, Variant: headerText, BodyType: null,
+            ModelName: modelName, Variant: headerText, BodyType: bodyType,
             BuildYearFrom: yearRange.From, BuildYearTo: yearRange.To, Doors: null, FuelType: null,
             LanguageCode: "EN", ParseConfidence.Heuristic);
     }
 
-    private static string ExtractModelName(string headerText)
+    internal static string ExtractModelName(string headerText)
     {
         var delimiterIndex = headerText.IndexOfAny([',', '/', '(']);
         var name = delimiterIndex > 0 ? headerText[..delimiterIndex] : headerText;
-        return name.Trim();
+        return FixKnownTypo(name.Trim());
     }
+
+    // Porsche's own combined PDF misspells "Boxster" as "Boxter" on several of its pages (verified
+    // against the real document - not a text-extraction artifact of PdfPig). Left uncorrected, this
+    // splits what's really one model across "boxster" and "boxter" (and "boxter-spyder") folders on a
+    // source typo. "Boxter" never legitimately appears as a substring of any other model name, so a
+    // plain case-insensitive replace is safe here.
+    private static string FixKnownTypo(string modelName) =>
+        modelName.Replace("Boxter", "Boxster", StringComparison.OrdinalIgnoreCase);
 
     private static string NormalizeId(string rawId) =>
         rawId.Replace(" ", string.Empty).ToUpperInvariant();

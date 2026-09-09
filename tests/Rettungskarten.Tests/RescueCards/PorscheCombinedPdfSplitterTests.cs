@@ -29,6 +29,7 @@ public class PorscheCombinedPdfSplitterTests
         var cayenne2003 = Assert.Single(results, r => r.Parsed.BuildYearFrom == 2003);
         Assert.Equal("Cayenne", cayenne2003.Parsed.ModelName);
         Assert.Equal(2005, cayenne2003.Parsed.BuildYearTo);
+        Assert.Equal("SUV", cayenne2003.Parsed.BodyType);
         Assert.Equal("EN", cayenne2003.Parsed.LanguageCode);
     }
 
@@ -90,5 +91,19 @@ public class PorscheCombinedPdfSplitterTests
         var results = PorscheCombinedPdfSplitter.Split(LoadFixture());
 
         Assert.DoesNotContain(results, r => r.Parsed.ModelName is null && r.Parsed.Variant is null);
+    }
+
+    [Theory]
+    [InlineData("Boxter/S/Spyder (987) Cabriolet", "Boxster")]
+    [InlineData("Boxter Spyder (981) Cabriolet", "Boxster Spyder")]
+    [InlineData("Boxter/S/GTS (981) Cabriolet", "Boxster")]
+    [InlineData("911 Carrera (997) Coupe", "911 Carrera")]
+    public void ExtractModelName_CorrectsKnownBoxterTypo(string headerText, string expectedModelName)
+    {
+        // Porsche's own combined PDF genuinely misspells "Boxster" as "Boxter" in several places -
+        // left uncorrected, this splits one real model across "boxster"/"boxter"/"boxter-spyder"
+        // folders on a source typo (found via a real end-to-end run against production data, not a
+        // hypothetical). "911 Carrera" is included to confirm the fix doesn't touch unrelated names.
+        Assert.Equal(expectedModelName, PorscheCombinedPdfSplitter.ExtractModelName(headerText));
     }
 }

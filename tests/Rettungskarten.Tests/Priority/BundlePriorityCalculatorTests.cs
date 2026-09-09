@@ -11,7 +11,8 @@ public class BundlePriorityCalculatorTests
         new("KOMPAKTKLASSE", "VW", "GOLF", 3_231_990),
         new("KLEINWAGEN", "SEAT", "IBIZA", 408_155),
         new("MITTELKLASSE SUVS", "SKODA", "KAROQ", 50_000),
-        new("MINIS", "VW", "UP", 15_000)
+        new("MINIS", "VW", "UP", 15_000),
+        new("KOMPAKTKLASSE SUVS", "SEAT", "FORMENTOR", 120_000)
     ];
 
     [Fact]
@@ -59,6 +60,20 @@ public class BundlePriorityCalculatorTests
         Assert.Equal(50_000, result.EstimatedFleetSize);
         Assert.Equal(BundlePriority.Medium, result.Priority);
         Assert.True(result.MatchedViaAlias);
+    }
+
+    [Fact]
+    public void Calculate_Cupra_MatchesSeatBrandedStockRows()
+    {
+        // KBA's FZ12 does not track Cupra as its own brand - every Cupra model is counted under
+        // "SEAT" instead (see BrandNames' Cupra alias comment). Without that alias this returned
+        // Unknown for every single Cupra card regardless of how common the model actually is.
+        var calculator = new BundlePriorityCalculator(ModelAliasConfig.Empty);
+
+        var result = calculator.Calculate(Brand.Cupra, "Formentor", StockRows);
+
+        Assert.Equal(120_000, result.EstimatedFleetSize);
+        Assert.Equal(BundlePriority.High, result.Priority);
     }
 
     [Fact]

@@ -37,7 +37,7 @@ public sealed class AudiRescueCardSource(
             }
 
             var absoluteUrl = HttpDownloadHelper.ResolveUrl(PageUrl, href);
-            var parsed = VwAudiCupraFilenameParser.Parse(absoluteUrl);
+            var parsed = AudiFilenameParser.Parse(absoluteUrl);
 
             // German-only per requirement; Audi's page mixes every language on one page.
             if (!string.Equals(parsed.LanguageCode, "DE", StringComparison.OrdinalIgnoreCase))

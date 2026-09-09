@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using AngleSharp;
 using AngleSharp.Dom;
 using Microsoft.Extensions.Logging;
@@ -24,6 +25,43 @@ public sealed class SkodaRescueCardSource(
 {
     private const string OverviewUrl = "https://www.skoda-auto.de/service/rettungskraefte";
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
+
+    // Every body style/fuel type actually seen in a real production run's model-page titles - see
+    // VehicleAttributeTextHelper for why the *last* match in the title wins (e.g. "Kodiaq iV SUV 2024
+    // 5d hybrid" names an "iV" trim before its actual fuel type, "hybrid", at the end).
+    private static readonly string[] BodyTypeVocabulary = ["Combi", "Sedan", "Pick Up", "SUV"];
+
+    // "iV" is excluded here and matched separately, case-sensitively, in ExtractFuelType below - it
+    // collides with the Roman-numeral generation marker "IV" used throughout these same titles (e.g.
+    // "Fabia IV", "Octavia IV"), which is always upper-case, unlike Škoda's lower-case-i electric-trim
+    // badge (e.g. "Citigo-e iV", "Superb iV").
+    private static readonly string[] FuelTypeVocabulary = ["PHEV HYBRID", "MHEV", "CNG", "LPG", "Hybrid", "GD"];
+
+    // Case-sensitive by design - see the FuelTypeVocabulary comment above for why.
+    private static readonly Regex ElectricTrimPattern = new(@"\biV\b", RegexOptions.Compiled);
+
+    /// <summary>Extracts a fuel type from a Škoda model-page title, combining the general vocabulary
+    /// match with the case-sensitive "iV" electric-trim badge and taking whichever occurs later in the
+    /// text (e.g. "Superb iV PHEV HYBRID" - the more specific "PHEV HYBRID" wins over the earlier "iV";
+    /// "Citigo-e iV" alone - "iV" is the only signal present, so it wins by default).</summary>
+    internal static string? ExtractFuelType(string title)
+    {
+        var vocabularyMatch = VehicleAttributeTextHelper.ExtractLastVocabularyMatch(title, FuelTypeVocabulary);
+        var electricTrimMatch = ElectricTrimPattern.Match(title);
+
+        if (!electricTrimMatch.Success)
+        {
+            return vocabularyMatch;
+        }
+
+        if (vocabularyMatch is null)
+        {
+            return electricTrimMatch.Value;
+        }
+
+        var vocabularyMatchIndex = title.LastIndexOf(vocabularyMatch, StringComparison.Ordinal);
+        return electricTrimMatch.Index > vocabularyMatchIndex ? electricTrimMatch.Value : vocabularyMatch;
+    }
 
     public Brand Brand => Brand.Skoda;
 
@@ -93,15 +131,16 @@ public sealed class SkodaRescueCardSource(
                 }
 
                 var title = file.Title?.Trim();
-                var yearRange = ModelYearRangeTextHelper.Extract(title ?? string.Empty);
+                var titleOrEmpty = title ?? string.Empty;
+                var yearRange = ModelYearRangeTextHelper.Extract(titleOrEmpty);
                 var parsed = new ParsedModelInfo(
                     ModelName: modelName,
                     Variant: title,
-                    BodyType: null,
+                    BodyType: VehicleAttributeTextHelper.ExtractLastVocabularyMatch(titleOrEmpty, BodyTypeVocabulary),
                     BuildYearFrom: yearRange.From,
                     BuildYearTo: yearRange.To,
-                    Doors: null,
-                    FuelType: null,
+                    Doors: VehicleAttributeTextHelper.ExtractDoors(titleOrEmpty),
+                    FuelType: ExtractFuelType(titleOrEmpty),
                     LanguageCode: "DE",
                     ParseConfidence: yearRange.From is null && yearRange.To is null
                         ? ParseConfidence.Unparsed
