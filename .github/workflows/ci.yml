@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build-and-test:
+    name: Build & test (${{ matrix.locale }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Runs the full suite under both supported OS locales, per CLAUDE.md's "test with both
+        # locales" rule - catches culture-sensitive bugs (number/date formatting, resource fallback)
+        # that a single-locale CI run would never surface.
+        locale: [en-US, de-DE]
+    env:
+      LC_ALL: ${{ matrix.locale }}.UTF-8
+      LANG: ${{ matrix.locale }}.UTF-8
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Test
+        run: >
+          dotnet test --no-build --configuration Release
+          --logger "trx;LogFileName=test-results-${{ matrix.locale }}.trx"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.locale }}
+          path: "**/test-results-*.trx"
+
+      - name: Smoke test - OS-locale fallback (no --lang)
+        run: dotnet run --project src/Rettungskarten.Cli --no-build --configuration Release -- list brands
+
+      - name: Smoke test - explicit --lang en
+        run: dotnet run --project src/Rettungskarten.Cli --no-build --configuration Release -- --lang en list brands
+
+      - name: Smoke test - explicit --lang de
+        run: dotnet run --project src/Rettungskarten.Cli --no-build --configuration Release -- --lang de list brands

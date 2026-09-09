@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <!-- App / global -->
+  <data name="App_Description" xml:space="preserve"><value>Rescue-sheet and vehicle-stock tool for fire brigades (VW Group)</value></data>
+  <data name="Option_Verbose_Description" xml:space="preserve"><value>Verbose logs</value></data>
+  <data name="Option_Lang_Description" xml:space="preserve"><value>Output language (de, en) - defaults to the OS language</value></data>
+  <data name="Error_InvalidLanguage" xml:space="preserve"><value>Invalid --lang value '{0}'. Must be 'de' or 'en'.</value></data>
+
+  <!-- fetch rescue-cards -->
+  <data name="Command_Fetch_Description" xml:space="preserve"><value>Fetches data from external sources</value></data>
+  <data name="Command_RescueCards_Description" xml:space="preserve"><value>Downloads rescue data sheets for VW Group vehicle brands (German only)</value></data>
+  <data name="Option_Brand_Description" xml:space="preserve"><value>Brand (vw, audi, skoda, seat, cupra, porsche, all)</value></data>
+  <data name="Option_Output_RescueCards_Description" xml:space="preserve"><value>Target directory for rescue data sheets</value></data>
+  <data name="Option_DryRun_Description" xml:space="preserve"><value>Discovery and metadata only, no PDF downloads</value></data>
+  <data name="Option_SiblingConfig_Description" xml:space="preserve"><value>Path to sibling-models.json (default: bundled file)</value></data>
+
+  <!-- fetch stock -->
+  <data name="Command_Stock_Description" xml:space="preserve"><value>Downloads the KBA vehicle stock (FZ12) for a given year</value></data>
+  <data name="Option_Year_Description" xml:space="preserve"><value>Reference year (as of January 1st)</value></data>
+  <data name="Option_Output_Stock_Description" xml:space="preserve"><value>Target directory for the vehicle stock data</value></data>
+
+  <!-- prioritize -->
+  <data name="Command_Prioritize_Description" xml:space="preserve"><value>Assigns rescue cards a bundling priority based on KBA vehicle stock data</value></data>
+  <data name="Option_RescueCardsPath_Description" xml:space="preserve"><value>Path to the rescue cards directory</value></data>
+  <data name="Option_StockPath_Description" xml:space="preserve"><value>Path to the vehicle stock directory</value></data>
+  <data name="Option_StockYear_Description" xml:space="preserve"><value>Stock year (default: latest available)</value></data>
+  <data name="Option_Aliases_Description" xml:space="preserve"><value>Path to model-aliases.json (default: bundled file)</value></data>
+
+  <!-- split porsche -->
+  <data name="Command_Split_Description" xml:space="preserve"><value>Post-processes already-downloaded rescue cards</value></data>
+  <data name="Command_SplitPorsche_Description" xml:space="preserve"><value>Splits Porsche's combined all-models PDF(s) into one file per model</value></data>
+  <data name="Split_Porsche_NoCombinedEntriesFound" xml:space="preserve"><value>No downloaded Porsche entries found - run 'fetch rescue-cards --brand porsche' first.</value></data>
+  <data name="Split_Porsche_NoModelsDetected" xml:space="preserve"><value>Could not detect any models in '{0}' - the document layout may have changed.</value></data>
+  <data name="Split_Porsche_Result" xml:space="preserve"><value>{0} combined document(s) split into {1} per-model rescue card(s).</value></data>
+  <data name="Split_Porsche_DocumentFailed" xml:space="preserve"><value>Failed to split '{0}': {1}</value></data>
+
+  <!-- list brands -->
+  <data name="Command_List_Description" xml:space="preserve"><value>Lists information</value></data>
+  <data name="Command_ListBrands_Description" xml:space="preserve"><value>Lists supported brands and their implementation status</value></data>
+
+  <!-- inspect xlsx -->
+  <data name="Command_Inspect_Description" xml:space="preserve"><value>Developer tools</value></data>
+  <data name="Command_InspectXlsx_Description" xml:space="preserve"><value>Shows worksheets/rows of an XLSX file for schema inspection</value></data>
+  <data name="Command_InspectQuality_Description" xml:space="preserve"><value>Checks already-fetched rescue-card metadata for anomalies (e.g. a body type that looks like a year, a fuel type that's just digits, duplicate ids)</value></data>
+  <data name="InspectQuality_NoIssuesFound" xml:space="preserve"><value>No data quality issues found ({0} cards checked).</value></data>
+  <data name="InspectQuality_IssueLine" xml:space="preserve"><value>[{0}] {1}: {2}</value></data>
+  <data name="InspectQuality_IssuesFound" xml:space="preserve"><value>{0} data quality issue(s) found ({1} cards checked).</value></data>
+  <data name="Argument_XlsxPath_Description" xml:space="preserve"><value>Path to the XLSX file</value></data>
+  <data name="Option_Rows_Description" xml:space="preserve"><value>Maximum number of rows per worksheet</value></data>
+
+  <!-- console output: run summary -->
+  <data name="Log_StartingBrand" xml:space="preserve"><value>Starting {0}...</value></data>
+  <data name="Summary_Column_Brand" xml:space="preserve"><value>Brand</value></data>
+  <data name="Summary_Column_Status" xml:space="preserve"><value>Status</value></data>
+  <data name="Summary_Column_Discovered" xml:space="preserve"><value>Discovered</value></data>
+  <data name="Summary_Column_Downloaded" xml:space="preserve"><value>Downloaded</value></data>
+  <data name="Summary_Column_MetadataOnly" xml:space="preserve"><value>Metadata only</value></data>
+  <data name="Summary_Column_Note" xml:space="preserve"><value>Note</value></data>
+  <data name="Summary_Note_NotImplemented" xml:space="preserve"><value>not implemented</value></data>
+  <data name="Summary_Note_DiscoveryFailed" xml:space="preserve"><value>discovery failed</value></data>
+  <data name="Outcome_Completed" xml:space="preserve"><value>Completed</value></data>
+  <data name="Outcome_DiscoveryFailed" xml:space="preserve"><value>Discovery failed</value></data>
+  <data name="Outcome_NotImplemented" xml:space="preserve"><value>Not implemented</value></data>
+  <data name="Priority_High" xml:space="preserve"><value>High</value></data>
+  <data name="Priority_Medium" xml:space="preserve"><value>Medium</value></data>
+  <data name="Priority_Low" xml:space="preserve"><value>Low</value></data>
+  <data name="Priority_Unknown" xml:space="preserve"><value>Unknown</value></data>
+
+  <!-- console output: fetch stock -->
+  <data name="Stock_Result" xml:space="preserve"><value>FZ12 {0}: {1} model series loaded, {2} warning(s).</value></data>
+  <data name="Stock_Source" xml:space="preserve"><value>Source: {0}</value></data>
+  <data name="Stock_License" xml:space="preserve"><value>License: {0}</value></data>
+  <data name="Stock_NotSupportedPrefix" xml:space="preserve"><value>Not supported: {0}</value></data>
+  <data name="Stock_ErrorPrefix" xml:space="preserve"><value>Error: {0}</value></data>
+
+  <!-- console output: prioritize -->
+  <data name="Prioritize_NoStockFound" xml:space="preserve"><value>No vehicle stock data found - run 'fetch stock --year &lt;year&gt;' first.</value></data>
+  <data name="Prioritize_Result" xml:space="preserve"><value>{0} rescue cards prioritized (stock: FZ12 {1}).</value></data>
+  <data name="Prioritize_ReportLabel" xml:space="preserve"><value>Report: {0}</value></data>
+  <data name="Prioritize_CsvReportLabel" xml:space="preserve"><value>CSV report: {0}</value></data>
+
+  <!-- list brands table -->
+  <data name="ListBrands_Column_Source" xml:space="preserve"><value>Source</value></data>
+  <data name="Status_FullyFunctional" xml:space="preserve"><value>Fully functional</value></data>
+  <data name="Brand_VW_Source" xml:space="preserve"><value>assets.feature-app.io JSON feed</value></data>
+  <data name="Brand_Audi_Source" xml:space="preserve"><value>audi.com static HTML page</value></data>
+  <data name="Brand_Skoda_Source" xml:space="preserve"><value>skoda-auto.de model pages</value></data>
+  <data name="Brand_Seat_Source" xml:space="preserve"><value>seat.de model pages</value></data>
+  <data name="Brand_Cupra_Status" xml:space="preserve"><value>Fully functional (Switzerland source only)</value></data>
+  <data name="Brand_Cupra_Source" xml:space="preserve"><value>cupraofficial.ch static HTML page</value></data>
+  <data name="Brand_Porsche_Status" xml:space="preserve"><value>Fully functional (2 combined PDFs, not per-model)</value></data>
+  <data name="Brand_Porsche_Source" xml:space="preserve"><value>porsche.com official documents page</value></data>
+  <data name="Brand_Bentley_Source" xml:space="preserve"><value>bentleymotors.com static HTML page</value></data>
+  <data name="Brand_Lamborghini_Status" xml:space="preserve"><value>Fully functional (English-language documents only)</value></data>
+  <data name="Brand_Lamborghini_Source" xml:space="preserve"><value>lamborghini.com static HTML page</value></data>
+
+  <!-- Infrastructure: KBA stock -->
+  <data name="Stock_NoDownloadLinkFound" xml:space="preserve"><value>No download link for FZ12 {0} found on the KBA product page.</value></data>
+  <data name="Stock_UnsupportedFormat" xml:space="preserve"><value>FZ12 {0} is not available in XLSX format ({1}) - older formats (.xls/.pdf) are not currently supported.</value></data>
+  <data name="Stock_WorksheetNotFound" xml:space="preserve"><value>No '{0}' worksheet found in the FZ12 {1} file - the layout has likely changed.</value></data>
+  <data name="Stock_WorksheetEmpty" xml:space="preserve"><value>Worksheet '{0}' in the FZ12 {1} file is empty.</value></data>
+  <data name="Stock_HeaderRowNotFound" xml:space="preserve"><value>Header row ('Segment'/'Modellreihe') not found in FZ12 {0} - the layout has likely changed.</value></data>
+  <data name="Stock_HeaderYearMismatch" xml:space="preserve"><value>The count column header ('{0}') does not contain the expected year {1}.</value></data>
+  <data name="Stock_RowNotANumber" xml:space="preserve"><value>Row {0}: count for '{1}' is not a number ('{2}') - skipped.</value></data>
+  <data name="Stock_Downloading" xml:space="preserve"><value>Downloading FZ12 {0} from {1}</value></data>
+  <data name="Stock_RowWarningLog" xml:space="preserve"><value>FZ12 {0}: {1}</value></data>
+  <data name="Http_WaitingForRateLimitSlot" xml:space="preserve"><value>Waiting for rate-limit slot for {0} (min. {1})</value></data>
+  <data name="Http_UnexpectedContentType" xml:space="preserve"><value>Unexpected Content-Type '{0}' instead of PDF (possibly an auth-gateway redirect)</value></data>
+  <data name="Http_UnexpectedStatusCode" xml:space="preserve"><value>HTTP {0} {1}</value></data>
+  <data name="Http_Timeout" xml:space="preserve"><value>Timeout: {0}</value></data>
+
+  <!-- Infrastructure: rescue card sources -->
+  <data name="RescueCards_Skoda_ModelPagesFound" xml:space="preserve"><value>Škoda: {0} model pages discovered</value></data>
+  <data name="RescueCards_Skoda_ModelPageReadFailed" xml:space="preserve"><value>Škoda: could not read model page {0}</value></data>
+  <data name="RescueCards_Seat_ModelPagesFound" xml:space="preserve"><value>SEAT: {0} model pages discovered</value></data>
+<data name="RescueCards_Seat_ModelPageReadFailed" xml:space="preserve"><value>SEAT: could not read model page {0}</value></data>
+  <data name="RescueCards_Audi_DiscoveredCount" xml:space="preserve"><value>Audi: {0} German-language rescue cards discovered</value></data>
+  <data name="RescueCards_Cupra_DiscoveredCount" xml:space="preserve"><value>Cupra: {0} German-language rescue cards discovered (Switzerland)</value></data>
+  <data name="RescueCards_Vw_DiscoveredCount" xml:space="preserve"><value>VW: {0} German-language rescue cards discovered</value></data>
+  <data name="RescueCards_Vw_LanguageBucketNotFound" xml:space="preserve"><value>VW: could not find the German-language bucket in the JSON feed.</value></data>
+  <data name="RescueCards_Porsche_DiscoveredCount" xml:space="preserve"><value>Porsche: {0} rescue data sheet document(s) discovered (combined, covers all models)</value></data>
+  <data name="RescueCards_Bentley_DiscoveredCount" xml:space="preserve"><value>Bentley: {0} German-language rescue cards discovered</value></data>
+  <data name="RescueCards_Bentley_AmbiguousGermanLink" xml:space="preserve"><value>Bentley: '{0}' skipped - its "DEUTSCHE" link shares a URL with a differently-labelled language button, which looks like a mislabeling bug on Bentley's own page rather than a real German document</value></data>
+  <data name="RescueCards_Lamborghini_DiscoveredCount" xml:space="preserve"><value>Lamborghini: {0} rescue data sheets discovered</value></data>
+  <data name="RescueCards_Porsche_TemplateNotFound" xml:space="preserve"><value>Porsche: app-template script block not found - page layout has likely changed.</value></data>
+
+  <!-- Core: orchestration -->
+  <data name="Orchestrator_NotImplementedLog" xml:space="preserve"><value>{0}: not implemented - {1}</value></data>
+  <data name="Orchestrator_DiscoveryFailedLog" xml:space="preserve"><value>{0}: discovery failed</value></data>
+  <data name="Orchestrator_DownloadFailedLog" xml:space="preserve"><value>{0}: download failed for {1}</value></data>
+  <data name="Orchestrator_NoSourceRegistered" xml:space="preserve"><value>No source registered for this brand.</value></data>
+  <data name="Error_UnknownBrand" xml:space="preserve"><value>Unknown brand</value></data>
+  <data name="FailureReason_NoDownloadUrl" xml:space="preserve"><value>No download URL discovered</value></data>
+  <data name="FailureReason_DryRunSkipped" xml:space="preserve"><value>dry-run: download skipped</value></data>
+</root>
