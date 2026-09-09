@@ -119,6 +119,7 @@
   <data name="Prioritize_NoStockFound" xml:space="preserve"><value>Kein Fahrzeugbestand gefunden - zuerst 'fetch stock --year &lt;jahr&gt;' ausführen.</value></data>
   <data name="Prioritize_Result" xml:space="preserve"><value>{0} Rettungskarten priorisiert (Bestand: FZ12 {1}).</value></data>
   <data name="Prioritize_ReportLabel" xml:space="preserve"><value>Report: {0}</value></data>
+  <data name="Prioritize_CsvReportLabel" xml:space="preserve"><value>CSV-Report: {0}</value></data>
 
   <!-- list brands table -->
   <data name="ListBrands_Column_Source" xml:space="preserve"><value>Quelle</value></data>

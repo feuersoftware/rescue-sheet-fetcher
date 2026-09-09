@@ -91,7 +91,8 @@ data/
     <year>/fz12_<year>.xlsx     (raw download)
     <year>/fz12_<year>.json     (parsed)
     <year>/fz12_<year>.meta.json
-  priority-report.json
+  priority-report.json          (sorted by estimated fleet size)
+  priority-report.csv           (same data, for Excel/spreadsheet use)
 ```
 
 ### For developers
@@ -226,7 +227,8 @@ data/
     <jahr>/fz12_<jahr>.xlsx      (Rohdatei)
     <jahr>/fz12_<jahr>.json      (geparst)
     <jahr>/fz12_<jahr>.meta.json
-  priority-report.json
+  priority-report.json          (sortiert nach geschätzter Bestandsgröße)
+  priority-report.csv           (gleiche Daten, für Excel/Tabellenkalkulation)
 ```
 
 ### Für Entwickler

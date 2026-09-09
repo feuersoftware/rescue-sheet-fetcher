@@ -1,9 +1,11 @@
 using System.CommandLine;
+using System.Text;
 using System.Text.Json;
 using Rettungskarten.Core.Config;
 using Rettungskarten.Core.Localization;
 using Rettungskarten.Core.Models;
 using Rettungskarten.Core.Priority;
+using Rettungskarten.Core.Reporting;
 using Rettungskarten.Infrastructure.Config;
 using Rettungskarten.Infrastructure.Storage;
 
@@ -90,18 +92,27 @@ public static class PrioritizeCommand
         var fullRescueCardsPath = Path.GetFullPath(
             rescueCardsPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
         var dataRoot = Path.GetDirectoryName(fullRescueCardsPath) ?? fullRescueCardsPath;
-        var reportPath = Path.Combine(dataRoot, "priority-report.json");
+        var jsonPath = Path.Combine(dataRoot, "priority-report.json");
+        var csvPath = Path.Combine(dataRoot, "priority-report.csv");
 
-        var report = updated
-            .OrderByDescending(c => c.EstimatedFleetSize ?? -1)
-            .Select(c => new
-            {
-                c.Brand, c.ModelName, c.Variant, c.Status, c.EstimatedFleetSize, c.BundlePriority
-            });
+        var sorted = updated.OrderByDescending(c => c.EstimatedFleetSize ?? -1).ToList();
+        var report = sorted.Select(c => new
+        {
+            c.Brand, c.ModelName, c.Variant, c.Status, c.EstimatedFleetSize, c.BundlePriority
+        });
 
-        await using var stream = File.Create(reportPath);
-        await JsonSerializer.SerializeAsync(stream, report, JsonDefaults.Options, ct);
+        await using (var stream = File.Create(jsonPath))
+        {
+            await JsonSerializer.SerializeAsync(stream, report, JsonDefaults.Options, ct);
+        }
 
-        Console.WriteLine(Strings.Get("Prioritize_ReportLabel", reportPath));
+        // A UTF-8 BOM is required here (File.WriteAllTextAsync's default encoding omits it): this file
+        // is meant to be double-clicked open in Excel on Windows by non-developer staff, and Excel
+        // falls back to the system ANSI codepage without a BOM, mangling brand/model names that
+        // contain non-ASCII characters (e.g. Škoda's "Š"/"ř").
+        await File.WriteAllTextAsync(csvPath, PriorityReportCsvFormatter.Format(sorted), new UTF8Encoding(encoderShouldEmitUTF8Identifier: true), ct);
+
+        Console.WriteLine(Strings.Get("Prioritize_ReportLabel", jsonPath));
+        Console.WriteLine(Strings.Get("Prioritize_CsvReportLabel", csvPath));
     }
 }
