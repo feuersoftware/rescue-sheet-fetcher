@@ -95,22 +95,22 @@ public static class PrioritizeCommand
         var jsonPath = Path.Combine(dataRoot, "priority-report.json");
         var csvPath = Path.Combine(dataRoot, "priority-report.csv");
 
-        var sorted = updated.OrderByDescending(c => c.EstimatedFleetSize ?? -1).ToList();
-        var report = sorted.Select(c => new
-        {
-            c.Brand, c.ModelName, c.Variant, c.Status, c.EstimatedFleetSize, c.BundlePriority
-        });
+        // One row per (Brand, ModelName), not one per rescue card - see PriorityReportAggregator for
+        // why a popular model's many year/body-type variants collapsing into a single row loses no
+        // information the report actually needs (they'd all show the identical fleet-size/priority
+        // anyway).
+        var rows = PriorityReportAggregator.Aggregate(updated);
 
         await using (var stream = File.Create(jsonPath))
         {
-            await JsonSerializer.SerializeAsync(stream, report, JsonDefaults.Options, ct);
+            await JsonSerializer.SerializeAsync(stream, rows, JsonDefaults.Options, ct);
         }
 
         // A UTF-8 BOM is required here (File.WriteAllTextAsync's default encoding omits it): this file
         // is meant to be double-clicked open in Excel on Windows by non-developer staff, and Excel
         // falls back to the system ANSI codepage without a BOM, mangling brand/model names that
         // contain non-ASCII characters (e.g. Škoda's "Š"/"ř").
-        await File.WriteAllTextAsync(csvPath, PriorityReportCsvFormatter.Format(sorted), new UTF8Encoding(encoderShouldEmitUTF8Identifier: true), ct);
+        await File.WriteAllTextAsync(csvPath, PriorityReportCsvFormatter.Format(rows), new UTF8Encoding(encoderShouldEmitUTF8Identifier: true), ct);
 
         Console.WriteLine(Strings.Get("Prioritize_ReportLabel", jsonPath));
         Console.WriteLine(Strings.Get("Prioritize_CsvReportLabel", csvPath));
