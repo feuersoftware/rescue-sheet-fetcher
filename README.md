@@ -102,6 +102,11 @@ data/
 
 **Splitting a combined multi-model PDF** (Porsche's case, and a template if another brand ever turns out to work the same way): `Rettungskarten.Infrastructure/RescueCards/Splitting/PorscheCombinedPdfSplitter.cs` uses `PdfPig` to find model boundaries in the page text (no PDF outline/bookmarks exist in Porsche's file) and `PDFsharp` to copy the matched page ranges into standalone PDFs. It's invoked by the separate `split porsche` command rather than by `fetch` itself, so re-running it doesn't re-download the large source file — the same reasoning `prioritize` already follows as its own post-processing step.
 
+**Continuous integration** (`.github/workflows/`):
+
+- `ci.yml` — build, test, and a `list brands` smoke test under both `en-US` and `de-DE` locales, on every push and PR.
+- `link-check.yml` — a scheduled (weekly, Mondays) discovery-only run against every live source (`fetch rescue-cards --brand all --dry-run` plus `fetch stock`), so a manufacturer or KBA moving/restructuring a page is caught within a week instead of silently rotting; also runnable on demand from the Actions tab. See `CLAUDE.md` for what to do when adding a source that this workflow should also cover.
+
 **Running tests**:
 
 ```bash
@@ -221,6 +226,11 @@ data/
 **Neue Marke hinzufügen**: `IRescueCardSource` in `Rettungskarten.Infrastructure/RescueCards/` implementieren, in `Rettungskarten.Cli/CompositionRoot.cs` registrieren, im `Brand`-Enum und in `ListBrandsCommand` ergänzen. `DiscoverAsync` darf niemals wegen Parsing-Problemen bei einem einzelnen Modell werfen; `DownloadAsync` muss bei erwarteten HTTP-Fehlern ein fehlgeschlagenes `RescueCardDownloadResult` zurückgeben statt zu werfen — der Orchestrator behandelt nur eine Exception aus `DiscoverAsync` als Markenfehler.
 
 **Eine kombinierte Multi-Modell-PDF aufteilen** (Porsches Fall, als Vorlage falls eine andere Marke sich je genauso verhält): `Rettungskarten.Infrastructure/RescueCards/Splitting/PorscheCombinedPdfSplitter.cs` nutzt `PdfPig`, um Modellgrenzen im Seitentext zu finden (Porsches Datei hat keine PDF-Bookmarks/Gliederung), und `PDFsharp`, um die passenden Seitenbereiche in eigenständige PDFs zu kopieren. Aufgerufen wird das über den separaten `split porsche`-Befehl statt direkt durch `fetch`, damit ein erneuter Lauf nicht die große Quelldatei erneut herunterlädt — dieselbe Überlegung, die `prioritize` bereits als eigener Nachbearbeitungsschritt befolgt.
+
+**Continuous integration** (`.github/workflows/`):
+
+- `ci.yml` — Build, Test und ein `list brands`-Smoke-Test unter den Locales `en-US` und `de-DE`, bei jedem Push und PR.
+- `link-check.yml` — ein wöchentlich geplanter (montags), rein entdeckender Lauf gegen alle Live-Quellen (`fetch rescue-cards --brand all --dry-run` plus `fetch stock`), damit eine von Hersteller oder KBA umgebaute/verschobene Seite innerhalb einer Woche auffällt statt stillschweigend zu veralten; auch manuell über den Actions-Tab startbar. Was bei einer neuen Quelle zu tun ist, damit dieser Workflow sie mit abdeckt, steht in `CLAUDE.md`.
 
 **Tests ausführen**:
 
