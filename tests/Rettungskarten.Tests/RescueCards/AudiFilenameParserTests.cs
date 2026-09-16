@@ -80,4 +80,23 @@ public class AudiFilenameParserTests
         Assert.Equal("DE", result.LanguageCode);
         Assert.Equal(ParseConfidence.High, result.ParseConfidence);
     }
+
+    // Regression test: NormalizeQuirks used to drop only one such stray numeral (a single `if`, not a
+    // loop). A re-uploaded/re-deduped asset could plausibly pick up more than one - this must strip all
+    // of them, not just the one closest to the language code, or the outer one still shifts FuelType.
+    [Fact]
+    public void Parse_TwoConsecutiveTrailingNumeralsBeforeLanguageCode_BothAreDropped()
+    {
+        var result = AudiFilenameParser.Parse("Audi_e-tron_Sportback_SUV_2019-2023_5d_Electric_1_2_DE.pdf");
+
+        Assert.Equal("e-tron", result.ModelName);
+        Assert.Equal("Sportback", result.Variant);
+        Assert.Equal("SUV", result.BodyType);
+        Assert.Equal(2019, result.BuildYearFrom);
+        Assert.Equal(2023, result.BuildYearTo);
+        Assert.Equal(5, result.Doors);
+        Assert.Equal("Electric", result.FuelType);
+        Assert.Equal("DE", result.LanguageCode);
+        Assert.Equal(ParseConfidence.High, result.ParseConfidence);
+    }
 }

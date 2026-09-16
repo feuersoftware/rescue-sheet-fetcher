@@ -48,8 +48,10 @@ public static class AudiFilenameParser
         }
 
         // The fuel-type token (immediately before the language code) is never a bare number for any
-        // brand's filenames - a numeral there is a spurious CMS suffix, not data.
-        if (merged.Count >= 2 && PureDigits.IsMatch(merged[^2]))
+        // brand's filenames - a numeral there is a spurious CMS suffix, not data. A loop rather than a
+        // single check: a re-uploaded/re-deduped asset could plausibly pick up more than one such
+        // suffix, and a single removal would leave the outer one still shifting the fuel-type field.
+        while (merged.Count >= 2 && PureDigits.IsMatch(merged[^2]))
         {
             merged.RemoveAt(merged.Count - 2);
         }

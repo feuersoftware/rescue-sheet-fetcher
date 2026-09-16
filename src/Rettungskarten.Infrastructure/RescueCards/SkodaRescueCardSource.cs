@@ -146,7 +146,8 @@ public sealed class SkodaRescueCardSource(
                         ? ParseConfidence.Unparsed
                         : ParseConfidence.Heuristic);
 
-                results.Add(new RescueCardEntry(Brand.Skoda, pageUrl, file.Link, title ?? modelName, parsed));
+                var downloadUrl = HttpDownloadHelper.ResolveUrl(pageUrl, file.Link);
+                results.Add(new RescueCardEntry(Brand.Skoda, pageUrl, downloadUrl, title ?? modelName, parsed));
             }
         }
 
