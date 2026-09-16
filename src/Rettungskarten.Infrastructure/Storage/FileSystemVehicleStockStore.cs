@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Rettungskarten.Core.Abstractions;
+using Rettungskarten.Core.Localization;
 using Rettungskarten.Core.Models;
 
 namespace Rettungskarten.Infrastructure.Storage;
@@ -20,20 +21,12 @@ public sealed class FileSystemVehicleStockStore(VehicleStockStoreOptions options
         var yearFolder = Path.Combine(options.RootPath, result.Year.ToString());
         Directory.CreateDirectory(yearFolder);
 
-        await File.WriteAllBytesAsync(Path.Combine(yearFolder, rawFileName), rawFileContent, ct);
-
-        await using (var stream = File.Create(Path.Combine(yearFolder, $"fz12_{result.Year}.json")))
-        {
-            await JsonSerializer.SerializeAsync(stream, result, JsonDefaults.Options, ct);
-        }
+        await AtomicFileWriter.WriteBytesAsync(Path.Combine(yearFolder, rawFileName), rawFileContent, ct);
+        await AtomicFileWriter.WriteJsonAsync(Path.Combine(yearFolder, $"fz12_{result.Year}.json"), result, ct);
 
         var meta = new VehicleStockMetaFile(
             result.SourceUrl, result.License, DateTimeOffset.UtcNow, result.Rows.Count, result.UnparsedRowWarnings.Count);
-
-        await using (var stream = File.Create(Path.Combine(yearFolder, $"fz12_{result.Year}.meta.json")))
-        {
-            await JsonSerializer.SerializeAsync(stream, meta, JsonDefaults.Options, ct);
-        }
+        await AtomicFileWriter.WriteJsonAsync(Path.Combine(yearFolder, $"fz12_{result.Year}.meta.json"), meta, ct);
     }
 
     public async Task<VehicleStockResult?> LoadAsync(int? year, CancellationToken ct)
@@ -61,7 +54,15 @@ public sealed class FileSystemVehicleStockStore(VehicleStockStoreOptions options
             return null;
         }
 
-        await using var stream = File.OpenRead(resultPath);
-        return await JsonSerializer.DeserializeAsync<VehicleStockResult>(stream, JsonDefaults.Options, ct);
+        try
+        {
+            await using var stream = File.OpenRead(resultPath);
+            return await JsonSerializer.DeserializeAsync<VehicleStockResult>(stream, JsonDefaults.Options, ct);
+        }
+        catch (Exception ex) when (ex is JsonException or IOException)
+        {
+            Console.Error.WriteLine(Strings.Get("Store_CorruptStockFile", resultPath, ex.Message));
+            return null;
+        }
     }
 }

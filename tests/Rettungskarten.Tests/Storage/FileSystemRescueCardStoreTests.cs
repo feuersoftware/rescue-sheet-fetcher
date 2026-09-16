@@ -51,4 +51,33 @@ public class FileSystemRescueCardStoreTests : IDisposable
         Assert.True(Directory.Exists(modelFolder));
         Assert.True(File.Exists(Path.Combine(modelFolder, "porsche-911-b.json")));
     }
+
+    [Fact]
+    public async Task LoadAllAsync_OneCorruptFile_SkipsItAndLoadsTheRest()
+    {
+        // Regression test: a single truncated/corrupt sidecar (e.g. from a crash mid-write, or
+        // external interference) must not abort loading every other card in the store.
+        var store = new FileSystemRescueCardStore(new RescueCardStoreOptions { RootPath = _tempRoot });
+        await store.SaveAsync(BuildMetadata("porsche-golf-1", "Golf"), null, CancellationToken.None);
+        await store.SaveAsync(BuildMetadata("porsche-polo-1", "Polo"), null, CancellationToken.None);
+
+        var corruptFile = Directory.EnumerateFiles(_tempRoot, "*.json", SearchOption.AllDirectories)
+            .Single(f => Path.GetFileNameWithoutExtension(f) == "porsche-golf-1");
+        await File.WriteAllTextAsync(corruptFile, "{ this is not valid json");
+
+        var loaded = await store.LoadAllAsync(CancellationToken.None);
+
+        var item = Assert.Single(loaded);
+        Assert.Equal("porsche-polo-1", item.Id);
+    }
+
+    [Fact]
+    public async Task SaveAsync_LeavesNoTempFileBehind()
+    {
+        var store = new FileSystemRescueCardStore(new RescueCardStoreOptions { RootPath = _tempRoot });
+
+        await store.SaveAsync(BuildMetadata("porsche-911-c", "911"), null, CancellationToken.None);
+
+        Assert.Empty(Directory.EnumerateFiles(_tempRoot, "*.tmp", SearchOption.AllDirectories));
+    }
 }

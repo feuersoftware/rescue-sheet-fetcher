@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Rettungskarten.Core.Abstractions;
+using Rettungskarten.Core.Localization;
 using Rettungskarten.Core.Models;
 using Rettungskarten.Core.Naming;
 
@@ -125,15 +126,27 @@ public sealed class FileSystemRescueCardStore(RescueCardStoreOptions options) : 
     private string GetMetadataPath(RescueCardMetadata metadata) =>
         Path.Combine(GetModelFolder(metadata.Brand, metadata.ModelName), $"{metadata.Id}.json");
 
-    private static async Task WriteJsonAsync<T>(string path, T value, CancellationToken ct)
-    {
-        await using var stream = File.Create(path);
-        await JsonSerializer.SerializeAsync(stream, value, JsonDefaults.Options, ct);
-    }
+    private static Task WriteJsonAsync<T>(string path, T value, CancellationToken ct) =>
+        AtomicFileWriter.WriteJsonAsync(path, value, ct);
 
+    /// <summary>
+    /// Returns null both when a file legitimately isn't valid JSON for this type (shouldn't happen for
+    /// writes made by this store, but can for a file truncated by a crash mid-write predating the
+    /// atomic-write fix, or external interference) and lets the caller skip it - reported via stderr
+    /// rather than thrown, so one damaged sidecar doesn't abort loading every other card in the store
+    /// (see AtomicFileWriter for why new writes shouldn't produce truncated files going forward).
+    /// </summary>
     private static async Task<RescueCardMetadata?> ReadJsonAsync(string path, CancellationToken ct)
     {
-        await using var stream = File.OpenRead(path);
-        return await JsonSerializer.DeserializeAsync<RescueCardMetadata>(stream, JsonDefaults.Options, ct);
+        try
+        {
+            await using var stream = File.OpenRead(path);
+            return await JsonSerializer.DeserializeAsync<RescueCardMetadata>(stream, JsonDefaults.Options, ct);
+        }
+        catch (Exception ex) when (ex is JsonException or IOException)
+        {
+            Console.Error.WriteLine(Strings.Get("Store_CorruptRescueCardSkipped", path, ex.Message));
+            return null;
+        }
     }
 }

@@ -148,6 +148,10 @@
   <data name="Stock_RowWarningLog" xml:space="preserve"><value>FZ12 {0}: {1}</value></data>
   <data name="Http_WaitingForRateLimitSlot" xml:space="preserve"><value>Waiting for rate-limit slot for {0} (min. {1})</value></data>
   <data name="Http_UnexpectedContentType" xml:space="preserve"><value>Unexpected Content-Type '{0}' instead of PDF (possibly an auth-gateway redirect)</value></data>
+
+  <!-- Infrastructure: file-system storage -->
+  <data name="Store_CorruptRescueCardSkipped" xml:space="preserve"><value>Skipped unreadable rescue-card file '{0}' ({1}) - it will be missing from this run's results until it is re-fetched or removed.</value></data>
+  <data name="Store_CorruptStockFile" xml:space="preserve"><value>Vehicle stock file '{0}' could not be read ({1}) - run 'fetch stock --year &lt;year&gt;' again to re-fetch it.</value></data>
   <data name="Http_UnexpectedStatusCode" xml:space="preserve"><value>HTTP {0} {1}</value></data>
   <data name="Http_Timeout" xml:space="preserve"><value>Timeout: {0}</value></data>
 
