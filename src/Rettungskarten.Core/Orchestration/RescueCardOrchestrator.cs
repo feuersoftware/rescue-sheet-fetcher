@@ -87,7 +87,7 @@ public sealed class RescueCardOrchestrator(
                 BundlePriority: BundlePriority.Unknown);
 
             await store.SaveAsync(metadata, download.Success ? download.Content : null, ct);
-            results.Add(new ModelRunResult(entry, download.Success, download.FailureReason));
+            results.Add(new ModelRunResult(entry, status, download.FailureReason));
         }
 
         if (!dryRun)

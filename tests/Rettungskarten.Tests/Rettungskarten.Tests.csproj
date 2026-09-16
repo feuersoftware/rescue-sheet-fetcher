@@ -22,6 +22,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Rettungskarten.Core\Rettungskarten.Core.csproj" />
     <ProjectReference Include="..\..\src\Rettungskarten.Infrastructure\Rettungskarten.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Rettungskarten.Cli\Rettungskarten.Cli.csproj" />
   </ItemGroup>
 
   <ItemGroup>

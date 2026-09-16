@@ -97,6 +97,7 @@
   <data name="Summary_Column_Discovered" xml:space="preserve"><value>Discovered</value></data>
   <data name="Summary_Column_Downloaded" xml:space="preserve"><value>Downloaded</value></data>
   <data name="Summary_Column_MetadataOnly" xml:space="preserve"><value>Metadata only</value></data>
+  <data name="Summary_Column_Failed" xml:space="preserve"><value>Failed</value></data>
   <data name="Summary_Column_Note" xml:space="preserve"><value>Note</value></data>
   <data name="Summary_Note_NotImplemented" xml:space="preserve"><value>not implemented</value></data>
   <data name="Summary_Note_DiscoveryFailed" xml:space="preserve"><value>discovery failed</value></data>

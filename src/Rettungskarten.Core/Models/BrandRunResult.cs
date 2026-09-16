@@ -7,7 +7,7 @@ public enum BrandRunOutcome
     NotImplemented
 }
 
-public sealed record ModelRunResult(RescueCardEntry Entry, bool Downloaded, string? FailureReason);
+public sealed record ModelRunResult(RescueCardEntry Entry, RescueCardStatus Status, string? FailureReason);
 
 public sealed record BrandRunResult(
     Brand Brand,
@@ -25,6 +25,13 @@ public sealed record BrandRunResult(
         new(brand, BrandRunOutcome.NotImplemented, [], note);
 
     public int Discovered => Models.Count;
-    public int Downloaded => Models.Count(m => m.Downloaded);
-    public int MetadataOnly => Models.Count(m => !m.Downloaded);
+    public int Downloaded => Models.Count(m => m.Status == RescueCardStatus.Downloaded);
+    public int MetadataOnly => Models.Count(m => m.Status == RescueCardStatus.MetadataOnly);
+
+    /// <summary>Entries with no discoverable download URL at all - distinct from <see cref="MetadataOnly"/>
+    /// (a URL was found but the fetch itself failed). Before <see cref="ModelRunResult"/> carried the
+    /// full <see cref="RescueCardStatus"/> instead of a bare bool, the console run-summary table
+    /// conflated both cases into one "Metadata only" number, hiding the difference between "this
+    /// brand's discovery is fundamentally incomplete" and "isolated download failures".</summary>
+    public int Failed => Models.Count(m => m.Status == RescueCardStatus.Failed);
 }
