@@ -155,6 +155,7 @@
   <data name="Stock_RowNotANumber" xml:space="preserve"><value>Zeile {0}: Anzahl für '{1}' ist keine Zahl ('{2}') - übersprungen.</value></data>
   <data name="Stock_Downloading" xml:space="preserve"><value>Lade FZ12 {0} von {1}</value></data>
   <data name="Stock_RowWarningLog" xml:space="preserve"><value>FZ12 {0}: {1}</value></data>
+  <data name="Stock_NetworkError" xml:space="preserve"><value>Netzwerkfehler beim Abrufen von {0}: {1}</value></data>
   <data name="Http_WaitingForRateLimitSlot" xml:space="preserve"><value>Warte auf Rate-Limit-Slot für {0} (min. {1})</value></data>
   <data name="Http_UnexpectedContentType" xml:space="preserve"><value>Unerwarteter Content-Type '{0}' statt PDF (evtl. Auth-Gateway-Weiterleitung)</value></data>
 

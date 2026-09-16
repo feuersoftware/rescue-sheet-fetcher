@@ -40,7 +40,7 @@ public sealed class KbaVehicleStockSource(
         }
 
         logger.LogInformation("{Message}", Strings.Get("Stock_Downloading", year, downloadUrl));
-        var bytes = await client.GetByteArrayAsync(downloadUrl, ct);
+        var bytes = await FetchOrThrowAsync(() => client.GetByteArrayAsync(downloadUrl, ct), downloadUrl, ct);
         var parsed = KbaStockXlsxParser.Parse(bytes, year, downloadUrl);
 
         foreach (var warning in parsed.UnparsedRowWarnings)
@@ -54,7 +54,7 @@ public sealed class KbaVehicleStockSource(
 
     private static async Task<string?> ResolveDownloadUrlAsync(HttpClient client, int year, CancellationToken ct)
     {
-        var html = await client.GetStringAsync(ProductPageUrl, ct);
+        var html = await FetchOrThrowAsync(() => client.GetStringAsync(ProductPageUrl, ct), ProductPageUrl, ct);
 
         var context = BrowsingContext.New(Configuration.Default);
         var document = await context.OpenAsync(req => req.Content(html), ct);
@@ -71,5 +71,31 @@ public sealed class KbaVehicleStockSource(
         }
 
         return href.StartsWith("http", StringComparison.OrdinalIgnoreCase) ? href : BaseUrl + href;
+    }
+
+    /// <summary>
+    /// Every other brand source routes its HTTP calls through <see cref="HttpDownloadHelper"/>, which
+    /// turns HttpRequestException/TaskCanceledException into a clean result instead of an exception.
+    /// This class's own calls (product-page HTML, then the XLSX bytes) bypassed that entirely, so a
+    /// brief KBA outage during `fetch stock` surfaced as a raw, un-localized stack trace via
+    /// System.CommandLine's default exception handler instead of FetchStockCommand's existing
+    /// Stock_ErrorPrefix-style message. Wrapping into InvalidOperationException here is enough for that
+    /// existing `catch (InvalidOperationException)` in FetchStockCommand to already handle it cleanly -
+    /// no new catch clause needed there.
+    /// </summary>
+    private static async Task<T> FetchOrThrowAsync<T>(Func<Task<T>> fetch, string url, CancellationToken ct)
+    {
+        try
+        {
+            return await fetch();
+        }
+        catch (HttpRequestException ex)
+        {
+            throw new InvalidOperationException(Strings.Get("Stock_NetworkError", url, ex.Message), ex);
+        }
+        catch (TaskCanceledException ex) when (!ct.IsCancellationRequested)
+        {
+            throw new InvalidOperationException(Strings.Get("Stock_NetworkError", url, ex.Message), ex);
+        }
     }
 }

@@ -38,6 +38,33 @@ public sealed class KbaVehicleStockSourceTests
         Assert.Equal("fz12_2026.xlsx", result.RawFileName);
     }
 
+    [Fact]
+    public async Task FetchWithRawAsync_ProductPageUnreachable_ThrowsInvalidOperationExceptionNotRawHttpException()
+    {
+        // Regression test: unlike every brand source (which routes through HttpDownloadHelper),
+        // KbaVehicleStockSource called client.GetStringAsync/GetByteArrayAsync directly, so a KBA
+        // outage surfaced as a raw HttpRequestException - uncaught by FetchStockCommand's existing
+        // catch (NotSupportedException)/(InvalidOperationException) clauses, producing an unhandled
+        // stack trace instead of a clean Stock_ErrorPrefix-style message.
+        var factory = new FailingHttpClientFactory();
+        var source = new KbaVehicleStockSource(factory, NullLogger<KbaVehicleStockSource>.Instance);
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => source.FetchWithRawAsync(2026, CancellationToken.None));
+        Assert.Contains(ProductPageUrl, ex.Message);
+    }
+
+    private sealed class FailingHttpClientFactory : IHttpClientFactory
+    {
+        public HttpClient CreateClient(string name) => new(new StubHandler());
+
+        private sealed class StubHandler : HttpMessageHandler
+        {
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct) =>
+                throw new HttpRequestException("simulated network failure");
+        }
+    }
+
     private sealed class StubHttpClientFactory(string productPageHtml, string expectedDownloadUrl, byte[] xlsxBytes) : IHttpClientFactory
     {
         public HttpClient CreateClient(string name) => new(new StubHandler(productPageHtml, expectedDownloadUrl, xlsxBytes));

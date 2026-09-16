@@ -155,6 +155,7 @@
   <data name="Stock_RowNotANumber" xml:space="preserve"><value>Row {0}: count for '{1}' is not a number ('{2}') - skipped.</value></data>
   <data name="Stock_Downloading" xml:space="preserve"><value>Downloading FZ12 {0} from {1}</value></data>
   <data name="Stock_RowWarningLog" xml:space="preserve"><value>FZ12 {0}: {1}</value></data>
+  <data name="Stock_NetworkError" xml:space="preserve"><value>Network error fetching {0}: {1}</value></data>
   <data name="Http_WaitingForRateLimitSlot" xml:space="preserve"><value>Waiting for rate-limit slot for {0} (min. {1})</value></data>
   <data name="Http_UnexpectedContentType" xml:space="preserve"><value>Unexpected Content-Type '{0}' instead of PDF (possibly an auth-gateway redirect)</value></data>
 
