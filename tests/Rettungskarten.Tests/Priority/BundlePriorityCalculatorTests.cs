@@ -86,4 +86,40 @@ public class BundlePriorityCalculatorTests
 
         Assert.Equal(BundlePriority.Unknown, result.Priority);
     }
+
+    [Fact]
+    public void Calculate_CalledRepeatedlyWithSameStockRowsInstance_EachCallStaysCorrect()
+    {
+        // Regression test for the by-brand/by-normalized-name index being built once and cached: a
+        // stale or cross-contaminated cache would show up as a later call returning an earlier call's
+        // result instead of its own.
+        var calculator = new BundlePriorityCalculator(ModelAliasConfig.Empty);
+
+        var golf = calculator.Calculate(Brand.VW, "Golf", StockRows);
+        var up = calculator.Calculate(Brand.VW, "Up", StockRows);
+        var formentor = calculator.Calculate(Brand.Cupra, "Formentor", StockRows);
+        var golfAgain = calculator.Calculate(Brand.VW, "Golf", StockRows);
+
+        Assert.Equal(3_231_990, golf.EstimatedFleetSize);
+        Assert.Equal(15_000, up.EstimatedFleetSize);
+        Assert.Equal(120_000, formentor.EstimatedFleetSize);
+        Assert.Equal(golf, golfAgain);
+    }
+
+    [Fact]
+    public void Calculate_CalledWithADifferentStockRowsInstance_RebuildsInsteadOfReturningStaleData()
+    {
+        // Regression test: caching the index by the stockRows reference must not return a previous
+        // run's data when a caller (e.g. a test, or a future re-fetch-then-reprioritize flow) passes a
+        // genuinely different stock-rows list to the same calculator instance.
+        var calculator = new BundlePriorityCalculator(ModelAliasConfig.Empty);
+        var firstRunRows = new[] { new VehicleStockRow("KOMPAKTKLASSE", "VW", "GOLF", 1_000_000) };
+        var secondRunRows = new[] { new VehicleStockRow("KOMPAKTKLASSE", "VW", "GOLF", 2_000_000) };
+
+        var first = calculator.Calculate(Brand.VW, "Golf", firstRunRows);
+        var second = calculator.Calculate(Brand.VW, "Golf", secondRunRows);
+
+        Assert.Equal(1_000_000, first.EstimatedFleetSize);
+        Assert.Equal(2_000_000, second.EstimatedFleetSize);
+    }
 }
