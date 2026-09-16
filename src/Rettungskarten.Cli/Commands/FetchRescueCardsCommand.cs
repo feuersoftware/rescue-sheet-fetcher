@@ -64,12 +64,17 @@ public static class FetchRescueCardsCommand
             var orchestrator = new RescueCardOrchestrator(
                 sources, store, siblingConfig, services.GetRequiredService<ILogger<RescueCardOrchestrator>>());
 
-            var results = new List<BrandRunResult>();
-            foreach (var brand in brands)
+            // Every brand source targets a distinct host, and HostRateLimiter rate-limits per host
+            // independently (see its own doc comment) - running brands sequentially only paid the sum
+            // of all 8 brands' discovery+download time for no politeness benefit, since none of them
+            // contend with each other. Task.WhenAll preserves the input order in its result array
+            // regardless of completion order, so RunSummaryPrinter's table still prints in the same
+            // deterministic brand order as before, not interleaved by whichever brand finishes first.
+            var results = await Task.WhenAll(brands.Select(async brand =>
             {
                 logger.LogInformation("{Message}", Strings.Get("Log_StartingBrand", brand));
-                results.Add(await orchestrator.RunForBrandAsync(brand, dryRun, ct));
-            }
+                return await orchestrator.RunForBrandAsync(brand, dryRun, ct);
+            }));
 
             RunSummaryPrinter.Print(results);
             return RunSummaryPrinter.HasUnexpectedFailures(results) ? 1 : 0;
