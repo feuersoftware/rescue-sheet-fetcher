@@ -87,6 +87,14 @@
   <data name="InspectQuality_NoIssuesFound" xml:space="preserve"><value>Keine Datenqualitätsprobleme gefunden ({0} Karten geprüft).</value></data>
   <data name="InspectQuality_IssueLine" xml:space="preserve"><value>[{0}] {1}: {2}</value></data>
   <data name="InspectQuality_IssuesFound" xml:space="preserve"><value>{0} Datenqualitätsproblem(e) gefunden ({1} Karten geprüft).</value></data>
+
+  <!-- Core: Datenqualitätsprüfungen (DataQualityChecker) -->
+  <data name="Quality_BodyTypeLooksLikeYear" xml:space="preserve"><value>BodyType '{0}' sieht wie eine Jahreszahl oder ein Jahresbereich aus, nicht wie eine Karosserieform - vermutlich ein verschobenes Feld.</value></data>
+  <data name="Quality_FuelTypeIsBareDigits" xml:space="preserve"><value>FuelType '{0}' besteht nur aus Ziffern, keine Kraftstoff-/Antriebsbeschreibung - vermutlich ein verschobenes Feld.</value></data>
+  <data name="Quality_DuplicateId" xml:space="preserve"><value>Id '{0}' kommt {1}-mal in diesem Datensatz vor.</value></data>
+  <data name="Quality_BrandEntirelyUnknownPriority" xml:space="preserve"><value>Alle {0} Karten der Marke {1} haben BundlePriority.Unknown, obwohl andere Marken in diesem Datensatz echte KBA-Bestandszeilen zugeordnet bekommen haben - vermutlich eine Marken-Zuordnungslücke (z. B. ein fehlender BrandNames-Alias), keine echten 100 % nicht erfassten Modelle.</value></data>
+  <data name="Quality_BrandUnknownPriorityCountAboveBaseline" xml:space="preserve"><value>{0} hat {1} Karten mit BundlePriority.Unknown, mehr als die erwartete Baseline von {2} - möglicherweise braucht ein neu nicht zugeordnetes Modell einen Eintrag in model-aliases.json, oder ein bestehender Alias ist kaputt.</value></data>
+
   <data name="Argument_XlsxPath_Description" xml:space="preserve"><value>Pfad zur XLSX-Datei</value></data>
   <data name="Option_Rows_Description" xml:space="preserve"><value>Maximale Zeilenanzahl je Arbeitsblatt</value></data>
 

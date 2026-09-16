@@ -87,6 +87,14 @@
   <data name="InspectQuality_NoIssuesFound" xml:space="preserve"><value>No data quality issues found ({0} cards checked).</value></data>
   <data name="InspectQuality_IssueLine" xml:space="preserve"><value>[{0}] {1}: {2}</value></data>
   <data name="InspectQuality_IssuesFound" xml:space="preserve"><value>{0} data quality issue(s) found ({1} cards checked).</value></data>
+
+  <!-- Core: data quality checks (DataQualityChecker) -->
+  <data name="Quality_BodyTypeLooksLikeYear" xml:space="preserve"><value>BodyType '{0}' looks like a year or year range, not a body style - probably a shifted field.</value></data>
+  <data name="Quality_FuelTypeIsBareDigits" xml:space="preserve"><value>FuelType '{0}' is just digits, not a fuel/drivetrain description - probably a shifted field.</value></data>
+  <data name="Quality_DuplicateId" xml:space="preserve"><value>Id '{0}' appears {1} times in this dataset.</value></data>
+  <data name="Quality_BrandEntirelyUnknownPriority" xml:space="preserve"><value>Every one of {0} {1} cards has BundlePriority.Unknown, even though other brands in this dataset matched real KBA stock rows - likely a brand-matching gap (e.g. a missing BrandNames alias), not genuinely 100% untracked models.</value></data>
+  <data name="Quality_BrandUnknownPriorityCountAboveBaseline" xml:space="preserve"><value>{0} has {1} cards with BundlePriority.Unknown, more than the expected baseline of {2} - a newly unmatched model may need a model-aliases.json entry, or an existing alias broke.</value></data>
+
   <data name="Argument_XlsxPath_Description" xml:space="preserve"><value>Path to the XLSX file</value></data>
   <data name="Option_Rows_Description" xml:space="preserve"><value>Maximum number of rows per worksheet</value></data>
 

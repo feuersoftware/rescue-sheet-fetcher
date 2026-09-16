@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using Rettungskarten.Core.Localization;
 using Rettungskarten.Core.Models;
 
 namespace Rettungskarten.Core.Quality;
@@ -63,13 +64,13 @@ public static class DataQualityChecker
             if (card.BodyType is not null && YearOrYearRangePattern.IsMatch(card.BodyType))
             {
                 issues.Add(new DataQualityIssue(card.Id, card.Brand, DataQualityIssueKind.BodyTypeLooksLikeYear,
-                    $"BodyType '{card.BodyType}' looks like a year or year range, not a body style - probably a shifted field."));
+                    Strings.Get("Quality_BodyTypeLooksLikeYear", card.BodyType)));
             }
 
             if (card.FuelType is not null && BareDigitsPattern.IsMatch(card.FuelType))
             {
                 issues.Add(new DataQualityIssue(card.Id, card.Brand, DataQualityIssueKind.FuelTypeIsBareDigits,
-                    $"FuelType '{card.FuelType}' is just digits, not a fuel/drivetrain description - probably a shifted field."));
+                    Strings.Get("Quality_FuelTypeIsBareDigits", card.FuelType)));
             }
         }
 
@@ -77,7 +78,7 @@ public static class DataQualityChecker
         {
             issues.Add(new DataQualityIssue(duplicateGroup.Key, duplicateGroup.First().Brand,
                 DataQualityIssueKind.DuplicateId,
-                $"Id '{duplicateGroup.Key}' appears {duplicateGroup.Count()} times in this dataset."));
+                Strings.Get("Quality_DuplicateId", duplicateGroup.Key, duplicateGroup.Count())));
         }
 
         var anyPriorityAssigned = cards.Any(c => c.BundlePriority != BundlePriority.Unknown);
@@ -89,7 +90,7 @@ public static class DataQualityChecker
                 {
                     issues.Add(new DataQualityIssue(brandGroup.Key.ToString(), brandGroup.Key,
                         DataQualityIssueKind.BrandEntirelyUnknownPriority,
-                        $"Every one of {brandGroup.Count()} {brandGroup.Key} cards has BundlePriority.Unknown, even though other brands in this dataset matched real KBA stock rows - likely a brand-matching gap (e.g. a missing BrandNames alias), not genuinely 100% untracked models."));
+                        Strings.Get("Quality_BrandEntirelyUnknownPriority", brandGroup.Count(), brandGroup.Key)));
                 }
                 else if (KnownUnknownBaselines.TryGetValue(brandGroup.Key, out var baseline))
                 {
@@ -98,7 +99,7 @@ public static class DataQualityChecker
                     {
                         issues.Add(new DataQualityIssue(brandGroup.Key.ToString(), brandGroup.Key,
                             DataQualityIssueKind.BrandUnknownPriorityCountAboveBaseline,
-                            $"{brandGroup.Key} has {unknownCount} cards with BundlePriority.Unknown, more than the expected baseline of {baseline} - a newly unmatched model may need a model-aliases.json entry, or an existing alias broke."));
+                            Strings.Get("Quality_BrandUnknownPriorityCountAboveBaseline", brandGroup.Key, unknownCount, baseline)));
                     }
                 }
             }
