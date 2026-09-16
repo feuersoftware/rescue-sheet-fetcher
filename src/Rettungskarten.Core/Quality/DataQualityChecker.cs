@@ -8,7 +8,8 @@ public enum DataQualityIssueKind
     BodyTypeLooksLikeYear,
     FuelTypeIsBareDigits,
     DuplicateId,
-    BrandEntirelyUnknownPriority
+    BrandEntirelyUnknownPriority,
+    BrandUnknownPriorityCountAboveBaseline
 }
 
 public sealed record DataQualityIssue(string CardId, Brand Brand, DataQualityIssueKind Kind, string Description);
@@ -31,12 +32,27 @@ public sealed record DataQualityIssue(string CardId, Brand Brand, DataQualityIss
 /// from its Id, so two cards that hash-collide to the same Id would already have overwritten each other
 /// on disk by the time LoadAllAsync runs - only one card, one Id, survives to be loaded. This check only
 /// has something to find if the caller passes in cards merged from more than one store/run.
+///
+/// The BrandUnknownPriorityCountAboveBaseline check covers the gap BrandEntirelyUnknownPriority can't
+/// see: a brand that is *partially*, permanently unmatched by design rather than 100% unmatched by bug.
+/// Porsche is the known case (see model-aliases.json and commit b19a397's message) - its ultra-low-
+/// volume specials (GT2/GT2 RS/GT3/GT3 RS/R/Turbo, 718 Cayman GT4) are deliberately NOT aliased to a
+/// base KBA series, since lumping them into that series' aggregate fleet count would overstate their
+/// real commonality far more than for an ordinary trim. That fix took Porsche's Unknown count from
+/// 65/85 to a stable 19/85 - KnownUnknownBaselines records that 19 so a *further* increase (a new
+/// unmatched model, or an alias that broke) gets flagged instead of silently blending into "business as
+/// usual", which is exactly the kind of partial, permanent gap that only firing at 100% would miss.
 /// </summary>
 public static class DataQualityChecker
 {
     private static readonly Regex YearOrYearRangePattern = new(
         @"^(19|20)\d{2}(-(19|20)\d{2})?$", RegexOptions.Compiled);
     private static readonly Regex BareDigitsPattern = new(@"^\d+$", RegexOptions.Compiled);
+
+    private static readonly IReadOnlyDictionary<Brand, int> KnownUnknownBaselines = new Dictionary<Brand, int>
+    {
+        [Brand.Porsche] = 19
+    };
 
     public static IReadOnlyList<DataQualityIssue> CheckAll(IReadOnlyList<RescueCardMetadata> cards)
     {
@@ -74,6 +90,16 @@ public static class DataQualityChecker
                     issues.Add(new DataQualityIssue(brandGroup.Key.ToString(), brandGroup.Key,
                         DataQualityIssueKind.BrandEntirelyUnknownPriority,
                         $"Every one of {brandGroup.Count()} {brandGroup.Key} cards has BundlePriority.Unknown, even though other brands in this dataset matched real KBA stock rows - likely a brand-matching gap (e.g. a missing BrandNames alias), not genuinely 100% untracked models."));
+                }
+                else if (KnownUnknownBaselines.TryGetValue(brandGroup.Key, out var baseline))
+                {
+                    var unknownCount = brandGroup.Count(c => c.BundlePriority == BundlePriority.Unknown);
+                    if (unknownCount > baseline)
+                    {
+                        issues.Add(new DataQualityIssue(brandGroup.Key.ToString(), brandGroup.Key,
+                            DataQualityIssueKind.BrandUnknownPriorityCountAboveBaseline,
+                            $"{brandGroup.Key} has {unknownCount} cards with BundlePriority.Unknown, more than the expected baseline of {baseline} - a newly unmatched model may need a model-aliases.json entry, or an existing alias broke."));
+                    }
                 }
             }
         }

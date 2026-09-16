@@ -120,6 +120,72 @@ public class DataQualityCheckerTests
     }
 
     [Fact]
+    public void CheckAll_PorscheUnknownCountExceedsBaseline_ReportsIssue()
+    {
+        // Porsche's ultra-low-volume specials (GT2/GT3/Turbo/...) are deliberately left unmatched
+        // (see commit b19a397: 65/85 -> 19/85 Unknown), so 19 Unknown is expected. If that count grows
+        // - a new unmatched model, or a broken alias - this should surface instead of blending in.
+        var cards = new List<RescueCardMetadata>
+        {
+            Card("vw-golf-1", brand: Brand.VW, priority: BundlePriority.High)
+        };
+        for (var i = 0; i < 66; i++)
+        {
+            cards.Add(Card($"porsche-matched-{i}", brand: Brand.Porsche, priority: BundlePriority.Medium));
+        }
+        for (var i = 0; i < 20; i++)
+        {
+            cards.Add(Card($"porsche-unknown-{i}", brand: Brand.Porsche, priority: BundlePriority.Unknown));
+        }
+
+        var issues = DataQualityChecker.CheckAll(cards);
+
+        var issue = Assert.Single(issues);
+        Assert.Equal(DataQualityIssueKind.BrandUnknownPriorityCountAboveBaseline, issue.Kind);
+        Assert.Equal(Brand.Porsche, issue.Brand);
+    }
+
+    [Fact]
+    public void CheckAll_PorscheUnknownCountAtBaseline_NoIssue()
+    {
+        var cards = new List<RescueCardMetadata>
+        {
+            Card("vw-golf-1", brand: Brand.VW, priority: BundlePriority.High)
+        };
+        for (var i = 0; i < 66; i++)
+        {
+            cards.Add(Card($"porsche-matched-{i}", brand: Brand.Porsche, priority: BundlePriority.Medium));
+        }
+        for (var i = 0; i < 19; i++)
+        {
+            cards.Add(Card($"porsche-unknown-{i}", brand: Brand.Porsche, priority: BundlePriority.Unknown));
+        }
+
+        var issues = DataQualityChecker.CheckAll(cards);
+
+        Assert.Empty(issues);
+    }
+
+    [Fact]
+    public void CheckAll_BrandWithoutBaseline_ManyUnknownButNotAll_NoIssue()
+    {
+        // No baseline is configured for VW, so a partial-Unknown mix (unlike Porsche) doesn't trigger
+        // BrandUnknownPriorityCountAboveBaseline - only brands with a known, deliberate gap do.
+        var cards = new List<RescueCardMetadata>
+        {
+            Card("vw-golf-1", brand: Brand.VW, priority: BundlePriority.High)
+        };
+        for (var i = 0; i < 30; i++)
+        {
+            cards.Add(Card($"vw-unknown-{i}", brand: Brand.VW, priority: BundlePriority.Unknown));
+        }
+
+        var issues = DataQualityChecker.CheckAll(cards);
+
+        Assert.Empty(issues);
+    }
+
+    [Fact]
     public void CheckAll_NoAnomalies_ReturnsEmpty()
     {
         var cards = new[] { Card("vw-golf-1", bodyType: "Hatchback", fuelType: "GD"), Card("vw-golf-2", bodyType: "Sedan") };
