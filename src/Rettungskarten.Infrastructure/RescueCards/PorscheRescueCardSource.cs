@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Logging;
-using Rettungskarten.Core.Abstractions;
 using Rettungskarten.Core.Localization;
 using Rettungskarten.Core.Models;
 using Rettungskarten.Infrastructure.Http;
@@ -16,16 +15,21 @@ namespace Rettungskarten.Infrastructure.RescueCards;
 /// <see cref="PorscheDocumentsPageParser"/> for how the links are actually extracted from the page.
 /// </summary>
 public sealed class PorscheRescueCardSource(
-    IHttpClientFactory httpClientFactory, ILogger<PorscheRescueCardSource> logger) : IRescueCardSource
+    IHttpClientFactory httpClientFactory, ILogger<PorscheRescueCardSource> logger) : RescueCardSourceBase(httpClientFactory)
 {
     private const string DocumentsPageUrl =
         "https://www.porsche.com/international/accessoriesandservice/porscheservice/vehicleinformation/documents/";
 
-    public Brand Brand => Brand.Porsche;
+    public override Brand Brand => Brand.Porsche;
 
-    public async Task<IReadOnlyList<RescueCardEntry>> DiscoverAsync(CancellationToken ct)
+    // Both of Porsche's combined documents are large (the main one is ~55MB) - use the long-timeout
+    // client rather than the shared default one (see
+    // HttpServiceCollectionExtensions.AddRettungskartenHttpClient for why these are kept separate).
+    protected override string DownloadClientName => RettungskartenHttpClient.LargeDownloadName;
+
+    public override async Task<IReadOnlyList<RescueCardEntry>> DiscoverAsync(CancellationToken ct)
     {
-        var client = httpClientFactory.CreateClient(RettungskartenHttpClient.Name);
+        var client = HttpClientFactory.CreateClient(RettungskartenHttpClient.Name);
         var html = await client.GetStringAsync(DocumentsPageUrl, ct);
 
         var links = await PorscheDocumentsPageParser.ParseRescueDataSheetLinksAsync(html, ct);
@@ -55,14 +59,5 @@ public sealed class PorscheRescueCardSource(
 
         logger.LogInformation("{Message}", Strings.Get("RescueCards_Porsche_DiscoveredCount", entries.Count));
         return entries;
-    }
-
-    public async Task<RescueCardDownloadResult> DownloadAsync(RescueCardEntry entry, CancellationToken ct)
-    {
-        // Both of Porsche's combined documents are large (the main one is ~55MB) - use the
-        // long-timeout client rather than the shared default one (see
-        // HttpServiceCollectionExtensions.AddRettungskartenHttpClient for why these are kept separate).
-        var client = httpClientFactory.CreateClient(RettungskartenHttpClient.LargeDownloadName);
-        return await HttpDownloadHelper.DownloadPdfAsync(client, entry.DownloadUrl!, ct);
     }
 }

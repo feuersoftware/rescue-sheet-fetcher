@@ -1,7 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
-using Rettungskarten.Core.Abstractions;
 using Rettungskarten.Core.Localization;
 using Rettungskarten.Core.Models;
 using Rettungskarten.Infrastructure.Http;
@@ -19,16 +18,16 @@ namespace Rettungskarten.Infrastructure.RescueCards;
 /// kundeninformationen/rechtliches/rescue-data.html) when downloading a card manually.
 /// </summary>
 public sealed class VwRescueCardSource(
-    IHttpClientFactory httpClientFactory, ILogger<VwRescueCardSource> logger) : IRescueCardSource
+    IHttpClientFactory httpClientFactory, ILogger<VwRescueCardSource> logger) : RescueCardSourceBase(httpClientFactory)
 {
     private const string FeedUrl = "https://assets.feature-app.io/rescue-asset/vw-de/config/rescueEntries.json";
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
 
-    public Brand Brand => Brand.VW;
+    public override Brand Brand => Brand.VW;
 
-    public async Task<IReadOnlyList<RescueCardEntry>> DiscoverAsync(CancellationToken ct)
+    public override async Task<IReadOnlyList<RescueCardEntry>> DiscoverAsync(CancellationToken ct)
     {
-        var client = httpClientFactory.CreateClient(RettungskartenHttpClient.Name);
+        var client = HttpClientFactory.CreateClient(RettungskartenHttpClient.Name);
         var json = await client.GetStringAsync(FeedUrl, ct);
         var root = JsonSerializer.Deserialize<RescueEntriesRoot>(json, JsonOptions);
 
@@ -52,12 +51,6 @@ public sealed class VwRescueCardSource(
         logger.LogInformation("{Message}", Strings.Get("RescueCards_Vw_DiscoveredCount", entries.Count));
 
         return entries;
-    }
-
-    public async Task<RescueCardDownloadResult> DownloadAsync(RescueCardEntry entry, CancellationToken ct)
-    {
-        var client = httpClientFactory.CreateClient(RettungskartenHttpClient.Name);
-        return await HttpDownloadHelper.DownloadPdfAsync(client, entry.DownloadUrl!, ct);
     }
 
     private sealed record RescueEntriesRoot(RescueConfig? Config, List<RescueLanguageBucket>? Languages);

@@ -1,7 +1,6 @@
 using System.Text.RegularExpressions;
 using AngleSharp;
 using Microsoft.Extensions.Logging;
-using Rettungskarten.Core.Abstractions;
 using Rettungskarten.Core.Localization;
 using Rettungskarten.Core.Models;
 using Rettungskarten.Infrastructure.Http;
@@ -17,7 +16,7 @@ namespace Rettungskarten.Infrastructure.RescueCards;
 /// filename parser at all.
 /// </summary>
 public sealed class LamborghiniRescueCardSource(
-    IHttpClientFactory httpClientFactory, ILogger<LamborghiniRescueCardSource> logger) : IRescueCardSource
+    IHttpClientFactory httpClientFactory, ILogger<LamborghiniRescueCardSource> logger) : RescueCardSourceBase(httpClientFactory)
 {
     private const string PageUrl = "https://www.lamborghini.com/en-en/guide-for-emergency-responders";
 
@@ -28,11 +27,11 @@ public sealed class LamborghiniRescueCardSource(
     private static readonly Regex RescueDataSheetPattern = new(
         @"^(.*?)[\s_]+RESCUE[\s_]DATA[\s_]SHEET", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-    public Brand Brand => Brand.Lamborghini;
+    public override Brand Brand => Brand.Lamborghini;
 
-    public async Task<IReadOnlyList<RescueCardEntry>> DiscoverAsync(CancellationToken ct)
+    public override async Task<IReadOnlyList<RescueCardEntry>> DiscoverAsync(CancellationToken ct)
     {
-        var client = httpClientFactory.CreateClient(RettungskartenHttpClient.Name);
+        var client = HttpClientFactory.CreateClient(RettungskartenHttpClient.Name);
         var html = await client.GetStringAsync(PageUrl, ct);
 
         var context = BrowsingContext.New(Configuration.Default);
@@ -67,11 +66,5 @@ public sealed class LamborghiniRescueCardSource(
 
         logger.LogInformation("{Message}", Strings.Get("RescueCards_Lamborghini_DiscoveredCount", entries.Count));
         return entries;
-    }
-
-    public async Task<RescueCardDownloadResult> DownloadAsync(RescueCardEntry entry, CancellationToken ct)
-    {
-        var client = httpClientFactory.CreateClient(RettungskartenHttpClient.Name);
-        return await HttpDownloadHelper.DownloadPdfAsync(client, entry.DownloadUrl!, ct);
     }
 }

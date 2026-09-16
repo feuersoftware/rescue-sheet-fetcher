@@ -2,7 +2,6 @@ using System.Text.RegularExpressions;
 using AngleSharp;
 using AngleSharp.Dom;
 using Microsoft.Extensions.Logging;
-using Rettungskarten.Core.Abstractions;
 using Rettungskarten.Core.Localization;
 using Rettungskarten.Core.Models;
 using Rettungskarten.Infrastructure.Http;
@@ -35,7 +34,7 @@ namespace Rettungskarten.Infrastructure.RescueCards;
 /// warning) rather than trusted.
 /// </summary>
 public sealed class BentleyRescueCardSource(
-    IHttpClientFactory httpClientFactory, ILogger<BentleyRescueCardSource> logger) : IRescueCardSource
+    IHttpClientFactory httpClientFactory, ILogger<BentleyRescueCardSource> logger) : RescueCardSourceBase(httpClientFactory)
 {
     private const string PageUrl = "https://www.bentleymotors.com/en/pages/other-vehicle-information.html";
     private const string GermanLabel = "DEUTSCHE";
@@ -43,11 +42,11 @@ public sealed class BentleyRescueCardSource(
     private static readonly Regex PowertrainPattern = new(@"\((ICE|HYBRID)\)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly Regex ParentheticalPattern = new(@"\s*\([^)]*\)", RegexOptions.Compiled);
 
-    public Brand Brand => Brand.Bentley;
+    public override Brand Brand => Brand.Bentley;
 
-    public async Task<IReadOnlyList<RescueCardEntry>> DiscoverAsync(CancellationToken ct)
+    public override async Task<IReadOnlyList<RescueCardEntry>> DiscoverAsync(CancellationToken ct)
     {
-        var client = httpClientFactory.CreateClient(RettungskartenHttpClient.Name);
+        var client = HttpClientFactory.CreateClient(RettungskartenHttpClient.Name);
         var html = await client.GetStringAsync(PageUrl, ct);
 
         var context = BrowsingContext.New(Configuration.Default);
@@ -100,11 +99,5 @@ public sealed class BentleyRescueCardSource(
 
         logger.LogInformation("{Message}", Strings.Get("RescueCards_Bentley_DiscoveredCount", entries.Count));
         return entries;
-    }
-
-    public async Task<RescueCardDownloadResult> DownloadAsync(RescueCardEntry entry, CancellationToken ct)
-    {
-        var client = httpClientFactory.CreateClient(RettungskartenHttpClient.Name);
-        return await HttpDownloadHelper.DownloadPdfAsync(client, entry.DownloadUrl!, ct);
     }
 }

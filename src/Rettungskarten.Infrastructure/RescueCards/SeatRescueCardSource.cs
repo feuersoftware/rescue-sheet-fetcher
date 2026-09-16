@@ -1,6 +1,5 @@
 using AngleSharp;
 using Microsoft.Extensions.Logging;
-using Rettungskarten.Core.Abstractions;
 using Rettungskarten.Core.Localization;
 using Rettungskarten.Core.Models;
 using Rettungskarten.Infrastructure.Http;
@@ -14,16 +13,16 @@ namespace Rettungskarten.Infrastructure.RescueCards;
 /// sub-pages that in turn list direct PDF links using the same filename convention as VW/Audi/Cupra.
 /// </summary>
 public sealed class SeatRescueCardSource(
-    IHttpClientFactory httpClientFactory, ILogger<SeatRescueCardSource> logger) : IRescueCardSource
+    IHttpClientFactory httpClientFactory, ILogger<SeatRescueCardSource> logger) : RescueCardSourceBase(httpClientFactory)
 {
     private const string OverviewUrl = "https://www.seat.de/kontakt/downloads/rettungsblaetter";
     private const string GeneralGuideModelName = "General Guide";
 
-    public Brand Brand => Brand.Seat;
+    public override Brand Brand => Brand.Seat;
 
-    public async Task<IReadOnlyList<RescueCardEntry>> DiscoverAsync(CancellationToken ct)
+    public override async Task<IReadOnlyList<RescueCardEntry>> DiscoverAsync(CancellationToken ct)
     {
-        var client = httpClientFactory.CreateClient(RettungskartenHttpClient.Name);
+        var client = HttpClientFactory.CreateClient(RettungskartenHttpClient.Name);
         var context = BrowsingContext.New(Configuration.Default);
 
         var overviewHtml = await client.GetStringAsync(OverviewUrl, ct);
@@ -95,11 +94,5 @@ public sealed class SeatRescueCardSource(
         }
 
         return entries;
-    }
-
-    public async Task<RescueCardDownloadResult> DownloadAsync(RescueCardEntry entry, CancellationToken ct)
-    {
-        var client = httpClientFactory.CreateClient(RettungskartenHttpClient.Name);
-        return await HttpDownloadHelper.DownloadPdfAsync(client, entry.DownloadUrl!, ct);
     }
 }

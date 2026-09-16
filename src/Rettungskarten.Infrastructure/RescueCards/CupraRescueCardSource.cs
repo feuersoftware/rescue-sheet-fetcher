@@ -1,6 +1,5 @@
 using AngleSharp;
 using Microsoft.Extensions.Logging;
-using Rettungskarten.Core.Abstractions;
 using Rettungskarten.Core.Localization;
 using Rettungskarten.Core.Models;
 using Rettungskarten.Infrastructure.Http;
@@ -16,15 +15,15 @@ namespace Rettungskarten.Infrastructure.RescueCards;
 /// would only add metadata-only entries for models already covered here from the CH catalog.
 /// </summary>
 public sealed class CupraRescueCardSource(
-    IHttpClientFactory httpClientFactory, ILogger<CupraRescueCardSource> logger) : IRescueCardSource
+    IHttpClientFactory httpClientFactory, ILogger<CupraRescueCardSource> logger) : RescueCardSourceBase(httpClientFactory)
 {
     private const string PageUrl = "https://www.cupraofficial.ch/de/services/rettungsblaetter";
 
-    public Brand Brand => Brand.Cupra;
+    public override Brand Brand => Brand.Cupra;
 
-    public async Task<IReadOnlyList<RescueCardEntry>> DiscoverAsync(CancellationToken ct)
+    public override async Task<IReadOnlyList<RescueCardEntry>> DiscoverAsync(CancellationToken ct)
     {
-        var client = httpClientFactory.CreateClient(RettungskartenHttpClient.Name);
+        var client = HttpClientFactory.CreateClient(RettungskartenHttpClient.Name);
         var html = await client.GetStringAsync(PageUrl, ct);
 
         var context = BrowsingContext.New(Configuration.Default);
@@ -52,11 +51,5 @@ public sealed class CupraRescueCardSource(
 
         logger.LogInformation("{Message}", Strings.Get("RescueCards_Cupra_DiscoveredCount", entries.Count));
         return entries;
-    }
-
-    public async Task<RescueCardDownloadResult> DownloadAsync(RescueCardEntry entry, CancellationToken ct)
-    {
-        var client = httpClientFactory.CreateClient(RettungskartenHttpClient.Name);
-        return await HttpDownloadHelper.DownloadPdfAsync(client, entry.DownloadUrl!, ct);
     }
 }

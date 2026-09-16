@@ -1,6 +1,5 @@
 using AngleSharp;
 using Microsoft.Extensions.Logging;
-using Rettungskarten.Core.Abstractions;
 using Rettungskarten.Core.Localization;
 using Rettungskarten.Core.Models;
 using Rettungskarten.Infrastructure.Http;
@@ -13,15 +12,15 @@ namespace Rettungskarten.Infrastructure.RescueCards;
 /// required - the simplest of the five brand sources. Filenames follow the same convention as VW/Cupra.
 /// </summary>
 public sealed class AudiRescueCardSource(
-    IHttpClientFactory httpClientFactory, ILogger<AudiRescueCardSource> logger) : IRescueCardSource
+    IHttpClientFactory httpClientFactory, ILogger<AudiRescueCardSource> logger) : RescueCardSourceBase(httpClientFactory)
 {
     private const string PageUrl = "https://www.audi.com/en/information-on-accident-rescue-17123";
 
-    public Brand Brand => Brand.Audi;
+    public override Brand Brand => Brand.Audi;
 
-    public async Task<IReadOnlyList<RescueCardEntry>> DiscoverAsync(CancellationToken ct)
+    public override async Task<IReadOnlyList<RescueCardEntry>> DiscoverAsync(CancellationToken ct)
     {
-        var client = httpClientFactory.CreateClient(RettungskartenHttpClient.Name);
+        var client = HttpClientFactory.CreateClient(RettungskartenHttpClient.Name);
         var html = await client.GetStringAsync(PageUrl, ct);
 
         var context = BrowsingContext.New(Configuration.Default);
@@ -50,11 +49,5 @@ public sealed class AudiRescueCardSource(
 
         logger.LogInformation("{Message}", Strings.Get("RescueCards_Audi_DiscoveredCount", entries.Count));
         return entries;
-    }
-
-    public async Task<RescueCardDownloadResult> DownloadAsync(RescueCardEntry entry, CancellationToken ct)
-    {
-        var client = httpClientFactory.CreateClient(RettungskartenHttpClient.Name);
-        return await HttpDownloadHelper.DownloadPdfAsync(client, entry.DownloadUrl!, ct);
     }
 }

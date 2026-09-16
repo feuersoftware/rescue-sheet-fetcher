@@ -3,7 +3,6 @@ using System.Text.RegularExpressions;
 using AngleSharp;
 using AngleSharp.Dom;
 using Microsoft.Extensions.Logging;
-using Rettungskarten.Core.Abstractions;
 using Rettungskarten.Core.Localization;
 using Rettungskarten.Core.Models;
 using Rettungskarten.Infrastructure.Http;
@@ -21,7 +20,7 @@ namespace Rettungskarten.Infrastructure.RescueCards;
 /// free-text file title, which only supplies the generation/variant label (e.g. "(2016-2021)").
 /// </summary>
 public sealed class SkodaRescueCardSource(
-    IHttpClientFactory httpClientFactory, ILogger<SkodaRescueCardSource> logger) : IRescueCardSource
+    IHttpClientFactory httpClientFactory, ILogger<SkodaRescueCardSource> logger) : RescueCardSourceBase(httpClientFactory)
 {
     private const string OverviewUrl = "https://www.skoda-auto.de/service/rettungskraefte";
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
@@ -63,11 +62,11 @@ public sealed class SkodaRescueCardSource(
         return electricTrimMatch.Index > vocabularyMatchIndex ? electricTrimMatch.Value : vocabularyMatch;
     }
 
-    public Brand Brand => Brand.Skoda;
+    public override Brand Brand => Brand.Skoda;
 
-    public async Task<IReadOnlyList<RescueCardEntry>> DiscoverAsync(CancellationToken ct)
+    public override async Task<IReadOnlyList<RescueCardEntry>> DiscoverAsync(CancellationToken ct)
     {
-        var client = httpClientFactory.CreateClient(RettungskartenHttpClient.Name);
+        var client = HttpClientFactory.CreateClient(RettungskartenHttpClient.Name);
         var context = BrowsingContext.New(Configuration.Default);
 
         var overviewHtml = await client.GetStringAsync(OverviewUrl, ct);
@@ -152,12 +151,6 @@ public sealed class SkodaRescueCardSource(
         }
 
         return results;
-    }
-
-    public async Task<RescueCardDownloadResult> DownloadAsync(RescueCardEntry entry, CancellationToken ct)
-    {
-        var client = httpClientFactory.CreateClient(RettungskartenHttpClient.Name);
-        return await HttpDownloadHelper.DownloadPdfAsync(client, entry.DownloadUrl!, ct);
     }
 
     private static T? TryDeserialize<T>(string? json) where T : class
