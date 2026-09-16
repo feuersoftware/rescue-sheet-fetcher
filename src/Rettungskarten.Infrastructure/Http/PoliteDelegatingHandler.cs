@@ -24,7 +24,7 @@ public sealed class PoliteDelegatingHandler(
             logger.LogDebug("{Message}", Strings.Get("Http_WaitingForRateLimitSlot", host, delay));
         }
 
-        await rateLimiter.WaitAsync(host, delay, cancellationToken);
+        using var slot = await rateLimiter.AcquireAsync(host, delay, cancellationToken);
         return await base.SendAsync(request, cancellationToken);
     }
 }
