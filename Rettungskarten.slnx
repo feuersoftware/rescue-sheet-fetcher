@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Rettungskarten.Cli/Rettungskarten.Cli.csproj" />
+    <Project Path="src/Rettungskarten.Core/Rettungskarten.Core.csproj" />
+    <Project Path="src/Rettungskarten.Infrastructure/Rettungskarten.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Rettungskarten.Tests/Rettungskarten.Tests.csproj" />
+  </Folder>
+</Solution>

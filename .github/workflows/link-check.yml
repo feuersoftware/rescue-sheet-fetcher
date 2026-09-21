@@ -1,0 +1,62 @@
+name: Link check
+
+on:
+  schedule:
+    # Every Monday at 06:00 UTC. A failure here means a manufacturer or KBA changed their site (a
+    # source page moved, its markup changed shape, or a link stopped resolving) - not that the app's
+    # own logic regressed, since nothing about the code changes between scheduled runs.
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+jobs:
+  check-links:
+    name: Check rescue-card and stock sources
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+
+      # Discovery-only (no PDF downloads) against every brand source currently registered in
+      # CompositionRoot - `--brand all` iterates the Brand enum, so a newly added brand is covered
+      # automatically without editing this workflow. This exercises each brand's real overview/model
+      # page URLs exactly like a normal `fetch rescue-cards` run would (same HTTP client, same
+      # per-host politeness delays), just without pulling every PDF on a weekly schedule.
+      #
+      # Exit code is non-zero only for an *unexpected* discovery failure (see
+      # RunSummaryPrinter.HasUnexpectedFailures) - a not-yet-implemented brand stub or Cupra AT's
+      # known auth-gateway redirect doesn't fail this job, only a source page that's actually
+      # moved/broken does.
+      - name: Check rescue-card sources (dry run, all brands)
+        run: >
+          dotnet run --project src/Rettungskarten.Cli --no-build --configuration Release --
+          fetch rescue-cards --brand all --dry-run --output "${{ runner.temp }}/rescue-cards"
+
+      # Discovery (even in --dry-run) already populates BodyType/FuelType/Doors from each source's
+      # free text, so this runs straight against the previous step's output with no extra downloads.
+      # Catches the class of bug a "did discovery return results" check can't - see
+      # DataQualityChecker for what's checked and the real Audi filename-parsing bug that motivated it.
+      - name: Check rescue-card data quality
+        run: >
+          dotnet run --project src/Rettungskarten.Cli --no-build --configuration Release --
+          inspect quality --rescue-cards-path "${{ runner.temp }}/rescue-cards"
+
+      # Resolves and downloads the current year's KBA FZ12 stock file. KbaVehicleStockSource scrapes
+      # the real download link (including its unpredictable `v=` query parameter) from the KBA
+      # product page rather than hardcoding it, so this also catches KBA restructuring that page.
+      - name: Check vehicle stock source (current year)
+        run: >
+          dotnet run --project src/Rettungskarten.Cli --no-build --configuration Release --
+          fetch stock --year "$(date -u +%Y)" --output "${{ runner.temp }}/stock"

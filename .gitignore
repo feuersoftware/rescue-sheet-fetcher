@@ -1,0 +1,12 @@
+# Build artifacts
+bin/
+obj/
+[Bb]in/
+[Oo]bj/
+.vs/
+
+# Fetched/generated data - not source, regenerate via `fetch` commands
+data/
+
+# User-specific
+*.user

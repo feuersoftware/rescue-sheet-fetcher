@@ -1,0 +1,79 @@
+{
+  "groups": [
+    {
+      "groupId": "mqb-a0-polo-family",
+      "platformName": "MQB A0",
+      "members": [
+        { "brand": "VW", "modelName": "Polo" },
+        { "brand": "Seat", "modelName": "Ibiza" },
+        { "brand": "Skoda", "modelName": "Fabia" }
+      ]
+    },
+    {
+      "groupId": "mqb-golf-family",
+      "platformName": "MQB",
+      "members": [
+        { "brand": "VW", "modelName": "Golf" },
+        { "brand": "Seat", "modelName": "Leon" },
+        { "brand": "Skoda", "modelName": "Octavia" },
+        { "brand": "Audi", "modelName": "A3" }
+      ]
+    },
+    {
+      "groupId": "mqb-a0-compact-suv-family",
+      "platformName": "MQB A0",
+      "members": [
+        { "brand": "VW", "modelName": "T-Roc" },
+        { "brand": "VW", "modelName": "Taigo" },
+        { "brand": "Seat", "modelName": "Arona" },
+        { "brand": "Skoda", "modelName": "Kamiq" }
+      ]
+    },
+    {
+      "groupId": "mqb-evo-midsize-suv-family",
+      "platformName": "MQB Evo",
+      "members": [
+        { "brand": "VW", "modelName": "Tiguan" },
+        { "brand": "Seat", "modelName": "Ateca" },
+        { "brand": "Cupra", "modelName": "Ateca" },
+        { "brand": "Skoda", "modelName": "Karoq" }
+      ]
+    },
+    {
+      "groupId": "mqb-evo-large-suv-family",
+      "platformName": "MQB Evo (7-Sitzer)",
+      "members": [
+        { "brand": "VW", "modelName": "Tayron" },
+        { "brand": "Seat", "modelName": "Tarraco" },
+        { "brand": "Cupra", "modelName": "Terramar" },
+        { "brand": "Skoda", "modelName": "Kodiaq" }
+      ]
+    },
+    {
+      "groupId": "mqb-passat-family",
+      "platformName": "MQB (Mittelklasse Kombi/Limousine)",
+      "members": [
+        { "brand": "VW", "modelName": "Passat" },
+        { "brand": "Skoda", "modelName": "Superb" },
+        { "brand": "Audi", "modelName": "A4" }
+      ]
+    },
+    {
+      "groupId": "meb-compact-family",
+      "platformName": "MEB (vollelektrisch, kompakt)",
+      "members": [
+        { "brand": "VW", "modelName": "ID.3" },
+        { "brand": "Cupra", "modelName": "Born" }
+      ]
+    },
+    {
+      "groupId": "meb-suv-family",
+      "platformName": "MEB (vollelektrisch, SUV)",
+      "members": [
+        { "brand": "VW", "modelName": "ID.4" },
+        { "brand": "Skoda", "modelName": "Enyaq" },
+        { "brand": "Audi", "modelName": "Q4" }
+      ]
+    }
+  ]
+}

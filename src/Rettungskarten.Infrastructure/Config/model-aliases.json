@@ -1,0 +1,31 @@
+{
+  "aliases": [
+    { "brand": "VW", "modelName": "ID.3", "kbaModelSeries": "ID.3" },
+    { "brand": "VW", "modelName": "ID.4", "kbaModelSeries": "ID.4, ID.5" },
+    { "brand": "VW", "modelName": "ID.5", "kbaModelSeries": "ID.4, ID.5" },
+    { "brand": "VW", "modelName": "T-Roc", "kbaModelSeries": "T-ROC" },
+    { "brand": "VW", "modelName": "T-Cross", "kbaModelSeries": "T-CROSS" },
+
+    { "brand": "Porsche", "modelName": "911 Carrera", "kbaModelSeries": "911" },
+    { "brand": "Porsche", "modelName": "911 G-Model", "kbaModelSeries": "911" },
+    { "brand": "Porsche", "modelName": "911 Targa 4", "kbaModelSeries": "911" },
+    { "brand": "Porsche", "modelName": "911 Urmodell", "kbaModelSeries": "911" },
+    { "brand": "Porsche", "modelName": "964", "kbaModelSeries": "911" },
+    { "brand": "Porsche", "modelName": "993", "kbaModelSeries": "911" },
+    { "brand": "Porsche", "modelName": "996", "kbaModelSeries": "911" },
+    { "brand": "Porsche", "modelName": "986", "kbaModelSeries": "BOXSTER" },
+    { "brand": "Porsche", "modelName": "Cayenne E-Hybrid", "kbaModelSeries": "CAYENNE" },
+    { "brand": "Porsche", "modelName": "Cayenne S E-Hybrid", "kbaModelSeries": "CAYENNE" },
+    { "brand": "Porsche", "modelName": "Cayenne S Hybrid", "kbaModelSeries": "CAYENNE" },
+    { "brand": "Porsche", "modelName": "Panamera S E-Hybrid", "kbaModelSeries": "PANAMERA" },
+    { "brand": "Porsche", "modelName": "Panamera S Hybrid", "kbaModelSeries": "PANAMERA" },
+    { "brand": "Porsche", "modelName": "Panamera Sport Turismo", "kbaModelSeries": "PANAMERA" },
+    { "brand": "Porsche", "modelName": "Taycan Cross Turismo", "kbaModelSeries": "TAYCAN" },
+
+    { "brand": "Bentley", "modelName": "NEW CONTINENTAL GT", "kbaModelSeries": "CONTINENTAL" },
+    { "brand": "Bentley", "modelName": "NEW CONTINENTAL GT CONVERTIBLE", "kbaModelSeries": "CONTINENTAL" },
+    { "brand": "Bentley", "modelName": "NEW CONTINENTAL GTC", "kbaModelSeries": "CONTINENTAL" },
+
+    { "brand": "Lamborghini", "modelName": "Urus SE", "kbaModelSeries": "URUS" }
+  ]
+}
