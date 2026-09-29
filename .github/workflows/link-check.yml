@@ -12,7 +12,7 @@ jobs:
   check-links:
     name: Check rescue-card and stock sources
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
 
     steps:
       - name: Checkout
@@ -34,6 +34,11 @@ jobs:
       # automatically without editing this workflow. This exercises each brand's real overview/model
       # page URLs exactly like a normal `fetch rescue-cards` run would (same HTTP client, same
       # per-host politeness delays), just without pulling every PDF on a weekly schedule.
+      #
+      # With every brand running in parallel this takes about 5 minutes (measured 2026-09-29): the
+      # slowest single source is Ford, whose discovery queries the fordserviceinfo.com lookup once
+      # per European vehicle line and model year (~210 requests at the 1 request/second per-host
+      # politeness delay). Hosts are rate-limited independently, so more brands don't add up.
       #
       # Exit code is non-zero only for an *unexpected* discovery failure (see
       # RunSummaryPrinter.HasUnexpectedFailures) - a not-yet-implemented brand stub or Cupra AT's

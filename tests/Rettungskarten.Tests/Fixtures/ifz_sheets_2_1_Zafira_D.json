@@ -1,0 +1,23 @@
+[
+    {
+        "fabrikat_nr": 1,
+        "land_id": 2,
+        "auto_typ": "Zafira_D",
+        "detail_text": "Zafira Life (2019)",
+        "detail_file": "ret_eng_pdf/eng_opelvauxhall_zafira_life"
+    },
+    {
+        "fabrikat_nr": 1,
+        "land_id": 2,
+        "auto_typ": "Zafira_D",
+        "detail_text": "Zafira D electric 50 kWh (2020)",
+        "detail_file": "ret_eng_pdf/eng_ov_zafira_d_e_life_50"
+    },
+    {
+        "fabrikat_nr": 1,
+        "land_id": 2,
+        "auto_typ": "Zafira_D",
+        "detail_text": "Zafira D electric 75 kWh (2020)",
+        "detail_file": "ret_eng_pdf/eng_ov_zafira_d_e_life_75"
+    }
+]

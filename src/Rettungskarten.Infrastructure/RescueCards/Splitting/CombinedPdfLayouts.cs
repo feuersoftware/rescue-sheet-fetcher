@@ -11,7 +11,14 @@ public static class CombinedPdfLayouts
 {
     public static IReadOnlyList<ICombinedPdfLayout> All { get; } =
     [
-        new PorscheCombinedPdfLayout()
+        new PorscheCombinedPdfLayout(),
+        new MaseratiCombinedPdfLayout(),
+        new DaihatsuCombinedPdfLayout(),
+        new SubaruCombinedPdfLayout(),
+        new HyundaiCombinedPdfLayout(),
+        new KiaCombinedPdfLayout(),
+        new NissanCombinedPdfLayout(),
+        new FordCombinedPdfLayout()
     ];
 
     public static IReadOnlyList<ICombinedPdfLayout> For(Brand brand) =>

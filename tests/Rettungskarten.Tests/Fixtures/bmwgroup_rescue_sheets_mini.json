@@ -1,0 +1,128 @@
+{
+ "meta": {
+  "count": 7,
+  "limit": 1000,
+  "offset": 0
+ },
+ "data": [
+  {
+   "id": "a8a63427-7b1c-4739-9b04-1edcb33b9a9c",
+   "brand": "mini",
+   "bodyType": {
+    "id": "59b0bbac-9d5e-49f0-82cc-fafd978da197",
+    "translationKey": "article.public-mini-clubman.Name",
+    "name": "clubman"
+   },
+   "series": {
+    "id": "5a4a3d83-cd72-48c0-ac59-b5e82cdbf723",
+    "translationKey": "F65",
+    "name": "F65"
+   },
+   "key": "Rescue-information/mini/clubman/F65/VUL-MINI_Cooper_F65_Hatchback_2024_5d_GD_de-DE.pdf",
+   "language": "de-DE",
+   "name": "Mini Cooper F65 (ab 07/2024)"
+  },
+  {
+   "id": "043fde11-ddab-4632-a707-ff3f74188246",
+   "brand": "mini",
+   "bodyType": {
+    "id": "59b0bbac-9d5e-49f0-82cc-fafd978da197",
+    "translationKey": "article.public-mini-clubman.Name",
+    "name": "clubman"
+   },
+   "series": {
+    "id": "b87f64e6-23a9-44c1-9adb-832c4d652c1a",
+    "translationKey": "portlet.private-rescue-information-mini-clubman-f54-browser.title",
+    "name": "f54"
+   },
+   "key": "Rescue-information/mini/clubman/f54/de_MINI-Clubman-F54.pdf",
+   "language": "de-DE",
+   "name": "MINI Clubman F54 (seit 10/2015)"
+  },
+  {
+   "id": "2618be1f-9df8-41bd-9484-5eab3599203a",
+   "brand": "mini",
+   "bodyType": {
+    "id": "785176ff-1349-4037-b6fe-1a01d26aea49",
+    "translationKey": "article.public-mini-coupe.Name",
+    "name": "coupe"
+   },
+   "series": {
+    "id": "20ca8b64-58b3-459f-8e3c-3222b615e68b",
+    "translationKey": "portlet.private-rescue-information-mini-coupe-e-browser.title",
+    "name": "e"
+   },
+   "key": "Rescue-information/mini/coupe/e/de_MINI-E.pdf",
+   "language": "de-DE",
+   "name": "MINI Coupé E (06/2008 - 06/2009)"
+  },
+  {
+   "id": "adaca354-7217-41ac-9613-d505161b18df",
+   "brand": "mini",
+   "bodyType": {
+    "id": "429a4819-c45f-46b5-ad20-ba4bb618a792",
+    "translationKey": "article.public-mini-coupe.Name",
+    "name": "coupe"
+   },
+   "series": {
+    "id": "6f4d0971-6d64-4c13-9bd8-796c355b8851",
+    "translationKey": "portlet.private-rescue-information-mini-coupe-r53-browser.title",
+    "name": "r53"
+   },
+   "key": "Rescue-information/mini/coupe/r53/de_MINI-Cooper-S-R53.pdf",
+   "language": "de-DE",
+   "name": "MINI R53 (Cooper S) (12/2001 - 11/2006)"
+  },
+  {
+   "id": "4e9d2d73-c4be-46cc-9430-3f7128d8d090",
+   "brand": "mini",
+   "bodyType": {
+    "id": "e5050164-d32c-4806-b4c7-e882c9cea68d",
+    "translationKey": "article.public-mini-coupe.Name",
+    "name": "coupe"
+   },
+   "series": {
+    "id": "79e82097-1e59-4510-aae4-2bebec39d8e6",
+    "translationKey": "portlet.private-rescue-information-mini-coupe-f56-browser.title",
+    "name": "f56"
+   },
+   "key": "Rescue-information/mini/coupe/f56/VUL-REK-P-MINI_F56BN_de-DE.pdf",
+   "language": "de-DE",
+   "name": "MINI Cooper SE F56 BEV"
+  },
+  {
+   "id": "feb330a4-93f5-4527-a805-2b301b7e39a5",
+   "brand": "mini",
+   "bodyType": {
+    "id": "a6859f3c-1a16-44c3-835b-76c25e55b6dd",
+    "translationKey": "article.public-mini-countryman.Name",
+    "name": "countryman"
+   },
+   "series": {
+    "id": "31c914f8-f9d4-49c8-864b-5b4bf633a53a",
+    "translationKey": "U25",
+    "name": "u25"
+   },
+   "key": "Rescue-information/mini/countryman/u25/MINI_Countryman_U25_SUV_2023_5d_GD_de-DE.pdf",
+   "language": "de-DE",
+   "name": "MINI Countryman U25 ICE (ab 11/2023)"
+  },
+  {
+   "id": "1b9ddabf-7d38-42e3-84d7-cb38d5b7c47c",
+   "brand": "mini",
+   "bodyType": {
+    "id": "f09ad628-722e-4cb6-aa96-016e7321275f",
+    "translationKey": "article.public-mini-convertible.Name",
+    "name": "convertible"
+   },
+   "series": {
+    "id": "51818207-2211-426c-8422-76d07b8df1c3",
+    "translationKey": "portlet.private-rescue-information-mini-convertible-r59-browser.title",
+    "name": "r59"
+   },
+   "key": "Rescue-information/mini/convertible/r59/de_MINI-Roadster-R59.pdf",
+   "language": "de-DE",
+   "name": "MINI Roadster R59 (seit 11/2011)"
+  }
+ ]
+}

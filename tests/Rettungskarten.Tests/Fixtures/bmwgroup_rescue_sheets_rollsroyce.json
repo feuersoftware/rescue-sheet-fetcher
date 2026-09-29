@@ -1,0 +1,77 @@
+{
+ "meta": {
+  "count": 4,
+  "limit": 1000,
+  "offset": 0
+ },
+ "data": [
+  {
+   "id": "c324891f-35f8-4e59-ad52-c5ea2b127c21",
+   "brand": "rolls-royce",
+   "bodyType": {
+    "id": "073a5003-1a7f-4337-9af7-3691336a872f",
+    "translationKey": "article.public-rolls-royce-sedan.Name",
+    "name": "sedan"
+   },
+   "series": {
+    "id": "a5b4eca8-9b9d-4df6-9411-b34b465f1b0b",
+    "translationKey": "",
+    "name": ""
+   },
+   "key": "Rescue-information/rolls-royce/sedan/Rolls Royce Cullinan RR31_de.pdf",
+   "language": "de-DE",
+   "name": "Rolls Royce Cullinan (RR31) (ab 08/2018)"
+  },
+  {
+   "id": "656d1e85-339d-4241-a70c-598a9097c1b9",
+   "brand": "rolls-royce",
+   "bodyType": {
+    "id": "d35a4349-267a-44f1-a844-e57e489f2aa6",
+    "translationKey": "article.public-rolls-royce-coupe.Name",
+    "name": "coupe"
+   },
+   "series": {
+    "id": "549668f7-0528-4c52-85b0-ecec12d06266",
+    "translationKey": "",
+    "name": ""
+   },
+   "key": "Rescue-information/rolls-royce/coupe/Rolls_Royce_RR06_Dawn_de.pdf",
+   "language": "de-DE",
+   "name": "Rolls-Royce Dawn(RR06)(seit 02/2016)"
+  },
+  {
+   "id": "b5690bb2-e40f-4d6f-abe3-273b68e8705b",
+   "brand": "rolls-royce",
+   "bodyType": {
+    "id": "d35a4349-267a-44f1-a844-e57e489f2aa6",
+    "translationKey": "article.public-rolls-royce-coupe.Name",
+    "name": "coupe"
+   },
+   "series": {
+    "id": "549668f7-0528-4c52-85b0-ecec12d06266",
+    "translationKey": "",
+    "name": ""
+   },
+   "key": "Rescue-information/rolls-royce/coupe/VUL-REK-P-RR25_BEVE_de-DE.pdf",
+   "language": "de-DE",
+   "name": "Rolls Royce Spectre RR25 BEVE (seit 08/2023)"
+  },
+  {
+   "id": "4beaf11f-e752-4d97-a81b-04e43fd5a358",
+   "brand": "rolls-royce",
+   "bodyType": {
+    "id": "f827c19d-4838-441a-aaa3-8912dfd2ea7c",
+    "translationKey": "article.public-rolls-royce-convertible.Name",
+    "name": "convertible"
+   },
+   "series": {
+    "id": "7849dd72-1694-4262-8069-e493315738d0",
+    "translationKey": "",
+    "name": ""
+   },
+   "key": "Rescue-information/rolls-royce/convertible/de_RR2-Phantom-Cabrio.pdf",
+   "language": "de-DE",
+   "name": "Rolls-Royce Phantom Drophead Coupé (RR 2) (seit 06/2007)"
+  }
+ ]
+}

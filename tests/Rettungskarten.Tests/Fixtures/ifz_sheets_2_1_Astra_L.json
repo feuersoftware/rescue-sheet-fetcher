@@ -1,0 +1,44 @@
+[
+    {
+        "fabrikat_nr": 1,
+        "land_id": 2,
+        "auto_typ": "Astra_L",
+        "detail_text": "Astra L 5-Door (2021)",
+        "detail_file": "ret_eng_pdf/eng_ov_astra_l_hatch"
+    },
+    {
+        "fabrikat_nr": 1,
+        "land_id": 2,
+        "auto_typ": "Astra_L",
+        "detail_text": "Astra L 5-Door Hybrid (2021)",
+        "detail_file": "ret_eng_pdf/eng_ov_astra_l_hyb_hatch"
+    },
+    {
+        "fabrikat_nr": 1,
+        "land_id": 2,
+        "auto_typ": "Astra_L",
+        "detail_text": "Astra L  Kombi  (Sports Tourer) (2022)",
+        "detail_file": "ret_eng_pdf/eng_ov_astra_l_wagon"
+    },
+    {
+        "fabrikat_nr": 1,
+        "land_id": 2,
+        "auto_typ": "Astra_L",
+        "detail_text": "Astra L  Kombi  (Sports Tourer) Hybrid (2021)",
+        "detail_file": "ret_eng_pdf/eng_ov_astra_l_hyb_wagon"
+    },
+    {
+        "fabrikat_nr": 1,
+        "land_id": 2,
+        "auto_typ": "Astra_L",
+        "detail_text": "Astra L Kombi (Sports Tourer) electric (2023)",
+        "detail_file": "ret_eng_pdf/eng_ov_astra_l_wagon_e_2023"
+    },
+    {
+        "fabrikat_nr": 1,
+        "land_id": 2,
+        "auto_typ": "Astra_L",
+        "detail_text": "Astra L 5-Door electric (2023)",
+        "detail_file": "ret_eng_pdf/eng_ov_astra_l_hatch_e_2023"
+    }
+]
