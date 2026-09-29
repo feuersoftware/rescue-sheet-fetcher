@@ -9,14 +9,14 @@ namespace Rettungskarten.Tests.RescueCards;
 /// six real models: four single-page ones and two that span multiple physical pages (5 and 6 pages),
 /// so both grouping shapes are exercised against real content, not a synthetic approximation.
 /// </summary>
-public class PorscheCombinedPdfSplitterTests
+public class PorscheCombinedPdfLayoutTests
 {
     private static byte[] LoadFixture() => File.ReadAllBytes(Path.Combine("Fixtures", "porsche_sample_pages.pdf"));
 
     [Fact]
     public void Split_GroupsPagesByModelId_SixModelsFromSixteenPages()
     {
-        var results = PorscheCombinedPdfSplitter.Split(LoadFixture());
+        var results = CombinedPdfSplitter.Split(LoadFixture(), new PorscheCombinedPdfLayout());
 
         Assert.Equal(6, results.Count);
     }
@@ -24,7 +24,7 @@ public class PorscheCombinedPdfSplitterTests
     [Fact]
     public void Split_SinglePageModel_ExtractsNameAndYearRange()
     {
-        var results = PorscheCombinedPdfSplitter.Split(LoadFixture());
+        var results = CombinedPdfSplitter.Split(LoadFixture(), new PorscheCombinedPdfLayout());
 
         var cayenne2003 = Assert.Single(results, r => r.Parsed.BuildYearFrom == 2003);
         Assert.Equal("Cayenne", cayenne2003.Parsed.ModelName);
@@ -36,7 +36,7 @@ public class PorscheCombinedPdfSplitterTests
     [Fact]
     public void Split_OpenEndedYearRange_ParsesFromModelYearOnly()
     {
-        var results = PorscheCombinedPdfSplitter.Split(LoadFixture());
+        var results = CombinedPdfSplitter.Split(LoadFixture(), new PorscheCombinedPdfLayout());
 
         var hybrid = Assert.Single(results, r => r.Parsed.Variant != null && r.Parsed.Variant.StartsWith("Cayenne S Hybrid (92A)"));
         Assert.Equal(2011, hybrid.Parsed.BuildYearFrom);
@@ -46,7 +46,7 @@ public class PorscheCombinedPdfSplitterTests
     [Fact]
     public void Split_MultiPageModel_CombinesAllPagesIntoOnePdf()
     {
-        var results = PorscheCombinedPdfSplitter.Split(LoadFixture());
+        var results = CombinedPdfSplitter.Split(LoadFixture(), new PorscheCombinedPdfLayout());
 
         // "Cayenne S Hybrid (92A)" spans 5 physical pages (Page 1 of 5 .. Page 5 of 5) - all of them
         // must end up as one 5-page output PDF, not five separate single-page ones.
@@ -59,7 +59,7 @@ public class PorscheCombinedPdfSplitterTests
     [Fact]
     public void Split_EveryResult_ProducesValidPdfBytes()
     {
-        var results = PorscheCombinedPdfSplitter.Split(LoadFixture());
+        var results = CombinedPdfSplitter.Split(LoadFixture(), new PorscheCombinedPdfLayout());
 
         Assert.All(results, r =>
         {
@@ -76,7 +76,7 @@ public class PorscheCombinedPdfSplitterTests
         // common name/body-type prefix that Variant's cap is reached before either model's
         // disambiguating "ID no." text differs, but DocumentId is the grouping key itself and is
         // therefore guaranteed distinct for every returned result.
-        var results = PorscheCombinedPdfSplitter.Split(LoadFixture());
+        var results = CombinedPdfSplitter.Split(LoadFixture(), new PorscheCombinedPdfLayout());
 
         var distinctIds = results.Select(r => r.DocumentId).Distinct().ToList();
         Assert.Equal(results.Count, distinctIds.Count);
@@ -88,7 +88,7 @@ public class PorscheCombinedPdfSplitterTests
     {
         // The fixture's first page is a legal-notice page with no "ID no." footer at all - it must be
         // silently skipped, not turned into a crash or a garbage entry with no model info.
-        var results = PorscheCombinedPdfSplitter.Split(LoadFixture());
+        var results = CombinedPdfSplitter.Split(LoadFixture(), new PorscheCombinedPdfLayout());
 
         Assert.DoesNotContain(results, r => r.Parsed.ModelName is null && r.Parsed.Variant is null);
     }
@@ -104,6 +104,6 @@ public class PorscheCombinedPdfSplitterTests
         // left uncorrected, this splits one real model across "boxster"/"boxter"/"boxter-spyder"
         // folders on a source typo (found via a real end-to-end run against production data, not a
         // hypothetical). "911 Carrera" is included to confirm the fix doesn't touch unrelated names.
-        Assert.Equal(expectedModelName, PorscheCombinedPdfSplitter.ExtractModelName(headerText));
+        Assert.Equal(expectedModelName, PorscheCombinedPdfLayout.ExtractModelName(headerText));
     }
 }

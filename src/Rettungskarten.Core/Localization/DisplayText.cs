@@ -20,4 +20,8 @@ public static class DisplayText
         BrandRunOutcome.NotImplemented => Strings.Get("Outcome_NotImplemented"),
         _ => outcome.ToString()
     };
+
+    /// <summary>Keyed by enum name ("Group_VolkswagenGroup", ...) - every value has an entry in both
+    /// resource files (enforced by StringsTests).</summary>
+    public static string For(ManufacturerGroup group) => Strings.Get($"Group_{group}");
 }

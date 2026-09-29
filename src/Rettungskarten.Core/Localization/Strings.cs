@@ -24,6 +24,11 @@ public static class Strings
     public static string Get(string name) =>
         ResourceManager.GetString(name, EffectiveCulture) ?? name;
 
+    /// <summary>Like <see cref="Get(string)"/>, but returns null instead of the key itself when the
+    /// resource doesn't exist - for optional per-brand entries (e.g. a brand-specific status text
+    /// that falls back to a generic one).</summary>
+    public static string? TryGet(string name) => ResourceManager.GetString(name, EffectiveCulture);
+
     public static string Get(string name, params object[] args)
     {
         var format = Get(name);

@@ -23,7 +23,7 @@ public sealed class CupraRescueCardSource(
 
     public override async Task<IReadOnlyList<RescueCardEntry>> DiscoverAsync(CancellationToken ct)
     {
-        var client = HttpClientFactory.CreateClient(RettungskartenHttpClient.Name);
+        var client = CreateDiscoveryClient();
         var html = await client.GetStringAsync(PageUrl, ct);
 
         var context = BrowsingContext.New(Configuration.Default);
@@ -39,7 +39,7 @@ public sealed class CupraRescueCardSource(
             }
 
             var absoluteUrl = HttpDownloadHelper.ResolveUrl(PageUrl, href);
-            var parsed = VwSeatCupraFilenameParser.Parse(absoluteUrl);
+            var parsed = StandardRescueSheetFilenameParser.Parse(absoluteUrl);
 
             if (!string.Equals(parsed.LanguageCode, "DE", StringComparison.OrdinalIgnoreCase))
             {

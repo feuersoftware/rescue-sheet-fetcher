@@ -27,7 +27,7 @@ public sealed class VwRescueCardSource(
 
     public override async Task<IReadOnlyList<RescueCardEntry>> DiscoverAsync(CancellationToken ct)
     {
-        var client = HttpClientFactory.CreateClient(RettungskartenHttpClient.Name);
+        var client = CreateDiscoveryClient();
         var json = await client.GetStringAsync(FeedUrl, ct);
         var root = JsonSerializer.Deserialize<RescueEntriesRoot>(json, JsonOptions);
 
@@ -44,7 +44,7 @@ public sealed class VwRescueCardSource(
         foreach (var fileName in germanBucket.Files)
         {
             var downloadUrl = $"{baseUrl.TrimEnd('/')}/{germanBucket.Name}/{fileName}";
-            var parsed = VwSeatCupraFilenameParser.Parse(fileName);
+            var parsed = StandardRescueSheetFilenameParser.Parse(fileName);
             entries.Add(new RescueCardEntry(Brand.VW, FeedUrl, downloadUrl, fileName, parsed));
         }
 

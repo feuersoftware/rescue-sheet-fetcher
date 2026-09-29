@@ -43,15 +43,12 @@
   </resheader>
 
   <!-- App / global -->
-  <data name="App_Description" xml:space="preserve"><value>Rescue-sheet and vehicle-stock tool for fire brigades (VW Group)</value></data>
   <data name="Option_Verbose_Description" xml:space="preserve"><value>Verbose logs</value></data>
   <data name="Option_Lang_Description" xml:space="preserve"><value>Output language (de, en) - defaults to the OS language</value></data>
   <data name="Error_InvalidLanguage" xml:space="preserve"><value>Invalid --lang value '{0}'. Must be 'de' or 'en'.</value></data>
 
   <!-- fetch rescue-cards -->
   <data name="Command_Fetch_Description" xml:space="preserve"><value>Fetches data from external sources</value></data>
-  <data name="Command_RescueCards_Description" xml:space="preserve"><value>Downloads rescue data sheets for VW Group vehicle brands (German only)</value></data>
-  <data name="Option_Brand_Description" xml:space="preserve"><value>Brand (vw, audi, skoda, seat, cupra, porsche, all)</value></data>
   <data name="Option_Output_RescueCards_Description" xml:space="preserve"><value>Target directory for rescue data sheets</value></data>
   <data name="Option_DryRun_Description" xml:space="preserve"><value>Discovery and metadata only, no PDF downloads</value></data>
   <data name="Option_SiblingConfig_Description" xml:space="preserve"><value>Path to sibling-models.json (default: bundled file)</value></data>
@@ -69,12 +66,6 @@
   <data name="Option_Aliases_Description" xml:space="preserve"><value>Path to model-aliases.json (default: bundled file)</value></data>
 
   <!-- split porsche -->
-  <data name="Command_Split_Description" xml:space="preserve"><value>Post-processes already-downloaded rescue cards</value></data>
-  <data name="Command_SplitPorsche_Description" xml:space="preserve"><value>Splits Porsche's combined all-models PDF(s) into one file per model</value></data>
-  <data name="Split_Porsche_NoCombinedEntriesFound" xml:space="preserve"><value>No downloaded Porsche entries found - run 'fetch rescue-cards --brand porsche' first.</value></data>
-  <data name="Split_Porsche_NoModelsDetected" xml:space="preserve"><value>Could not detect any models in '{0}' - the document layout may have changed.</value></data>
-  <data name="Split_Porsche_Result" xml:space="preserve"><value>{0} combined document(s) split into {1} per-model rescue card(s).</value></data>
-  <data name="Split_Porsche_DocumentFailed" xml:space="preserve"><value>Failed to split '{0}': {1}</value></data>
 
   <!-- list brands -->
   <data name="Command_List_Description" xml:space="preserve"><value>Lists information</value></data>
@@ -188,4 +179,35 @@
   <data name="Error_UnknownBrand" xml:space="preserve"><value>Unknown brand</value></data>
   <data name="FailureReason_NoDownloadUrl" xml:space="preserve"><value>No download URL discovered</value></data>
   <data name="FailureReason_DryRunSkipped" xml:space="preserve"><value>dry-run: download skipped</value></data>
+  <data name="App_Description" xml:space="preserve"><value>Rescue-sheet and vehicle-stock tool for fire brigades</value></data>
+  <data name="Command_RescueCards_Description" xml:space="preserve"><value>Downloads the manufacturers' official rescue data sheets (German where available, otherwise English)</value></data>
+  <data name="Option_Brand_Description" xml:space="preserve"><value>Brand (lower-case name as shown by 'list brands', e.g. vw, mercedesbenz, landrover) or 'all'</value></data>
+  <data name="Command_Split_Description" xml:space="preserve"><value>Splits a brand's already-downloaded combined all-models PDF(s) into one file per model</value></data>
+  <data name="Argument_SplitBrand_Description" xml:space="preserve"><value>Brand whose combined PDFs to split, or 'all' for every brand that has any</value></data>
+  <data name="Split_NoLayoutForBrand" xml:space="preserve"><value>'{0}' does not publish combined PDFs that this tool can split.</value></data>
+  <data name="Split_NoCombinedEntriesFound" xml:space="preserve"><value>No downloaded combined {0} documents found - run 'fetch rescue-cards --brand {1}' first.</value></data>
+  <data name="Split_NoCombinedEntriesFoundAnyBrand" xml:space="preserve"><value>No downloaded combined documents found for any brand - run 'fetch rescue-cards' first.</value></data>
+  <data name="Split_NoModelsDetected" xml:space="preserve"><value>Could not detect any models in '{0}' - the document layout may have changed.</value></data>
+  <data name="Split_Result" xml:space="preserve"><value>{0} combined document(s) split into {1} per-model rescue card(s).</value></data>
+  <data name="Split_DocumentFailed" xml:space="preserve"><value>Failed to split '{0}': {1}</value></data>
+  <data name="ListBrands_Column_Group" xml:space="preserve"><value>Group</value></data>
+  <data name="Group_VolkswagenGroup" xml:space="preserve"><value>Volkswagen Group</value></data>
+  <data name="Group_MercedesBenzGroup" xml:space="preserve"><value>Mercedes-Benz Group</value></data>
+  <data name="Group_BmwGroup" xml:space="preserve"><value>BMW Group</value></data>
+  <data name="Group_Stellantis" xml:space="preserve"><value>Stellantis</value></data>
+  <data name="Group_RenaultGroup" xml:space="preserve"><value>Renault Group</value></data>
+  <data name="Group_HyundaiMotorGroup" xml:space="preserve"><value>Hyundai Motor Group</value></data>
+  <data name="Group_ToyotaGroup" xml:space="preserve"><value>Toyota Group</value></data>
+  <data name="Group_Geely" xml:space="preserve"><value>Geely</value></data>
+  <data name="Group_TataMotors" xml:space="preserve"><value>Tata Motors (JLR)</value></data>
+  <data name="Group_GeneralMotors" xml:space="preserve"><value>General Motors</value></data>
+  <data name="Group_SaicMotor" xml:space="preserve"><value>SAIC Motor</value></data>
+  <data name="Group_Independent" xml:space="preserve"><value>Independent</value></data>
+  <data name="RescueCards_Generic_DiscoveredCount" xml:space="preserve"><value>{0}: {1} rescue cards discovered</value></data>
+  <data name="RescueCards_Generic_PageReadFailed" xml:space="preserve"><value>{0}: could not read page {1}</value></data>
+  <data name="Http_NotAPdf" xml:space="preserve"><value>Response is not a PDF file (no %PDF signature)</value></data>
+  <data name="Http_RobotsTxtUnavailable" xml:space="preserve"><value>robots.txt at {0} could not be read ({1}) - continuing without restrictions for this host.</value></data>
+  <data name="FailureReason_RobotsTxtDisallowed" xml:space="preserve"><value>Download skipped: disallowed by the host's robots.txt</value></data>
+  <data name="FailureReason_DownloadUrlResolutionFailed" xml:space="preserve"><value>Could not resolve the PDF download URL: {0}</value></data>
+  <data name="FailureReason_DownloadUrlNotResolved" xml:space="preserve"><value>No PDF link found for this entry at download time</value></data>
 </root>

@@ -11,7 +11,7 @@ namespace Rettungskarten.Infrastructure.RescueCards;
 /// second covering classic/older models - unlike every other brand there is no per-model file. Found
 /// via the "Weitere Dokumente"/"Further Documents" page (linked from Porsche's German site, which
 /// redirects to the same international URL), under a "Rescue Data Sheets" entry; both PDFs are served
-/// directly from Porsche's own asset CDN (assets-v2.porsche.com), not a third-party mirror. See
+/// directly from Porsche's own asset CDN (files.porsche.com, formerly assets-v2.porsche.com), not a third-party mirror. See
 /// <see cref="PorscheDocumentsPageParser"/> for how the links are actually extracted from the page.
 /// </summary>
 public sealed class PorscheRescueCardSource(
@@ -29,7 +29,7 @@ public sealed class PorscheRescueCardSource(
 
     public override async Task<IReadOnlyList<RescueCardEntry>> DiscoverAsync(CancellationToken ct)
     {
-        var client = HttpClientFactory.CreateClient(RettungskartenHttpClient.Name);
+        var client = CreateDiscoveryClient();
         var html = await client.GetStringAsync(DocumentsPageUrl, ct);
 
         var links = await PorscheDocumentsPageParser.ParseRescueDataSheetLinksAsync(html, ct);
@@ -54,7 +54,7 @@ public sealed class PorscheRescueCardSource(
                 BuildYearFrom: null, BuildYearTo: null, Doors: null, FuelType: null,
                 LanguageCode: "EN", ParseConfidence.Heuristic);
 
-            return new RescueCardEntry(Brand.Porsche, DocumentsPageUrl, l.Href, l.Text, parsed);
+            return new RescueCardEntry(Brand.Porsche, DocumentsPageUrl, l.Href, l.Text, parsed, DocumentScope.Combined);
         }).ToList();
 
         logger.LogInformation("{Message}", Strings.Get("RescueCards_Porsche_DiscoveredCount", entries.Count));

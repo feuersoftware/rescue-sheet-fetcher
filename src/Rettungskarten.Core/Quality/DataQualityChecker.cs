@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using Rettungskarten.Core.Localization;
+using Rettungskarten.Core.Matching;
 using Rettungskarten.Core.Models;
 
 namespace Rettungskarten.Core.Quality;
@@ -84,7 +85,11 @@ public static class DataQualityChecker
         var anyPriorityAssigned = cards.Any(c => c.BundlePriority != BundlePriority.Unknown);
         if (anyPriorityAssigned)
         {
-            foreach (var brandGroup in cards.GroupBy(c => c.Brand))
+            // Combined multi-model documents carry no single model name (their split parts do), and
+            // brands KBA never lists stay Unknown by design - neither says anything about matching.
+            foreach (var brandGroup in cards
+                         .Where(c => c.DocumentScope != DocumentScope.Combined && BrandNames.IsListedInKbaStock(c.Brand))
+                         .GroupBy(c => c.Brand))
             {
                 if (brandGroup.All(c => c.BundlePriority == BundlePriority.Unknown))
                 {

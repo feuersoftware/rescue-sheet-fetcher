@@ -1,25 +1,21 @@
 using System.Text.RegularExpressions;
-using PdfSharp.Pdf;
-using PdfSharp.Pdf.IO;
 using Rettungskarten.Core.Models;
 using Rettungskarten.Infrastructure.RescueCards.Parsing;
-using PigPdfDocument = UglyToad.PdfPig.PdfDocument;
 
 namespace Rettungskarten.Infrastructure.RescueCards.Splitting;
 
 /// <summary>
-/// Splits Porsche's combined "all models" rescue-data PDF into one small PDF per model, matching the
-/// one-file-per-model convention every other brand already follows.
+/// Layout of Porsche's combined "all models" rescue-data PDF (current and classic models).
 ///
 /// The document has no PDF outline/bookmarks (verified empirically), so model boundaries are found in
 /// the page text instead: every content page carries a footer "ID no. {id} Version no. {n} Page {p}
 /// [of {total}]", and the *first* page of each model additionally carries a header
-/// "Porsche AG, {model name/derivatives} {body type} {Model Year range}". Consecutive pages sharing
-/// the same ID belong to one model (some models span several pages - the ID is what actually groups
-/// them, "Page x of y" is corroborating but not required). The one page without an ID (the leading
-/// legal-notice page) is simply skipped.
+/// "Porsche AG, {model name/derivatives} {body type} {Model Year range}". Pages sharing the same ID
+/// belong to one model (some models span several pages - the ID is what actually groups them, "Page x
+/// of y" is corroborating but not required). The one page without an ID (the leading legal-notice
+/// page) is simply skipped.
 /// </summary>
-public static class PorscheCombinedPdfSplitter
+public sealed class PorscheCombinedPdfLayout : PageTextCombinedPdfLayout
 {
     // The digit-group width varies between documents (the main file uses e.g. "ENUS-01-710-0001",
     // the classic file "ENGB-01-710-041" - three digits, not four, in the last group) so each numeric
@@ -39,90 +35,25 @@ public static class PorscheCombinedPdfSplitter
         "Sedan", "SUV"
     ];
 
-    /// <summary>One model's extracted rescue-data pages, already assembled into a standalone PDF.
-    /// <paramref name="DocumentId"/> is the document's own internal id (e.g. "ENUS-01-710-0004") - it
-    /// is guaranteed unique per group by construction (it's literally the grouping key), unlike
-    /// <c>Parsed.Variant</c>, which is a length-capped free-text header that two distinct models can
-    /// share a long common prefix of (same name/body-type/year-range text before their respective "ID
-    /// no." footers) - callers that need a stable, collision-resistant identifier (e.g. for building a
-    /// persisted card id) should use <paramref name="DocumentId"/>, not <c>Parsed.Variant</c>.</summary>
-    public sealed record SplitResult(ParsedModelInfo Parsed, string DocumentId, byte[] PdfBytes);
+    public override Brand Brand => Brand.Porsche;
 
-    public static IReadOnlyList<SplitResult> Split(byte[] combinedPdfBytes)
+    /// <summary>Also recognizes combined entries fetched before sources marked them
+    /// <see cref="DocumentScope.Combined"/>: only the two original documents have Variant text starting
+    /// with "Rescue Data Sheets" (the link text PorscheRescueCardSource discovers them under), while
+    /// every split part gets a real per-model header as its Variant.</summary>
+    public override bool IsCombinedEntry(RescueCardMetadata entry) =>
+        entry.DocumentScope == DocumentScope.Combined ||
+        (entry.DocumentScope == DocumentScope.Single && entry.Variant is not null &&
+            entry.Variant.StartsWith("Rescue Data Sheets", StringComparison.OrdinalIgnoreCase));
+
+    protected override string? TryGetPageKey(string pageText)
     {
-        var groups = ExtractGroups(combinedPdfBytes);
-        if (groups.Count == 0)
-        {
-            return [];
-        }
-
-        var results = new List<SplitResult>(groups.Count);
-
-        using var sourceStream = new MemoryStream(combinedPdfBytes);
-        using var sourceDocument = PdfReader.Open(sourceStream, PdfDocumentOpenMode.Import);
-
-        foreach (var (id, parsed, pageIndices) in groups)
-        {
-            using var outputDocument = new PdfDocument();
-            foreach (var pageIndex in pageIndices)
-            {
-                outputDocument.AddPage(sourceDocument.Pages[pageIndex]);
-            }
-
-            using var outputStream = new MemoryStream();
-            outputDocument.Save(outputStream, closeStream: false);
-            results.Add(new SplitResult(parsed, id, outputStream.ToArray()));
-        }
-
-        return results;
+        var idMatch = IdPattern.Match(pageText);
+        return idMatch.Success ? NormalizeId(idMatch.Groups[1].Value) : null;
     }
 
-    private static List<(string Id, ParsedModelInfo Parsed, List<int> PageIndices)> ExtractGroups(byte[] pdfBytes)
-    {
-        var pageIndicesById = new Dictionary<string, List<int>>();
-        var headerById = new Dictionary<string, string>();
-        var encounterOrder = new List<string>();
-
-        using (var document = PigPdfDocument.Open(pdfBytes))
-        {
-            foreach (var page in document.GetPages())
-            {
-                var text = page.Text;
-                var idMatch = IdPattern.Match(text);
-                if (!idMatch.Success)
-                {
-                    continue; // e.g. the leading legal-notice page - not a model page
-                }
-
-                var id = NormalizeId(idMatch.Groups[1].Value);
-                if (!pageIndicesById.TryGetValue(id, out var pageIndices))
-                {
-                    pageIndices = [];
-                    pageIndicesById[id] = pageIndices;
-                    encounterOrder.Add(id);
-                }
-
-                pageIndices.Add(page.Number - 1); // PdfPig is 1-based, PDFsharp page indices are 0-based
-
-                if (!headerById.ContainsKey(id))
-                {
-                    var headerText = ExtractHeaderText(text);
-                    if (headerText is not null)
-                    {
-                        headerById[id] = headerText;
-                    }
-                }
-            }
-        }
-
-        var groups = new List<(string, ParsedModelInfo, List<int>)>(encounterOrder.Count);
-        foreach (var id in encounterOrder)
-        {
-            groups.Add((id, ParseHeader(id, headerById.GetValueOrDefault(id)), pageIndicesById[id]));
-        }
-
-        return groups;
-    }
+    protected override ParsedModelInfo ParseGroup(string key, IReadOnlyList<string> pageTexts) =>
+        ParseHeader(key, pageTexts.Select(ExtractHeaderText).FirstOrDefault(h => h is not null));
 
     private static string? ExtractHeaderText(string pageText)
     {

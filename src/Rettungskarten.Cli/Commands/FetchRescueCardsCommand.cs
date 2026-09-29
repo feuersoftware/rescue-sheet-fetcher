@@ -19,8 +19,7 @@ public static class FetchRescueCardsCommand
             Description = Strings.Get("Option_Brand_Description"),
             DefaultValueFactory = _ => "all"
         };
-        brandOption.AcceptOnlyFromAmong(
-            "vw", "audi", "skoda", "seat", "cupra", "porsche", "bentley", "lamborghini", "all");
+        brandOption.AcceptOnlyFromAmong(BrandArgument.AllowedValues());
 
         var outputOption = new Option<string>("--output")
         {
@@ -56,7 +55,7 @@ public static class FetchRescueCardsCommand
             using var services = CompositionRoot.Build(verbose);
             var logger = services.GetRequiredService<ILoggerFactory>().CreateLogger("RescueCards");
 
-            var brands = brandArg == "all" ? Enum.GetValues<Brand>() : [ParseBrand(brandArg)];
+            var brands = BrandArgument.Resolve(brandArg);
 
             var siblingConfig = await ConfigLoader.LoadSiblingModelsAsync(siblingConfigPath, ct);
             var sources = services.GetServices<IRescueCardSource>();
@@ -64,12 +63,14 @@ public static class FetchRescueCardsCommand
             var orchestrator = new RescueCardOrchestrator(
                 sources, store, siblingConfig, services.GetRequiredService<ILogger<RescueCardOrchestrator>>());
 
-            // Every brand source targets a distinct host, and HostRateLimiter rate-limits per host
-            // independently (see its own doc comment) - running brands sequentially only paid the sum
-            // of all 8 brands' discovery+download time for no politeness benefit, since none of them
-            // contend with each other. Task.WhenAll preserves the input order in its result array
-            // regardless of completion order, so RunSummaryPrinter's table still prints in the same
-            // deterministic brand order as before, not interleaved by whichever brand finishes first.
+            // HostRateLimiter rate-limits per host independently (see its own doc comment) - running
+            // brands sequentially only paid the sum of every brand's discovery+download time for no
+            // politeness benefit. Brands that share a host (portal sources serving several brands,
+            // e.g. Mercedes/AMG/EQ/Maybach/smart or Peugeot/Citroen/DS) still queue behind each other
+            // on that host's limiter, so parallelism never increases the request rate to any one site.
+            // Task.WhenAll preserves the input order in its result array regardless of completion order,
+            // so RunSummaryPrinter's table still prints in the same deterministic brand order as before,
+            // not interleaved by whichever brand finishes first.
             var results = await Task.WhenAll(brands.Select(async brand =>
             {
                 logger.LogInformation("{Message}", Strings.Get("Log_StartingBrand", brand));
@@ -82,17 +83,4 @@ public static class FetchRescueCardsCommand
 
         return command;
     }
-
-    private static Brand ParseBrand(string value) => value.ToLowerInvariant() switch
-    {
-        "vw" => Brand.VW,
-        "audi" => Brand.Audi,
-        "skoda" => Brand.Skoda,
-        "seat" => Brand.Seat,
-        "cupra" => Brand.Cupra,
-        "porsche" => Brand.Porsche,
-        "bentley" => Brand.Bentley,
-        "lamborghini" => Brand.Lamborghini,
-        _ => throw new ArgumentOutOfRangeException(nameof(value), value, Strings.Get("Error_UnknownBrand"))
-    };
 }

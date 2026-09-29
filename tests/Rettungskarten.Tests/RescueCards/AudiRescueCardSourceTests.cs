@@ -12,7 +12,7 @@ public sealed class AudiRescueCardSourceTests
         // The German entry's filename ("..._Hybrid_(Electric)_DE.pdf") is one of Audi's own real CMS
         // quirks (see AudiFilenameParser's doc comment) - this exercises that quirk-normalization
         // end-to-end via DiscoverAsync, not just AudiFilenameParserTests' isolated unit tests. A source
-        // that mistakenly called the shared VwSeatCupraFilenameParser instead would get this wrong
+        // that mistakenly called the shared StandardRescueSheetFilenameParser instead would get this wrong
         // (BodyType would come back "2018", not "Limousine" - see that parser's doc comment for why).
         var html = await File.ReadAllTextAsync(Path.Combine("Fixtures", "audi_page.html"));
         var factory = new SingleResponseHttpClientFactory(html);

@@ -3,12 +3,12 @@ using Rettungskarten.Infrastructure.RescueCards.Parsing;
 
 namespace Rettungskarten.Tests.RescueCards;
 
-public class VwSeatCupraFilenameParserTests
+public class StandardRescueSheetFilenameParserTests
 {
     [Fact]
     public void Parse_VwFileNameWithVariant_ExtractsAllFields()
     {
-        var result = VwSeatCupraFilenameParser.Parse("Volkswagen_Arteon_eHYBRID_Coupe_2020_5d_Hybrid-Electric_DE.pdf");
+        var result = StandardRescueSheetFilenameParser.Parse("Volkswagen_Arteon_eHYBRID_Coupe_2020_5d_Hybrid-Electric_DE.pdf");
 
         Assert.Equal("Arteon", result.ModelName);
         Assert.Equal("eHYBRID", result.Variant);
@@ -24,7 +24,7 @@ public class VwSeatCupraFilenameParserTests
     [Fact]
     public void Parse_SeatFileNameWithDoubleUnderscore_CollapsesEmptyVariantToken()
     {
-        var result = VwSeatCupraFilenameParser.Parse("Seat_Ateca__SUV_2018_5d_GD_DE.pdf");
+        var result = StandardRescueSheetFilenameParser.Parse("Seat_Ateca__SUV_2018_5d_GD_DE.pdf");
 
         Assert.Equal("Ateca", result.ModelName);
         Assert.Null(result.Variant);
@@ -39,7 +39,7 @@ public class VwSeatCupraFilenameParserTests
     [Fact]
     public void Parse_CupraFileName_ExtractsModelAndFuelType()
     {
-        var result = VwSeatCupraFilenameParser.Parse("Cupra_Terramar__SUV_2024_5d_Hybrid_DE.pdf");
+        var result = StandardRescueSheetFilenameParser.Parse("Cupra_Terramar__SUV_2024_5d_Hybrid_DE.pdf");
 
         Assert.Equal("Terramar", result.ModelName);
         Assert.Equal("SUV", result.BodyType);
@@ -51,7 +51,7 @@ public class VwSeatCupraFilenameParserTests
     [Fact]
     public void Parse_TooFewTokens_ReturnsUnparsedWithoutThrowing()
     {
-        var result = VwSeatCupraFilenameParser.Parse("Volkswagen_Golf.pdf");
+        var result = StandardRescueSheetFilenameParser.Parse("Volkswagen_Golf.pdf");
 
         Assert.Equal(ParseConfidence.Unparsed, result.ParseConfidence);
         Assert.Null(result.BuildYearFrom);

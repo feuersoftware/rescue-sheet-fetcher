@@ -13,7 +13,7 @@ namespace Rettungskarten.Infrastructure.RescueCards.Parsing;
 /// absent (a wrong body type/fuel type is worse than a missing one for a safety-critical rescue card).
 ///
 /// Internal: brand sources reach this only through their own thin entry point (e.g.
-/// <see cref="VwSeatCupraFilenameParser"/>, <see cref="AudiFilenameParser"/>) so each brand's own
+/// <see cref="StandardRescueSheetFilenameParser"/>, <see cref="AudiFilenameParser"/>) so each brand's own
 /// filename quirks get normalized in exactly one place before tokens land here.
 /// </summary>
 internal static class PositionalFilenameParser
@@ -24,10 +24,27 @@ internal static class PositionalFilenameParser
     private static readonly Regex DoorsPattern = new(@"^(\d{1,2})d$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly Regex LanguageCodePattern = new(@"^[A-Za-z]{2}$", RegexOptions.Compiled);
 
+    private static readonly Regex LowerLanguagePattern = new(@"^[a-z]{2}$", RegexOptions.Compiled);
+    private static readonly Regex UpperRegionPattern = new(@"^[A-Z]{2}$", RegexOptions.Compiled);
+
+    /// <summary>
+    /// Splits a filename (or URL - query string/fragment and path are dropped, percent-escapes decoded)
+    /// into its underscore-delimited tokens. A trailing locale pair ("..._de_DE.pdf", as used by the
+    /// Stellantis Servicebox) is collapsed to its language token, so it occupies the single language
+    /// position the convention expects instead of shifting every other field by one.
+    /// </summary>
     public static string[] Tokenize(string fileNameOrUrl)
     {
-        var fileName = Path.GetFileNameWithoutExtension(fileNameOrUrl.Split('/', '\\')[^1]);
-        return fileName.Split('_', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var withoutQuery = fileNameOrUrl.Split('?', '#')[0];
+        var fileName = Path.GetFileNameWithoutExtension(Uri.UnescapeDataString(withoutQuery.Split('/', '\\')[^1]));
+        var tokens = fileName.Split('_', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        if (tokens.Length >= 8 && LowerLanguagePattern.IsMatch(tokens[^2]) && UpperRegionPattern.IsMatch(tokens[^1]))
+        {
+            tokens = tokens[..^1];
+        }
+
+        return tokens;
     }
 
     public static ParsedModelInfo Parse(string[] tokens)

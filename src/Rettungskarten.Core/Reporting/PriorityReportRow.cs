@@ -11,7 +11,7 @@ namespace Rettungskarten.Core.Reporting;
 /// covered on disk when some of its variants actually failed to download.
 /// </summary>
 public sealed record PriorityReportRow(
-    Brand Brand, string? ModelName, int CardCount, int NotDownloadedCount, int? EstimatedFleetSize, BundlePriority BundlePriority);
+    Brand Brand, ManufacturerGroup ManufacturerGroup, string? ModelName, int CardCount, int NotDownloadedCount, int? EstimatedFleetSize, BundlePriority BundlePriority);
 
 /// <summary>
 /// Collapses the full per-card list into one row per (Brand, ModelName). Pure logic, no I/O.
@@ -50,6 +50,7 @@ public static class PriorityReportAggregator
                 var (fleetSize, priority) = distinctMatches[0];
                 return new PriorityReportRow(
                     Brand: g.Key.Brand,
+                    ManufacturerGroup: g.First().EffectiveManufacturerGroup,
                     ModelName: g.Key.ModelName,
                     CardCount: g.Count(),
                     NotDownloadedCount: g.Count(c => c.Status != RescueCardStatus.Downloaded),

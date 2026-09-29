@@ -6,7 +6,7 @@
 
   <ItemGroup>
     <!-- Lets Rettungskarten.Tests unit-test small internal string-processing helpers (e.g.
-         PorscheCombinedPdfSplitter's known-typo correction) directly, without going through the
+         PorscheCombinedPdfLayout's known-typo correction) directly, without going through the
          full PDF-parsing pipeline for logic that has nothing to do with PDFs. -->
     <InternalsVisibleTo Include="Rettungskarten.Tests" />
   </ItemGroup>

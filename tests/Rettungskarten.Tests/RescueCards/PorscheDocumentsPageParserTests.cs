@@ -23,6 +23,21 @@ public class PorscheDocumentsPageParserTests
     }
 
     [Fact]
+    public async Task ParseRescueDataSheetLinksAsync_AstroLayout_FindsBothCombinedDocuments()
+    {
+        // The page was rebuilt with Astro in 2026 - the Vue template is gone and the links are plain
+        // anchors on files.porsche.com. Found by the live dry run returning 0 Porsche entries.
+        var html = await File.ReadAllTextAsync(Path.Combine("Fixtures", "porsche_documents_page_astro.html"));
+
+        var links = await PorscheDocumentsPageParser.ParseRescueDataSheetLinksAsync(html, CancellationToken.None);
+
+        Assert.Equal(2, links.Count);
+        Assert.Contains(links, l => l.Text == "Rescue Data Sheets" && l.Href.EndsWith("rescue-data-sheets-2025.pdf"));
+        Assert.Contains(links, l => l.Text == "Rescue Data Sheets Classic" && l.Href.EndsWith("rescue-data-sheets-classic.pdf"));
+        Assert.All(links, l => Assert.StartsWith("https://files.porsche.com/", l.Href));
+    }
+
+    [Fact]
     public async Task ParseRescueDataSheetLinksAsync_UnrelatedHtml_ReturnsEmpty()
     {
         var links = await PorscheDocumentsPageParser.ParseRescueDataSheetLinksAsync(

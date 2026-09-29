@@ -44,9 +44,15 @@ public sealed class BentleyRescueCardSource(
 
     public override Brand Brand => Brand.Bentley;
 
+    // bentleymotors.com moved behind Akamai bot protection in 2026 (403 for the page, robots.txt
+    // included, to any non-browser request) - found by the live dry run failing discovery.
+    protected override string DiscoveryClientName => RettungskartenHttpClient.BrowserName;
+
+    protected override string DownloadClientName => RettungskartenHttpClient.BrowserName;
+
     public override async Task<IReadOnlyList<RescueCardEntry>> DiscoverAsync(CancellationToken ct)
     {
-        var client = HttpClientFactory.CreateClient(RettungskartenHttpClient.Name);
+        var client = CreateDiscoveryClient();
         var html = await client.GetStringAsync(PageUrl, ct);
 
         var context = BrowsingContext.New(Configuration.Default);

@@ -66,7 +66,7 @@ public sealed class SkodaRescueCardSource(
 
     public override async Task<IReadOnlyList<RescueCardEntry>> DiscoverAsync(CancellationToken ct)
     {
-        var client = HttpClientFactory.CreateClient(RettungskartenHttpClient.Name);
+        var client = CreateDiscoveryClient();
         var context = BrowsingContext.New(Configuration.Default);
 
         var overviewHtml = await client.GetStringAsync(OverviewUrl, ct);

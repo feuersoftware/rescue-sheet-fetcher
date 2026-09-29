@@ -3,7 +3,9 @@ namespace Rettungskarten.Core.Models;
 /// <summary>
 /// Best-effort structured information extracted from a rescue card's filename or link/label text.
 /// No source publishes this as structured data, so every field may be null and <see cref="ParseConfidence"/>
-/// records how much to trust the result.
+/// records how much to trust the result. <see cref="ChassisCode"/> is the manufacturer's internal
+/// series/platform code where a source states it (e.g. "W177", "F45", "KE") - it doesn't help KBA
+/// matching (KBA only knows marketing names) but identifies a generation unambiguously for rescuers.
 /// </summary>
 public sealed record ParsedModelInfo(
     string? ModelName,
@@ -14,7 +16,8 @@ public sealed record ParsedModelInfo(
     int? Doors,
     string? FuelType,
     string? LanguageCode,
-    ParseConfidence ParseConfidence);
+    ParseConfidence ParseConfidence,
+    string? ChassisCode = null);
 
 public enum ParseConfidence
 {

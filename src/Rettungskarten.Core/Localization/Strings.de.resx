@@ -43,15 +43,12 @@
   </resheader>
 
   <!-- App / global -->
-  <data name="App_Description" xml:space="preserve"><value>Rettungskarten- und Fahrzeugbestand-Werkzeug für Feuerwehren (VW-Gruppe)</value></data>
   <data name="Option_Verbose_Description" xml:space="preserve"><value>Ausführliche Logs</value></data>
   <data name="Option_Lang_Description" xml:space="preserve"><value>Ausgabesprache (de, en) - Standard ist die Betriebssystemsprache</value></data>
   <data name="Error_InvalidLanguage" xml:space="preserve"><value>Ungültiger --lang-Wert '{0}'. Muss 'de' oder 'en' sein.</value></data>
 
   <!-- fetch rescue-cards -->
   <data name="Command_Fetch_Description" xml:space="preserve"><value>Ruft Daten von externen Quellen ab</value></data>
-  <data name="Command_RescueCards_Description" xml:space="preserve"><value>Lädt Rettungskarten für Fahrzeugmarken der VW-Gruppe (nur Deutsch)</value></data>
-  <data name="Option_Brand_Description" xml:space="preserve"><value>Marke (vw, audi, skoda, seat, cupra, porsche, all)</value></data>
   <data name="Option_Output_RescueCards_Description" xml:space="preserve"><value>Zielverzeichnis für Rettungskarten</value></data>
   <data name="Option_DryRun_Description" xml:space="preserve"><value>Nur Discovery + Metadaten, keine PDF-Downloads</value></data>
   <data name="Option_SiblingConfig_Description" xml:space="preserve"><value>Pfad zur sibling-models.json (Standard: mitgelieferte Datei)</value></data>
@@ -69,12 +66,6 @@
   <data name="Option_Aliases_Description" xml:space="preserve"><value>Pfad zur model-aliases.json (Standard: mitgelieferte Datei)</value></data>
 
   <!-- split porsche -->
-  <data name="Command_Split_Description" xml:space="preserve"><value>Verarbeitet bereits geladene Rettungskarten nach</value></data>
-  <data name="Command_SplitPorsche_Description" xml:space="preserve"><value>Teilt Porsches kombinierte Alle-Modelle-PDF(s) in je eine Datei pro Modell auf</value></data>
-  <data name="Split_Porsche_NoCombinedEntriesFound" xml:space="preserve"><value>Keine geladenen Porsche-Einträge gefunden - zuerst 'fetch rescue-cards --brand porsche' ausführen.</value></data>
-  <data name="Split_Porsche_NoModelsDetected" xml:space="preserve"><value>Konnte keine Modelle in '{0}' erkennen - das Dokumentlayout hat sich vermutlich geändert.</value></data>
-  <data name="Split_Porsche_Result" xml:space="preserve"><value>{0} kombinierte(s) Dokument(e) in {1} Rettungskarte(n) je Modell aufgeteilt.</value></data>
-  <data name="Split_Porsche_DocumentFailed" xml:space="preserve"><value>Aufteilen von '{0}' fehlgeschlagen: {1}</value></data>
 
   <!-- list brands -->
   <data name="Command_List_Description" xml:space="preserve"><value>Listet Informationen auf</value></data>
@@ -188,4 +179,35 @@
   <data name="Error_UnknownBrand" xml:space="preserve"><value>Unbekannte Marke</value></data>
   <data name="FailureReason_NoDownloadUrl" xml:space="preserve"><value>Keine Download-URL entdeckt</value></data>
   <data name="FailureReason_DryRunSkipped" xml:space="preserve"><value>dry-run: Download übersprungen</value></data>
+  <data name="App_Description" xml:space="preserve"><value>Rettungskarten- und Fahrzeugbestand-Werkzeug für Feuerwehren</value></data>
+  <data name="Command_RescueCards_Description" xml:space="preserve"><value>Lädt die offiziellen Rettungsdatenblätter der Hersteller (Deutsch, wo verfügbar, sonst Englisch)</value></data>
+  <data name="Option_Brand_Description" xml:space="preserve"><value>Marke (Name in Kleinbuchstaben wie in 'list brands', z. B. vw, mercedesbenz, landrover) oder 'all'</value></data>
+  <data name="Command_Split_Description" xml:space="preserve"><value>Teilt bereits geladene kombinierte Alle-Modelle-PDF(s) einer Marke in je eine Datei pro Modell auf</value></data>
+  <data name="Argument_SplitBrand_Description" xml:space="preserve"><value>Marke, deren kombinierte PDFs aufgeteilt werden sollen, oder 'all' für alle Marken, die welche haben</value></data>
+  <data name="Split_NoLayoutForBrand" xml:space="preserve"><value>'{0}' veröffentlicht keine kombinierten PDFs, die dieses Werkzeug aufteilen kann.</value></data>
+  <data name="Split_NoCombinedEntriesFound" xml:space="preserve"><value>Keine geladenen kombinierten {0}-Dokumente gefunden - zuerst 'fetch rescue-cards --brand {1}' ausführen.</value></data>
+  <data name="Split_NoCombinedEntriesFoundAnyBrand" xml:space="preserve"><value>Für keine Marke geladene kombinierte Dokumente gefunden - zuerst 'fetch rescue-cards' ausführen.</value></data>
+  <data name="Split_NoModelsDetected" xml:space="preserve"><value>Konnte keine Modelle in '{0}' erkennen - das Dokumentlayout hat sich vermutlich geändert.</value></data>
+  <data name="Split_Result" xml:space="preserve"><value>{0} kombinierte(s) Dokument(e) in {1} Rettungskarte(n) je Modell aufgeteilt.</value></data>
+  <data name="Split_DocumentFailed" xml:space="preserve"><value>Aufteilen von '{0}' fehlgeschlagen: {1}</value></data>
+  <data name="ListBrands_Column_Group" xml:space="preserve"><value>Konzern</value></data>
+  <data name="Group_VolkswagenGroup" xml:space="preserve"><value>Volkswagen-Konzern</value></data>
+  <data name="Group_MercedesBenzGroup" xml:space="preserve"><value>Mercedes-Benz Group</value></data>
+  <data name="Group_BmwGroup" xml:space="preserve"><value>BMW Group</value></data>
+  <data name="Group_Stellantis" xml:space="preserve"><value>Stellantis</value></data>
+  <data name="Group_RenaultGroup" xml:space="preserve"><value>Renault Group</value></data>
+  <data name="Group_HyundaiMotorGroup" xml:space="preserve"><value>Hyundai Motor Group</value></data>
+  <data name="Group_ToyotaGroup" xml:space="preserve"><value>Toyota-Gruppe</value></data>
+  <data name="Group_Geely" xml:space="preserve"><value>Geely</value></data>
+  <data name="Group_TataMotors" xml:space="preserve"><value>Tata Motors (JLR)</value></data>
+  <data name="Group_GeneralMotors" xml:space="preserve"><value>General Motors</value></data>
+  <data name="Group_SaicMotor" xml:space="preserve"><value>SAIC Motor</value></data>
+  <data name="Group_Independent" xml:space="preserve"><value>Konzernunabhängig</value></data>
+  <data name="RescueCards_Generic_DiscoveredCount" xml:space="preserve"><value>{0}: {1} Rettungskarten gefunden</value></data>
+  <data name="RescueCards_Generic_PageReadFailed" xml:space="preserve"><value>{0}: Seite {1} konnte nicht gelesen werden</value></data>
+  <data name="Http_NotAPdf" xml:space="preserve"><value>Antwort ist keine PDF-Datei (keine %PDF-Signatur)</value></data>
+  <data name="Http_RobotsTxtUnavailable" xml:space="preserve"><value>robots.txt unter {0} konnte nicht gelesen werden ({1}) - für diesen Host wird ohne Einschränkungen fortgefahren.</value></data>
+  <data name="FailureReason_RobotsTxtDisallowed" xml:space="preserve"><value>Download übersprungen: durch robots.txt des Hosts gesperrt</value></data>
+  <data name="FailureReason_DownloadUrlResolutionFailed" xml:space="preserve"><value>PDF-Download-URL konnte nicht ermittelt werden: {0}</value></data>
+  <data name="FailureReason_DownloadUrlNotResolved" xml:space="preserve"><value>Beim Download wurde für diesen Eintrag kein PDF-Link gefunden</value></data>
 </root>
