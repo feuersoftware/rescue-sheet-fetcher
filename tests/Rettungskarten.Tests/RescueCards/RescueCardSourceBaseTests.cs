@@ -26,7 +26,7 @@ public class RescueCardSourceBaseTests
     }
 
     [Fact]
-    public async Task DownloadAsync_ResolvesTheRealPdfUrlAtDownloadTime_AndAppliesRequestConfiguration()
+    public async Task DownloadAsync_ResolvesTheRealPdfUrlAtDownloadTime()
     {
         // BMW's signed S3 URLs expire after 2h and Mercedes' PDF link lives on a per-card detail page -
         // the entry keeps the stable URL, the source resolves the real one only when downloading.
@@ -40,7 +40,6 @@ public class RescueCardSourceBaseTests
         Assert.True(result.Success);
         var pdfRequest = factory.Requests.Last();
         Assert.Equal("https://portal.test/files/42.pdf", pdfRequest.Request.RequestUri!.AbsoluteUri);
-        Assert.Equal("https://portal.test/", pdfRequest.Request.Headers.Referrer?.ToString());
         Assert.All(factory.Requests, r => Assert.Equal(RettungskartenHttpClient.BrowserName, r.ClientName));
     }
 
@@ -85,9 +84,6 @@ public class RescueCardSourceBaseTests
             var start = html.IndexOf("href='", StringComparison.Ordinal);
             return start < 0 ? null : HttpDownloadHelper.ResolveUrl(entry.DownloadUrl!, html[(start + 6)..html.IndexOf('\'', start + 6)]);
         }
-
-        protected override void ConfigureDownloadRequest(HttpRequestMessage request, RescueCardEntry entry) =>
-            request.Headers.Referrer = new Uri(entry.SourcePageUrl);
     }
 
     private sealed class StubSource() : RescueCardSourceBase(new NoopHttpClientFactory())

@@ -19,17 +19,11 @@ public static class HttpDownloadHelper
     private static readonly byte[] PdfSignature = "%PDF-"u8.ToArray();
     private const int PdfSignatureSearchWindow = 1024;
 
-    public static Task<RescueCardDownloadResult> DownloadPdfAsync(HttpClient client, string url, CancellationToken ct) =>
-        DownloadPdfAsync(client, url, configureRequest: null, ct);
-
-    public static async Task<RescueCardDownloadResult> DownloadPdfAsync(
-        HttpClient client, string url, Action<HttpRequestMessage>? configureRequest, CancellationToken ct)
+    public static async Task<RescueCardDownloadResult> DownloadPdfAsync(HttpClient client, string url, CancellationToken ct)
     {
         try
         {
-            using var request = new HttpRequestMessage(HttpMethod.Get, NormalizeUrl(url));
-            configureRequest?.Invoke(request);
-            using var response = await client.SendAsync(request, ct);
+            using var response = await client.GetAsync(NormalizeUrl(url), ct);
 
             if (RobotsTxtDelegatingHandler.IsBlockedResponse(response))
             {

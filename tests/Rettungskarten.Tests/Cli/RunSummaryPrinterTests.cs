@@ -17,7 +17,7 @@ public class RunSummaryPrinterTests : IDisposable
     [Fact]
     public void HasUnexpectedFailures_DiscoveryFailed_ReturnsTrue()
     {
-        var results = new[] { BrandRunResult.DiscoveryFailed(Brand.VW, new InvalidOperationException("boom")) };
+        var results = new[] { BrandRunResult.DiscoveryFailed(Brand.VW, [], "boom") };
 
         Assert.True(RunSummaryPrinter.HasUnexpectedFailures(results));
     }

@@ -18,7 +18,6 @@ public class BrandMappingTests
     [InlineData(Brand.MercedesAmg, Brand.MercedesBenz)]
     [InlineData(Brand.MercedesEq, Brand.MercedesBenz)]
     [InlineData(Brand.Maybach, Brand.MercedesBenz)]
-    [InlineData(Brand.Vauxhall, Brand.Opel)]
     [InlineData(Brand.FiatProfessional, Brand.Fiat)]
     [InlineData(Brand.Abarth, Brand.Fiat)]
     public void SubBrands_HaveTheirKbaParent(Brand brand, Brand parent) =>
@@ -28,7 +27,7 @@ public class BrandMappingTests
     [InlineData(Brand.VW, ManufacturerGroup.VolkswagenGroup)]
     [InlineData(Brand.Smart, ManufacturerGroup.MercedesBenzGroup)]
     [InlineData(Brand.Mini, ManufacturerGroup.BmwGroup)]
-    [InlineData(Brand.Vauxhall, ManufacturerGroup.Stellantis)]
+    [InlineData(Brand.Opel, ManufacturerGroup.Stellantis)]
     [InlineData(Brand.Daihatsu, ManufacturerGroup.ToyotaGroup)]
     [InlineData(Brand.Polestar, ManufacturerGroup.Geely)]
     [InlineData(Brand.LandRover, ManufacturerGroup.TataMotors)]

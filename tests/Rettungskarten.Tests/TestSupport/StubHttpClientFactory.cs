@@ -33,16 +33,6 @@ public sealed class StubHttpClientFactory : IHttpClientFactory
     public StubHttpClientFactory Status(string url, HttpStatusCode status) =>
         Respond(url, _ => new HttpResponseMessage(status) { Content = new StringContent(string.Empty) });
 
-    /// <summary>A redirect to <paramref name="location"/> - note HttpClient only follows it when the
-    /// real handler does; the stub returns it as-is.</summary>
-    public StubHttpClientFactory Redirect(string url, string location, HttpStatusCode status = HttpStatusCode.TemporaryRedirect) =>
-        Respond(url, _ =>
-        {
-            var response = new HttpResponseMessage(status);
-            response.Headers.Location = new Uri(location);
-            return response;
-        });
-
     public StubHttpClientFactory Respond(string url, Func<HttpRequestMessage, HttpResponseMessage> respond)
     {
         _responses[new Uri(url).AbsoluteUri] = respond;

@@ -142,10 +142,6 @@
     {"brand": "Opel", "modelName": "Grandland", "kbaModelSeries": "GRANDLAND X"},
     {"brand": "Opel", "modelName": "Mokka X", "kbaModelSeries": "MOKKA"},
     {"brand": "Opel", "modelName": "Ampera-e", "kbaModelSeries": "AMPERA"},
-    {"brand": "Vauxhall", "modelName": "Crossland", "kbaModelSeries": "CROSSLAND X"},
-    {"brand": "Vauxhall", "modelName": "Grandland", "kbaModelSeries": "GRANDLAND X"},
-    {"brand": "Vauxhall", "modelName": "Mokka X", "kbaModelSeries": "MOKKA"},
-    {"brand": "Vauxhall", "modelName": "Ampera-e", "kbaModelSeries": "AMPERA"},
 
     {"brand": "Hyundai", "modelName": "H-1", "kbaModelSeries": "H-1 STAREX"},
     {"brand": "Kia", "modelName": "ProCeed", "kbaModelSeries": "CEED"},

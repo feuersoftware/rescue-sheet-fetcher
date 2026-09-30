@@ -2,8 +2,8 @@ namespace Rettungskarten.Core.Models;
 
 /// <summary>
 /// One value per brand exactly as the manufacturer itself presents it - sub-brands that the
-/// manufacturer publishes rescue sheets for separately (Mercedes-AMG, Mercedes-EQ, Maybach, Vauxhall,
-/// Fiat Professional, Cupra) get their own value, like Cupra/SEAT always did. Which group a brand
+/// manufacturer publishes rescue sheets for separately (Mercedes-AMG, Mercedes-EQ, Maybach, Fiat
+/// Professional, Cupra) get their own value, like Cupra/SEAT always did. Which group a brand
 /// belongs to and which brand's KBA figures it falls under are tracked separately in
 /// <see cref="BrandGroups"/>, not by collapsing brands here.
 ///
@@ -39,7 +39,6 @@ public enum Brand
     Citroen,
     DS,
     Opel,
-    Vauxhall,
     Fiat,
     FiatProfessional,
     Abarth,

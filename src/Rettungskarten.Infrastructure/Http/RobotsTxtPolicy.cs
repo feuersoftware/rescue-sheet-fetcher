@@ -16,7 +16,7 @@ namespace Rettungskarten.Infrastructure.Http;
 /// fails the same way right after, and treating a transient outage as "blocked" would turn one flaky
 /// response into a permanently missing card for the whole run. It is logged as a warning instead.
 /// </summary>
-public sealed class RobotsTxtPolicy(PolitenessOptions options, ILogger<RobotsTxtPolicy> logger)
+public sealed class RobotsTxtPolicy(ILogger<RobotsTxtPolicy> logger)
 {
     private readonly ConcurrentDictionary<string, Lazy<Task<RobotsTxtRules>>> _rulesByOrigin =
         new(StringComparer.OrdinalIgnoreCase);
@@ -34,7 +34,7 @@ public sealed class RobotsTxtPolicy(PolitenessOptions options, ILogger<RobotsTxt
         Action<HttpRequestMessage> copyHeaders,
         CancellationToken ct)
     {
-        if (!options.RespectRobotsTxt || url.AbsolutePath.Equals("/robots.txt", StringComparison.OrdinalIgnoreCase))
+        if (url.AbsolutePath.Equals("/robots.txt", StringComparison.OrdinalIgnoreCase))
         {
             return true;
         }

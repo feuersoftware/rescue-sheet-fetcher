@@ -62,18 +62,6 @@ public class HttpDownloadHelperTests : IDisposable
         Assert.Equal(Strings.Get("FailureReason_RobotsTxtDisallowed"), result.FailureReason);
     }
 
-    [Fact]
-    public async Task DownloadPdfAsync_AppliesRequestConfiguration()
-    {
-        var factory = new StubHttpClientFactory().Bytes("https://cdn.test/card.pdf", StubHttpClientFactory.FakePdf());
-
-        await HttpDownloadHelper.DownloadPdfAsync(
-            factory.CreateClient("x"), "https://cdn.test/card.pdf",
-            r => r.Headers.Referrer = new Uri("https://www.example.test/"), CancellationToken.None);
-
-        Assert.Equal("https://www.example.test/", factory.Requests.Single().Request.Headers.Referrer?.ToString());
-    }
-
     [Theory]
     [InlineData("%PDF-1.7", true)]
     [InlineData("\r\n%PDF-1.4", true)]

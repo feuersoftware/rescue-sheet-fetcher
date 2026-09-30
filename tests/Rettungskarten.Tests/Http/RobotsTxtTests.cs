@@ -142,7 +142,7 @@ public class RobotsTxtDelegatingHandlerTests
 
             return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("ok") };
         });
-        var policy = new RobotsTxtPolicy(new PolitenessOptions(), NullLogger<RobotsTxtPolicy>.Instance);
+        var policy = new RobotsTxtPolicy(NullLogger<RobotsTxtPolicy>.Instance);
         using var plainClient = CreateClient(inner, policy, "RettungskartenTool/1.0");
         using var browserClient = CreateClient(inner, policy, "Mozilla/5.0 Chrome/140.0");
 
@@ -155,7 +155,7 @@ public class RobotsTxtDelegatingHandlerTests
 
     private static HttpClient CreateClient(RecordingHandler inner, RobotsTxtPolicy? policy = null, string userAgent = "RettungskartenTool/1.0")
     {
-        policy ??= new RobotsTxtPolicy(new PolitenessOptions(), NullLogger<RobotsTxtPolicy>.Instance);
+        policy ??= new RobotsTxtPolicy(NullLogger<RobotsTxtPolicy>.Instance);
         var client = new HttpClient(new RobotsTxtDelegatingHandler(policy) { InnerHandler = inner });
         client.DefaultRequestHeaders.UserAgent.ParseAdd(userAgent);
         return client;

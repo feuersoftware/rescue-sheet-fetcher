@@ -36,9 +36,5 @@ public sealed record PolitenessOptions
     public string BrowserUserAgent { get; init; } =
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36";
 
-    /// <summary>Checked for every request by <see cref="RobotsTxtDelegatingHandler"/>; off only for
-    /// tests.</summary>
-    public bool RespectRobotsTxt { get; init; } = true;
-
     public TimeSpan GetDelayFor(string host) => PerHostDelay.GetValueOrDefault(host, DefaultDelay);
 }

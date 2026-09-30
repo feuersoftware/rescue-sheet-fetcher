@@ -8,10 +8,9 @@ using Rettungskarten.Tests.TestSupport;
 namespace Rettungskarten.Tests.RescueCards;
 
 /// <summary>
-/// Fixtures are real IFZ Berlin API responses (2026-09-29): the Opel/Vauxhall model-group list trimmed
-/// to five groups, and those groups' German (land_id 1) and English (land_id 2) sheet lists as
-/// returned - including the English "Zafira A (1999)" record that points at the Zafira Life file, and
-/// a German label ending in a stray "\r\n".
+/// Fixtures are real IFZ Berlin API responses (2026-09-29): the Opel model-group list trimmed to five
+/// groups, and those groups' German (land_id 1) sheet lists as returned - including a label ending in
+/// a stray "\r\n".
 ///
 /// No assertion here reads localized text (only the log lines go through Strings, into a NullLogger),
 /// so these tests deliberately leave the process-global Strings.OverrideCulture alone - setting it
@@ -25,7 +24,7 @@ public sealed class IfzBerlinRescueCardSourceTests
     [Fact]
     public async Task DiscoverAsync_Opel_ReadsGermanCollectionWithReferer()
     {
-        var factory = Factory(landId: 1);
+        var factory = Factory();
 
         var entries = await Source(Brand.Opel, factory).DiscoverAsync(CancellationToken.None);
 
@@ -49,28 +48,26 @@ public sealed class IfzBerlinRescueCardSourceTests
     }
 
     [Fact]
-    public async Task DiscoverAsync_Vauxhall_ReadsEnglishCollectionAndResolvesSharedFile()
+    public void PickRecordForFile_SharedFile_PrefersTheRecordTheFilenameNames()
     {
-        var factory = Factory(landId: 2);
+        // Real case from IFZ's English collection: "Zafira A (1999)" and "Zafira Life (2019)" both
+        // link eng_opelvauxhall_zafira_life - the entry must be labelled as the Zafira Life.
+        const string file = "ret_eng_pdf/eng_opelvauxhall_zafira_life";
+        var records = new List<(string, IfzBerlinRescueCardSource.SheetDto, string)>
+        {
+            ("Zafira_A", new IfzBerlinRescueCardSource.SheetDto("Zafira A (1999)", file), file),
+            ("Zafira_D", new IfzBerlinRescueCardSource.SheetDto("Zafira Life (2019)", file), file)
+        };
 
-        var entries = await Source(Brand.Vauxhall, factory).DiscoverAsync(CancellationToken.None);
+        var picked = IfzBerlinRescueCardSource.PickRecordForFile(records);
 
-        Assert.All(entries, e => Assert.Equal(Brand.Vauxhall, e.Brand));
-        Assert.All(entries, e => Assert.Equal("EN", e.Parsed.LanguageCode));
-        Assert.Contains(factory.Requests, r => r.Request.RequestUri!.Query.Contains("land_id=2", StringComparison.Ordinal));
-
-        // "Zafira A (1999)" and "Zafira Life (2019)" both link eng_opelvauxhall_zafira_life: one entry,
-        // labelled as the record the filename actually names.
-        var life = Assert.Single(entries, e => e.RawFileNameOrLabel == "ret_eng_pdf/eng_opelvauxhall_zafira_life");
-        Assert.Equal("Zafira Life", life.Parsed.ModelName);
-        Assert.Equal(2019, life.Parsed.BuildYearFrom);
-        Assert.Equal(entries.Count, entries.Select(e => e.RawFileNameOrLabel).Distinct().Count());
+        Assert.Equal("Zafira Life (2019)", picked.Item2.DetailText);
     }
 
     [Fact]
     public async Task DiscoverAsync_OneGroupFails_KeepsTheOthers()
     {
-        var factory = Factory(landId: 1)
+        var factory = Factory()
             .Status($"{Api}index_ret_8_4.php?land_id=1&fabrikat_nr=1&auto_typ=Astra_L", HttpStatusCode.InternalServerError);
 
         var entries = await Source(Brand.Opel, factory).DiscoverAsync(CancellationToken.None);
@@ -88,14 +85,14 @@ public sealed class IfzBerlinRescueCardSourceTests
     }
 
     private static IfzBerlinRescueCardSource Source(Brand brand, StubHttpClientFactory factory) =>
-        new(brand, factory, new DiscoveryResponseCache(), NullLogger<IfzBerlinRescueCardSource>.Instance);
+        new(brand, factory, NullLogger<IfzBerlinRescueCardSource>.Instance);
 
-    private static StubHttpClientFactory Factory(int landId)
+    private static StubHttpClientFactory Factory()
     {
         var factory = new StubHttpClientFactory().Json($"{Api}index_ret_8_3.php?fabrikat_nr=1", Fixture("ifz_autotypen_1.json"));
         foreach (var group in Groups)
         {
-            factory.Json($"{Api}index_ret_8_4.php?land_id={landId}&fabrikat_nr=1&auto_typ={group}", Fixture($"ifz_sheets_{landId}_1_{group}.json"));
+            factory.Json($"{Api}index_ret_8_4.php?land_id=1&fabrikat_nr=1&auto_typ={group}", Fixture($"ifz_sheets_1_1_{group}.json"));
         }
 
         return factory;

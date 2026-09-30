@@ -13,15 +13,14 @@ namespace Rettungskarten.Infrastructure.RescueCards;
 /// implements <see cref="Brand"/>/<see cref="DiscoverAsync"/> itself; only the download step was ever
 /// actually identical.
 ///
-/// Three hooks cover what the non-VW sources need beyond a plain GET:
+/// Two hooks cover what the non-VW sources need beyond a plain GET:
 /// - <see cref="DiscoveryClientName"/>/<see cref="DownloadClientName"/> pick the named client, e.g.
 ///   <see cref="RettungskartenHttpClient.BrowserName"/> for Akamai-fronted hosts;
 /// - <see cref="ResolveDownloadUrlAsync"/> turns an entry's stable <c>DownloadUrl</c> into the actual
 ///   PDF URL at download time, for sources whose real link is short-lived or one hop away (BMW's
 ///   signed S3 URLs expire after 2h, Mercedes' PDF link lives on a per-card detail page) - resolving
 ///   those during discovery would either persist dead links or cost one extra request per card on
-///   every dry run;
-/// - <see cref="ConfigureDownloadRequest"/> adds per-request headers (e.g. a Referer).
+///   every dry run.
 ///
 /// Also closes a latent null-safety gap: every DownloadAsync used to dereference the nullable
 /// <c>entry.DownloadUrl</c> with the null-forgiving operator (<c>!</c>), relying entirely on
@@ -59,10 +58,6 @@ public abstract class RescueCardSourceBase(IHttpClientFactory httpClientFactory)
     protected virtual Task<string?> ResolveDownloadUrlAsync(RescueCardEntry entry, HttpClient client, CancellationToken ct) =>
         Task.FromResult(entry.DownloadUrl);
 
-    protected virtual void ConfigureDownloadRequest(HttpRequestMessage request, RescueCardEntry entry)
-    {
-    }
-
     public virtual async Task<RescueCardDownloadResult> DownloadAsync(RescueCardEntry entry, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(entry.DownloadUrl);
@@ -88,6 +83,6 @@ public abstract class RescueCardSourceBase(IHttpClientFactory httpClientFactory)
             return RescueCardDownloadResult.Fail(Strings.Get("FailureReason_DownloadUrlNotResolved"));
         }
 
-        return await HttpDownloadHelper.DownloadPdfAsync(client, pdfUrl, request => ConfigureDownloadRequest(request, entry), ct);
+        return await HttpDownloadHelper.DownloadPdfAsync(client, pdfUrl, ct);
     }
 }

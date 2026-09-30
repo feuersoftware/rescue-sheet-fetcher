@@ -80,7 +80,7 @@ public static class CompositionRoot
             services.AddTransient<IRescueCardSource>(sp => ActivatorUtilities.CreateInstance<ServiceboxRescueCardSource>(sp, brand));
         }
 
-        foreach (var brand in new[] { Brand.Opel, Brand.Vauxhall, Brand.Saab, Brand.Chevrolet, Brand.Cadillac })
+        foreach (var brand in new[] { Brand.Opel, Brand.Saab, Brand.Chevrolet, Brand.Cadillac })
         {
             services.AddTransient<IRescueCardSource>(sp => ActivatorUtilities.CreateInstance<IfzBerlinRescueCardSource>(sp, brand));
         }

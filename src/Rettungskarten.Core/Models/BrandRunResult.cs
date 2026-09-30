@@ -18,9 +18,6 @@ public sealed record BrandRunResult(
     public static BrandRunResult Completed(Brand brand, IReadOnlyList<ModelRunResult> models) =>
         new(brand, BrandRunOutcome.Completed, models, null);
 
-    public static BrandRunResult DiscoveryFailed(Brand brand, Exception ex) =>
-        new(brand, BrandRunOutcome.DiscoveryFailed, [], ex.Message);
-
     /// <summary>At least one of the brand's sources failed discovery while others (if any) still
     /// produced <paramref name="models"/> - the run is still reported as failed so the link check
     /// notices, but the surviving sources' cards are kept.</summary>

@@ -13,10 +13,9 @@ namespace Rettungskarten.Core.Matching;
 /// with: KBA doesn't track it as a brand at all - every Cupra model (Formentor, Born, Ateca, Leon,
 /// Tavascan, Terramar) is counted under "SEAT" (confirmed against a real FZ12 file: all 6 Cupra model
 /// names have a matching "SEAT {model}" row, and "CUPRA" does not appear anywhere in the file). The
-/// same holds for Mercedes-AMG/-EQ/Maybach (counted as "MERCEDES", e.g. "MERCEDES AMG GT"), Vauxhall
-/// (never registered in Germany under that name - its models are Opels) and Fiat Professional/Abarth
-/// (counted as "FIAT"). Without this every such card matched zero stock rows and fell back to
-/// BundlePriority.Unknown regardless of how common the model actually is.
+/// same holds for Mercedes-AMG/-EQ/Maybach (counted as "MERCEDES", e.g. "MERCEDES AMG GT") and Fiat
+/// Professional/Abarth (counted as "FIAT"). Without this every such card matched zero stock rows and
+/// fell back to BundlePriority.Unknown regardless of how common the model actually is.
 /// </summary>
 public static class BrandNames
 {

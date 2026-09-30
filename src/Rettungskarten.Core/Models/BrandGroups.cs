@@ -3,7 +3,7 @@ namespace Rettungskarten.Core.Models;
 /// <summary>
 /// Static brand -> corporate group and brand -> parent brand mapping. The parent brand is the brand a
 /// sub-brand's vehicles are registered under in the KBA statistics (Cupra -> SEAT, Mercedes-AMG ->
-/// Mercedes-Benz, Vauxhall -> Opel, ...), used by <see cref="Matching.BrandNames"/> so a sub-brand's
+/// Mercedes-Benz, Abarth -> Fiat, ...), used by <see cref="Matching.BrandNames"/> so a sub-brand's
 /// cards still match stock rows; it is not used for anything else.
 /// </summary>
 public static class BrandGroups
@@ -35,7 +35,6 @@ public static class BrandGroups
         [Brand.Citroen] = ManufacturerGroup.Stellantis,
         [Brand.DS] = ManufacturerGroup.Stellantis,
         [Brand.Opel] = ManufacturerGroup.Stellantis,
-        [Brand.Vauxhall] = ManufacturerGroup.Stellantis,
         [Brand.Fiat] = ManufacturerGroup.Stellantis,
         [Brand.FiatProfessional] = ManufacturerGroup.Stellantis,
         [Brand.Abarth] = ManufacturerGroup.Stellantis,
@@ -74,7 +73,6 @@ public static class BrandGroups
         [Brand.MercedesAmg] = Brand.MercedesBenz,
         [Brand.MercedesEq] = Brand.MercedesBenz,
         [Brand.Maybach] = Brand.MercedesBenz,
-        [Brand.Vauxhall] = Brand.Opel,
         [Brand.FiatProfessional] = Brand.Fiat,
         [Brand.Abarth] = Brand.Fiat
     };

@@ -278,8 +278,6 @@
   <data name="Brand_Citroen_Source" xml:space="preserve"><value>public.servicebox-parts.com statisches Frameset (Modellseiten)</value></data>
   <data name="Brand_DS_Source" xml:space="preserve"><value>public.servicebox-parts.com statisches Frameset (Modellseiten)</value></data>
   <data name="Brand_Opel_Source" xml:space="preserve"><value>ifz-berlin.de JSON-API (Portal Stellantis Aftersales)</value></data>
-  <data name="Brand_Vauxhall_Status" xml:space="preserve"><value>Voll funktionsfähig (nur englischsprachige Dokumente)</value></data>
-  <data name="Brand_Vauxhall_Source" xml:space="preserve"><value>ifz-berlin.de JSON-API (englische Opel/Vauxhall-Sammlung)</value></data>
   <data name="Brand_Saab_Source" xml:space="preserve"><value>ifz-berlin.de JSON-API (Portal Stellantis Aftersales)</value></data>
   <data name="Brand_Chevrolet_Source" xml:space="preserve"><value>ifz-berlin.de JSON-API (Portal Stellantis Aftersales)</value></data>
   <data name="Brand_Cadillac_Source" xml:space="preserve"><value>ifz-berlin.de JSON-API (Portal Stellantis Aftersales)</value></data>

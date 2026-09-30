@@ -16,11 +16,11 @@ public sealed class DiscoveryResponseCache
     private readonly ConcurrentDictionary<string, Lazy<Task<string>>> _responses = new(StringComparer.Ordinal);
 
     public async Task<string> GetStringAsync(
-        HttpClient client, string url, CancellationToken ct, Action<HttpRequestMessage>? configureRequest = null)
+        HttpClient client, string url, CancellationToken ct)
     {
         // The shared fetch isn't tied to the first caller's token (its cancellation would otherwise
         // fail every other brand awaiting the same response); each caller only stops waiting.
-        var lazy = _responses.GetOrAdd(url, u => new Lazy<Task<string>>(() => FetchAsync(client, u, configureRequest, CancellationToken.None)));
+        var lazy = _responses.GetOrAdd(url, u => new Lazy<Task<string>>(() => client.GetStringAsync(u, CancellationToken.None)));
         try
         {
             return await lazy.Value.WaitAsync(ct);
@@ -30,15 +30,5 @@ public sealed class DiscoveryResponseCache
             _responses.TryRemove(new KeyValuePair<string, Lazy<Task<string>>>(url, lazy));
             throw;
         }
-    }
-
-    private static async Task<string> FetchAsync(
-        HttpClient client, string url, Action<HttpRequestMessage>? configureRequest, CancellationToken ct)
-    {
-        using var request = new HttpRequestMessage(HttpMethod.Get, url);
-        configureRequest?.Invoke(request);
-        using var response = await client.SendAsync(request, ct);
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadAsStringAsync(ct);
     }
 }
