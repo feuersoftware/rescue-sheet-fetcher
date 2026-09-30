@@ -21,6 +21,16 @@ public static class FetchRescueCardsCommand
         };
         brandOption.AcceptOnlyFromAmong(BrandArgument.AllowedValues());
 
+        // For the weekly link check: some manufacturer sites block requests from cloud/CI networks
+        // outright (403 for every client, verified on the GitHub-hosted runner), so CI skips them
+        // explicitly instead of failing every week on something no code change can fix.
+        var excludeBrandsOption = new Option<string[]>("--exclude-brands")
+        {
+            Description = Strings.Get("Option_ExcludeBrands_Description"),
+            AllowMultipleArgumentsPerToken = true
+        };
+        excludeBrandsOption.AcceptOnlyFromAmong(BrandArgument.AllowedValues().Where(v => v != BrandArgument.All).ToArray());
+
         var outputOption = new Option<string>("--output")
         {
             Description = Strings.Get("Option_Output_RescueCards_Description"),
@@ -40,6 +50,7 @@ public static class FetchRescueCardsCommand
 
         var command = new Command("rescue-cards", Strings.Get("Command_RescueCards_Description"));
         command.Add(brandOption);
+        command.Add(excludeBrandsOption);
         command.Add(outputOption);
         command.Add(dryRunOption);
         command.Add(siblingConfigOption);
@@ -55,7 +66,12 @@ public static class FetchRescueCardsCommand
             using var services = CompositionRoot.Build(verbose);
             var logger = services.GetRequiredService<ILoggerFactory>().CreateLogger("RescueCards");
 
-            var brands = BrandArgument.Resolve(brandArg);
+            var excluded = (parseResult.GetValue(excludeBrandsOption) ?? []).Select(BrandArgument.Parse).ToHashSet();
+            var brands = BrandArgument.Resolve(brandArg).Where(b => !excluded.Contains(b)).ToList();
+            if (excluded.Count > 0)
+            {
+                logger.LogInformation("{Message}", Strings.Get("Log_BrandsExcluded", string.Join(", ", excluded.Order())));
+            }
 
             var siblingConfig = await ConfigLoader.LoadSiblingModelsAsync(siblingConfigPath, ct);
             var sources = services.GetServices<IRescueCardSource>();

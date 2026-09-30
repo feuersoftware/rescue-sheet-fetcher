@@ -291,4 +291,6 @@
   <data name="Brand_Ford_Status" xml:space="preserve"><value>Voll funktionsfähig (Modelle bis ca. 2020 in 1 kombinierten PDF, aufteilbar mit 'split ford'; neuere pro Modell)</value></data>
   <data name="RescueCards_Ford_PortalLookups" xml:space="preserve"><value>Ford: Rettungskarten für {0} Baureihen/Modelljahre im Ford-Serviceportal abfragen (dauert einige Minuten)</value></data>
   <data name="RescueCards_Ford_MarketNotAccepted" xml:space="preserve"><value>Ford: das Serviceportal akzeptiert die Auswahl des deutschen Markts nicht mehr (Weiterleitung auf {0})</value></data>
+  <data name="Option_ExcludeBrands_Description" xml:space="preserve"><value>Zu überspringende Marken (Namen in Kleinbuchstaben, durch Leerzeichen getrennt), z. B. für CI-Runner, deren Netz manche Herstellerseiten sperren</value></data>
+  <data name="Log_BrandsExcluded" xml:space="preserve"><value>Ausgeschlossene Marken werden übersprungen: {0}</value></data>
 </root>

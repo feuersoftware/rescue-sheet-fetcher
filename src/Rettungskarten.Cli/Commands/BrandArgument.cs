@@ -19,7 +19,7 @@ public static class BrandArgument
 
     /// <summary>Every brand for "all", otherwise the one named brand (case-insensitive).</summary>
     public static IReadOnlyList<Brand> Resolve(string value) =>
-        value.Equals(All, StringComparison.OrdinalIgnoreCase)
-            ? Enum.GetValues<Brand>()
-            : [Enum.Parse<Brand>(value, ignoreCase: true)];
+        value.Equals(All, StringComparison.OrdinalIgnoreCase) ? Enum.GetValues<Brand>() : [Parse(value)];
+
+    public static Brand Parse(string value) => Enum.Parse<Brand>(value, ignoreCase: true);
 }

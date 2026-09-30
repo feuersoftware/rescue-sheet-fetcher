@@ -291,4 +291,6 @@
   <data name="Brand_Ford_Status" xml:space="preserve"><value>Fully functional (models up to ~2020 in 1 combined PDF, split with 'split ford'; newer ones per model)</value></data>
   <data name="RescueCards_Ford_PortalLookups" xml:space="preserve"><value>Ford: looking up rescue cards for {0} vehicle lines/model years on the Ford service portal (takes a few minutes)</value></data>
   <data name="RescueCards_Ford_MarketNotAccepted" xml:space="preserve"><value>Ford: the service portal no longer accepts the German market selection (redirected to {0})</value></data>
+  <data name="Option_ExcludeBrands_Description" xml:space="preserve"><value>Brands to skip (space-separated lower-case names), e.g. for CI runners whose network some manufacturer sites block</value></data>
+  <data name="Log_BrandsExcluded" xml:space="preserve"><value>Skipping excluded brands: {0}</value></data>
 </root>
