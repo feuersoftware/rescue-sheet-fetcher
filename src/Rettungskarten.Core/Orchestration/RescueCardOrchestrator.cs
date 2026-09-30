@@ -10,6 +10,12 @@ namespace Rettungskarten.Core.Orchestration;
 /// <summary>
 /// Brand-agnostic discover-download-store pipeline shared by every brand. A failure discovering or
 /// downloading one brand's cards must never abort the whole run — see <see cref="RunForBrandAsync"/>.
+///
+/// A brand may have more than one registered source (smart: Mercedes' portal for the models up to
+/// 2021, smart's own site for the Geely-era models since 2022). Every source is discovered
+/// independently, each entry is downloaded through the source that discovered it, and one source
+/// failing never discards another's cards - the brand is still reported as
+/// <see cref="BrandRunOutcome.DiscoveryFailed"/> in that case so the weekly link check notices.
 /// </summary>
 public sealed class RescueCardOrchestrator(
     IEnumerable<IRescueCardSource> sources,
@@ -22,32 +28,49 @@ public sealed class RescueCardOrchestrator(
 
     public async Task<BrandRunResult> RunForBrandAsync(Brand brand, bool dryRun, CancellationToken ct)
     {
-        var source = sources.FirstOrDefault(s => s.Brand == brand);
-        if (source is null)
+        var brandSources = sources.Where(s => s.Brand == brand).ToList();
+        if (brandSources.Count == 0)
         {
             return BrandRunResult.NotImplemented(brand, Strings.Get("Orchestrator_NoSourceRegistered"));
         }
 
-        IReadOnlyList<RescueCardEntry> entries;
-        try
+        var discovered = new List<(IRescueCardSource Source, RescueCardEntry Entry)>();
+        var failureNotes = new List<string>();
+        var notImplementedNotes = new List<string>();
+
+        foreach (var source in brandSources)
         {
-            entries = await source.DiscoverAsync(ct);
-        }
-        catch (NotSupportedException ex)
-        {
-            logger.LogInformation("{Message}", Strings.Get("Orchestrator_NotImplementedLog", brand, ex.Message));
-            return BrandRunResult.NotImplemented(brand, ex.Message);
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException)
-        {
-            logger.LogWarning(ex, "{Message}", Strings.Get("Orchestrator_DiscoveryFailedLog", brand));
-            return BrandRunResult.DiscoveryFailed(brand, ex);
+            try
+            {
+                var entries = await source.DiscoverAsync(ct);
+                discovered.AddRange(entries.Select(e => (source, e)));
+            }
+            catch (NotSupportedException ex)
+            {
+                logger.LogInformation("{Message}", Strings.Get("Orchestrator_NotImplementedLog", brand, ex.Message));
+                notImplementedNotes.Add(ex.Message);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                logger.LogWarning(ex, "{Message}", Strings.Get("Orchestrator_DiscoveryFailedLog", brand));
+                failureNotes.Add(ex.Message);
+            }
         }
 
-        var results = new List<ModelRunResult>(entries.Count);
+        if (notImplementedNotes.Count == brandSources.Count)
+        {
+            return BrandRunResult.NotImplemented(brand, string.Join("; ", notImplementedNotes));
+        }
+
+        if (failureNotes.Count > 0 && discovered.Count == 0)
+        {
+            return BrandRunResult.DiscoveryFailed(brand, [], string.Join("; ", failureNotes));
+        }
+
+        var results = new List<ModelRunResult>(discovered.Count);
         var now = _time.GetUtcNow();
 
-        foreach (var entry in entries)
+        foreach (var (source, entry) in discovered)
         {
             ct.ThrowIfCancellationRequested();
 
@@ -84,7 +107,10 @@ public sealed class RescueCardOrchestrator(
                 LocalPdfRelativePath: null,
                 SiblingModelIds: siblingConfig.FindGroupIds(brand, entry.Parsed.ModelName),
                 EstimatedFleetSize: null,
-                BundlePriority: BundlePriority.Unknown);
+                BundlePriority: BundlePriority.Unknown,
+                DocumentScope: entry.Scope,
+                ManufacturerGroup: entry.ManufacturerGroup,
+                ChassisCode: entry.Parsed.ChassisCode);
 
             await store.SaveAsync(metadata, download.Success ? download.Content : null, ct);
             results.Add(new ModelRunResult(entry, status, download.FailureReason));
@@ -95,7 +121,9 @@ public sealed class RescueCardOrchestrator(
             await store.WriteBrandManifestAsync(brand, ct);
         }
 
-        return BrandRunResult.Completed(brand, results);
+        return failureNotes.Count > 0
+            ? BrandRunResult.DiscoveryFailed(brand, results, string.Join("; ", failureNotes))
+            : BrandRunResult.Completed(brand, results);
     }
 
     private async Task<RescueCardDownloadResult> TryDownloadAsync(

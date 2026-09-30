@@ -7,14 +7,14 @@ public class DataQualityCheckerTests
 {
     private static RescueCardMetadata Card(
         string id, Brand brand = Brand.Audi, string? bodyType = null, string? fuelType = null,
-        BundlePriority priority = BundlePriority.Unknown) =>
+        BundlePriority priority = BundlePriority.Unknown, DocumentScope scope = DocumentScope.Single) =>
         new(
             Id: id, Brand: brand, ModelName: "Test", Variant: null, BodyType: bodyType,
             BuildYearFrom: null, BuildYearTo: null, Doors: null, FuelType: fuelType,
             LanguageCode: "DE", Status: RescueCardStatus.Downloaded, SourcePageUrl: "https://example.test",
             DownloadUrl: null, FailureReason: null, ParseConfidence: ParseConfidence.Heuristic,
             DiscoveredAtUtc: DateTimeOffset.UtcNow, DownloadedAtUtc: null, LocalPdfRelativePath: null,
-            SiblingModelIds: [], EstimatedFleetSize: null, BundlePriority: priority);
+            SiblingModelIds: [], EstimatedFleetSize: null, BundlePriority: priority, DocumentScope: scope);
 
     [Fact]
     public void CheckAll_BodyTypeIsAYear_ReportsIssue()
@@ -193,5 +193,27 @@ public class DataQualityCheckerTests
         var issues = DataQualityChecker.CheckAll(cards);
 
         Assert.Empty(issues);
+    }
+    [Fact]
+    public void CheckAll_BrandKbaNeverLists_IsNotReportedAsEntirelyUnknown()
+    {
+        // Rolls-Royce is below KBA's 1,000-vehicle publication threshold for every model.
+        var cards = new[] { Card("vw-1", Brand.VW, priority: BundlePriority.High), Card("rr-1", Brand.RollsRoyce) };
+
+        Assert.Empty(DataQualityChecker.CheckAll(cards));
+    }
+
+    [Fact]
+    public void CheckAll_CombinedDocuments_DoNotCountAsUnmatchedCards()
+    {
+        // A combined all-models PDF has no single model name; its split parts are what gets matched.
+        var cards = new[]
+        {
+            Card("vw-1", Brand.VW, priority: BundlePriority.High),
+            Card("ford-all", Brand.Ford, scope: DocumentScope.Combined),
+            Card("ford-kuga", Brand.Ford, priority: BundlePriority.High, scope: DocumentScope.SplitPart)
+        };
+
+        Assert.Empty(DataQualityChecker.CheckAll(cards));
     }
 }

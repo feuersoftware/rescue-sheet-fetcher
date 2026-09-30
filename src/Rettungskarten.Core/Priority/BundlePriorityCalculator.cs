@@ -24,13 +24,22 @@ public sealed record PriorityMatchResult(int? EstimatedFleetSize, BundlePriority
 /// built once (keyed by reference equality of the stockRows instance, so it still rebuilds correctly if
 /// a caller - e.g. a test - ever passes a different list) and turns every subsequent card's lookup into
 /// an O(1) dictionary hit instead of a full rescan.
+///
+/// Two FZ12 layout facts shape the index (both verified against fz12_2026.xlsx):
+/// - The same model series appears once per segment it is registered in - vans and utilities are
+///   split across "GROSSRAUM-VANS", "UTILITIES" and "WOHNMOBILE" (e.g. "VW CADDY", "MERCEDES VITO",
+///   "FIAT DUCATO", "LAND ROVER DEFENDER" in both SUVs and utilities). The model's fleet is the sum of
+///   those rows; taking only the first one undercounted every such model.
+/// - Some series name several models at once, comma-separated ("MERCEDES GLK, GLC", "ML-KLASSE, GLE",
+///   "FORD TRANSIT, TOURNEO"). Each part is indexed as a fallback name for the whole row, so a "GLC"
+///   card matches without an alias; an exact series name always wins over such a part.
 /// </summary>
 public sealed class BundlePriorityCalculator(ModelAliasConfig aliases, BundlePriorityThresholds? thresholds = null)
 {
     private readonly BundlePriorityThresholds _thresholds = thresholds ?? BundlePriorityThresholds.Default;
 
     private IReadOnlyList<VehicleStockRow>? _indexedStockRows;
-    private Dictionary<Brand, Dictionary<string, VehicleStockRow>>? _index;
+    private Dictionary<Brand, BrandIndex>? _index;
 
     public PriorityMatchResult Calculate(Brand brand, string? modelName, IReadOnlyList<VehicleStockRow> stockRows)
     {
@@ -41,51 +50,41 @@ public sealed class BundlePriorityCalculator(ModelAliasConfig aliases, BundlePri
 
         var brandIndex = GetOrBuildIndex(stockRows).GetValueOrDefault(brand);
 
-        var directMatch = FindByNormalizedName(brandIndex, modelName);
-        if (directMatch is not null)
+        var directMatch = brandIndex?.Find(modelName);
+        if (directMatch is { } directCount)
         {
-            return new PriorityMatchResult(directMatch.Count, ToPriority(directMatch.Count), false);
+            return new PriorityMatchResult(directCount, ToPriority(directCount), false);
         }
 
         var aliasTarget = aliases.FindKbaModelSeries(brand, modelName);
-        if (aliasTarget is not null)
+        if (aliasTarget is not null && brandIndex?.Find(aliasTarget) is { } aliasCount)
         {
-            var aliasMatch = FindByNormalizedName(brandIndex, aliasTarget);
-            if (aliasMatch is not null)
-            {
-                return new PriorityMatchResult(aliasMatch.Count, ToPriority(aliasMatch.Count), true);
-            }
+            return new PriorityMatchResult(aliasCount, ToPriority(aliasCount), true);
         }
 
         return new PriorityMatchResult(null, BundlePriority.Unknown, false);
     }
 
-    private Dictionary<Brand, Dictionary<string, VehicleStockRow>> GetOrBuildIndex(IReadOnlyList<VehicleStockRow> stockRows)
+    private Dictionary<Brand, BrandIndex> GetOrBuildIndex(IReadOnlyList<VehicleStockRow> stockRows)
     {
         if (_index is not null && ReferenceEquals(_indexedStockRows, stockRows))
         {
             return _index;
         }
 
-        var index = new Dictionary<Brand, Dictionary<string, VehicleStockRow>>();
+        var index = new Dictionary<Brand, BrandIndex>();
         foreach (var brand in Enum.GetValues<Brand>())
         {
-            var byNormalizedName = new Dictionary<string, VehicleStockRow>();
+            var brandIndex = new BrandIndex();
             foreach (var row in stockRows)
             {
-                if (!BrandNames.Matches(brand, row.BrandLabel))
+                if (BrandNames.Matches(brand, row.BrandLabel))
                 {
-                    continue;
+                    brandIndex.Add(row);
                 }
-
-                // First-match-wins on a normalized-name collision, same as the original linear
-                // FirstOrDefault over stockRows in its original order - shouldn't happen in practice
-                // (KBA rows are unique per model series within a brand), but keeps behavior identical
-                // if it ever did.
-                byNormalizedName.TryAdd(ModelNameNormalizer.Normalize(row.ModelSeries), row);
             }
 
-            index[brand] = byNormalizedName;
+            index[brand] = brandIndex;
         }
 
         _indexedStockRows = stockRows;
@@ -93,13 +92,45 @@ public sealed class BundlePriorityCalculator(ModelAliasConfig aliases, BundlePri
         return index;
     }
 
-    private static VehicleStockRow? FindByNormalizedName(Dictionary<string, VehicleStockRow>? brandIndex, string modelName) =>
-        brandIndex?.GetValueOrDefault(ModelNameNormalizer.Normalize(modelName));
-
     private BundlePriority ToPriority(int fleetSize) => fleetSize switch
     {
         _ when fleetSize >= _thresholds.High => BundlePriority.High,
         _ when fleetSize >= _thresholds.Medium => BundlePriority.Medium,
         _ => BundlePriority.Low
     };
+
+    private sealed class BrandIndex
+    {
+        private readonly Dictionary<string, int> _bySeriesName = new();
+        private readonly Dictionary<string, int> _bySeriesNamePart = new();
+
+        public void Add(VehicleStockRow row)
+        {
+            var name = ModelNameNormalizer.Normalize(row.ModelSeries);
+            _bySeriesName[name] = _bySeriesName.GetValueOrDefault(name) + row.Count;
+
+            var parts = row.ModelSeries.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            if (parts.Length < 2)
+            {
+                return;
+            }
+
+            foreach (var part in parts)
+            {
+                var partName = ModelNameNormalizer.Normalize(part);
+                _bySeriesNamePart[partName] = _bySeriesNamePart.GetValueOrDefault(partName) + row.Count;
+            }
+        }
+
+        public int? Find(string modelName)
+        {
+            var normalized = ModelNameNormalizer.Normalize(modelName);
+            if (_bySeriesName.TryGetValue(normalized, out var count))
+            {
+                return count;
+            }
+
+            return _bySeriesNamePart.TryGetValue(normalized, out var partCount) ? partCount : null;
+        }
+    }
 }

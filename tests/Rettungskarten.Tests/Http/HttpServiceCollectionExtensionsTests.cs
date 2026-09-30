@@ -9,6 +9,7 @@ public class HttpServiceCollectionExtensionsTests
     [Theory]
     [InlineData(RettungskartenHttpClient.Name)]
     [InlineData(RettungskartenHttpClient.LargeDownloadName)]
+    [InlineData(RettungskartenHttpClient.BrowserName)]
     public void AddRettungskartenHttpClient_PoliteDelegatingHandlerIsInnermost(string clientName)
     {
         // Regression test: PoliteDelegatingHandler must be registered AFTER (= closer to the transport
@@ -26,9 +27,14 @@ public class HttpServiceCollectionExtensionsTests
         using var provider = services.BuildServiceProvider();
         provider.GetRequiredService<IHttpClientFactory>().CreateClient(clientName);
 
+        // Expected order, outermost first: resilience, robots.txt check, rate limiter - the robots.txt
+        // check must sit inside the resilience handler (a refused request is never retried) and
+        // outside the rate limiter (its own robots.txt fetch is rate-limited like any request).
         Assert.NotNull(capturedHandlers);
-        Assert.Equal(2, capturedHandlers.Count);
+        Assert.Equal(3, capturedHandlers.Count);
         Assert.IsType<PoliteDelegatingHandler>(capturedHandlers[^1]);
+        Assert.IsType<RobotsTxtDelegatingHandler>(capturedHandlers[^2]);
         Assert.IsNotType<PoliteDelegatingHandler>(capturedHandlers[0]);
+        Assert.IsNotType<RobotsTxtDelegatingHandler>(capturedHandlers[0]);
     }
 }

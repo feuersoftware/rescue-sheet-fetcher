@@ -1,5 +1,6 @@
 using ClosedXML.Excel;
 using Rettungskarten.Core.Localization;
+using Rettungskarten.Core.Matching;
 using Rettungskarten.Core.Models;
 
 namespace Rettungskarten.Infrastructure.Stock;
@@ -112,8 +113,22 @@ public static class KbaStockXlsxParser
         return rows;
     }
 
-    private static (string BrandLabel, string ModelSeries) SplitBrandAndModel(string modellreihe)
+    /// <summary>
+    /// The brand is the longest known multi-word KBA brand label the text starts with
+    /// (<see cref="BrandNames.MultiWordKbaBrandLabels"/>: "ALFA ROMEO", "LAND ROVER", "MG ROEWE", ...),
+    /// otherwise the first word. Splitting at the first space alone made "ALFA" the brand and
+    /// "ROMEO GIULIA" the model for every Alfa Romeo, Land Rover, Aston Martin, Lynk &amp; Co and MG row.
+    /// </summary>
+    internal static (string BrandLabel, string ModelSeries) SplitBrandAndModel(string modellreihe)
     {
+        var multiWordBrand = BrandNames.MultiWordKbaBrandLabels
+            .OrderByDescending(label => label.Length)
+            .FirstOrDefault(label => modellreihe.StartsWith(label + " ", StringComparison.OrdinalIgnoreCase));
+        if (multiWordBrand is not null)
+        {
+            return (modellreihe[..multiWordBrand.Length], modellreihe[(multiWordBrand.Length + 1)..].Trim());
+        }
+
         var spaceIndex = modellreihe.IndexOf(' ');
         return spaceIndex < 0
             ? (modellreihe, string.Empty)

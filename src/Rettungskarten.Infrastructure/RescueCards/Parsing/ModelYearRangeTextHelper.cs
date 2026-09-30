@@ -10,12 +10,25 @@ public readonly record struct YearRange(int? From, int? To);
 /// "bis 2021" -> (null, 2021), a single bare year "2024" -> (2024, 2024), Porsche's English
 /// "Model Year 2003 to Model Year 2005" / "from Model Year 2011" phrasing, or Bentley's
 /// "(2021 - )" open-ended-dash phrasing for a model still in production.
+///
+/// Before matching, the text is normalized for the phrasings the non-VW sources add: en/em dashes
+/// ("2012 – 2017"), a month in front of the year ("ab 03/2019", "11.2019 - 06.2023" - only the year
+/// is kept, the schema has no month), and the German "Modelljahr"/"MJ" prefix ("ab Modelljahr 2023").
+/// "seit"/"from"/"since" read like "ab", "vor"/"until"/"before" like "bis".
+///
+/// A single bare year is ambiguous: on VW-style filenames it is the one year a sheet applies to, but
+/// on most other brands' labels ("Captur 2 - 2021", "Spring 2024") it's the launch year of a model
+/// still being built. <paramref name="singleYearIsStartYear"/> lets a caller pick the latter meaning.
 /// </summary>
 public static class ModelYearRangeTextHelper
 {
-    private static readonly Regex RangePattern = new(@"(19|20)\d{2}\s*-\s*(19|20)\d{2}", RegexOptions.Compiled);
-    private static readonly Regex AbPattern = new(@"\bab\s+((?:19|20)\d{2})\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-    private static readonly Regex BisPattern = new(@"\bbis\s+((?:19|20)\d{2})\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex DashVariants = new(@"[‒–—―−]", RegexOptions.Compiled);
+    private static readonly Regex MonthBeforeYear = new(@"\b(?:0?[1-9]|1[0-2])\s*[./]\s*(?=(?:19|20)\d{2}\b)", RegexOptions.Compiled);
+    private static readonly Regex ModelYearPrefix = new(@"\b(?:Modelljahr|MJ)\s*(?=(?:19|20)\d{2}\b)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    private static readonly Regex RangePattern = new(@"((?:19|20)\d{2})\s*-\s*((?:19|20)\d{2})", RegexOptions.Compiled);
+    private static readonly Regex AbPattern = new(@"\b(?:ab|seit|from|since)\s+((?:19|20)\d{2})\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex BisPattern = new(@"\b(?:bis|vor|until|before)\s+((?:19|20)\d{2})\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly Regex ModelYearRangePattern = new(
         @"(?:from\s+)?Model\s+Year\s+((?:19|20)\d{2})\s+to\s+(?:Model\s+Year\s+)?((?:19|20)\d{2})",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
@@ -29,15 +42,16 @@ public static class ModelYearRangeTextHelper
     // "YYYY - YYYY" range and is checked first), not load-bearing on its own.
     private static readonly Regex OpenEndedDashPattern = new(
         @"((?:19|20)\d{2})\s*-\s*(?!(?:19|20)\d{2})", RegexOptions.Compiled);
-    private static readonly Regex SingleYearPattern = new(@"(19|20)\d{2}", RegexOptions.Compiled);
+    private static readonly Regex SingleYearPattern = new(@"(?<!\d)(19|20)\d{2}(?!\d)", RegexOptions.Compiled);
 
-    public static YearRange Extract(string text)
+    public static YearRange Extract(string text, bool singleYearIsStartYear = false)
     {
+        text = Normalize(text);
+
         var rangeMatch = RangePattern.Match(text);
         if (rangeMatch.Success)
         {
-            var parts = rangeMatch.Value.Split('-', StringSplitOptions.TrimEntries);
-            return new YearRange(int.Parse(parts[0]), int.Parse(parts[1]));
+            return new YearRange(int.Parse(rangeMatch.Groups[1].Value), int.Parse(rangeMatch.Groups[2].Value));
         }
 
         var modelYearRangeMatch = ModelYearRangePattern.Match(text);
@@ -45,6 +59,12 @@ public static class ModelYearRangeTextHelper
         {
             return new YearRange(
                 int.Parse(modelYearRangeMatch.Groups[1].Value), int.Parse(modelYearRangeMatch.Groups[2].Value));
+        }
+
+        var fromModelYearMatch = FromModelYearPattern.Match(text);
+        if (fromModelYearMatch.Success)
+        {
+            return new YearRange(int.Parse(fromModelYearMatch.Groups[1].Value), null);
         }
 
         var abMatch = AbPattern.Match(text);
@@ -59,12 +79,6 @@ public static class ModelYearRangeTextHelper
             return new YearRange(null, int.Parse(bisMatch.Groups[1].Value));
         }
 
-        var fromModelYearMatch = FromModelYearPattern.Match(text);
-        if (fromModelYearMatch.Success)
-        {
-            return new YearRange(int.Parse(fromModelYearMatch.Groups[1].Value), null);
-        }
-
         var openEndedDashMatch = OpenEndedDashPattern.Match(text);
         if (openEndedDashMatch.Success)
         {
@@ -75,9 +89,16 @@ public static class ModelYearRangeTextHelper
         if (singleMatch.Success)
         {
             var year = int.Parse(singleMatch.Value);
-            return new YearRange(year, year);
+            return singleYearIsStartYear ? new YearRange(year, null) : new YearRange(year, year);
         }
 
         return new YearRange(null, null);
+    }
+
+    private static string Normalize(string text)
+    {
+        text = DashVariants.Replace(text, "-");
+        text = MonthBeforeYear.Replace(text, string.Empty);
+        return ModelYearPrefix.Replace(text, string.Empty);
     }
 }

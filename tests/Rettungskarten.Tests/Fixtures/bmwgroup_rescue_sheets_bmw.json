@@ -1,0 +1,230 @@
+{
+ "meta": {
+  "count": 13,
+  "limit": 1000,
+  "offset": 0
+ },
+ "data": [
+  {
+   "id": "068541c9-946f-47b7-ab37-10c17ad8fa2e",
+   "brand": "bmw",
+   "bodyType": {
+    "id": "0bb8895b-3a00-4f74-8de6-a3d29687545a",
+    "translationKey": "article.public-bmw-compact-van.Name",
+    "name": "compact-van"
+   },
+   "series": {
+    "id": "e95b4bf2-a0ae-4d29-9071-5a1ad5287ee1",
+    "translationKey": "portlet.public-rescue-information-bmw-compact-van-2-series-browser.title",
+    "name": "2-series"
+   },
+   "key": "Rescue-information/BMW/compact-van/2-series/de_2er-Reihe-F45.pdf",
+   "language": "de-DE",
+   "name": "2er-Reihe F45 (ab 09/2014)"
+  },
+  {
+   "id": "e6f27e77-544e-4a6c-87ba-bdf798a55506",
+   "brand": "bmw",
+   "bodyType": {
+    "id": "6ee59cb3-24c7-4a18-af1d-66b1b806a6d2",
+    "translationKey": "article.public-bmw-coupe-compact.Name",
+    "name": "coupe-compact"
+   },
+   "series": {
+    "id": "bb103c35-385a-4d9a-841b-65d02d67d8df",
+    "translationKey": "portlet.private-rescue-information-bmw-coupe-compact-2-series-browser.title",
+    "name": "2-series"
+   },
+   "key": "Rescue-information/BMW/coupe-compact/2-series/VUL-BMW_2er Series_F74_Coupé_2024_5d_GD_de-DE.pdf",
+   "language": "de-DE",
+   "name": "2-Series F74 (ab 11/2024)"
+  },
+  {
+   "id": "e1f19cdd-c9bb-4738-b4e5-002a8ff594ef",
+   "brand": "bmw",
+   "bodyType": {
+    "id": "6114cf26-4162-4e0e-9329-c87586fe0ab5",
+    "translationKey": "article.public-bmw-coupe-compact.Name",
+    "name": "coupe-compact"
+   },
+   "series": {
+    "id": "d170cafe-3100-4180-bb72-9845c922c9ee",
+    "translationKey": "portlet.private-rescue-information-bmw-coupe-compact-4-series-browser.title",
+    "name": "4-series"
+   },
+   "key": "Rescue-information/BMW/coupe-compact/4-series/VUL-REK-P-BMW_G26BEV_de-DE.pdf",
+   "language": "de-DE",
+   "name": "I4 G26 BEVE (seit 11/2021)"
+  },
+  {
+   "id": "6708fbf8-84d9-4db6-b7e8-3c44d88dbbd3",
+   "brand": "bmw",
+   "bodyType": {
+    "id": "12e02376-9e85-4abe-a5d3-828f15761d66",
+    "translationKey": "article.public-bmw-suv.Name",
+    "name": "suv"
+   },
+   "series": {
+    "id": "d87a505d-ae3f-41b1-83d2-9e16b2286670",
+    "translationKey": "iX",
+    "name": "iX"
+   },
+   "key": "Rescue-information/BMW/suv/x3/VUL-BMW_iX3_NA5_SUV_2025_5d_Electric_de-DE.pdf",
+   "language": "de-DE",
+   "name": "iX3 NA5 BEV (ab 11/2025)"
+  },
+  {
+   "id": "3d147ab9-f06b-437d-8531-035aaba931be",
+   "brand": "bmw",
+   "bodyType": {
+    "id": "9b135b65-5625-4ed7-8726-fd1da5dd2530",
+    "translationKey": "article.public-bmw-suv.Name",
+    "name": "suv"
+   },
+   "series": {
+    "id": "d87a505d-ae3f-41b1-83d2-9e16b2286670",
+    "translationKey": "iX",
+    "name": "iX"
+   },
+   "key": "Rescue-information/BMW/suv/iX/VUL-BMW_I20_de-DE.pdf",
+   "language": "de-DE",
+   "name": "I20 (seit 07/2021)"
+  },
+  {
+   "id": "d9d08740-1695-4b64-a0e0-fe25c2cfa91c",
+   "brand": "bmw",
+   "bodyType": {
+    "id": "92013c44-9912-439a-ac60-dc0a4fa01469",
+    "translationKey": "article.public-bmw-convertible.Name",
+    "name": "convertible"
+   },
+   "series": {
+    "id": "ff5af65a-2040-46b5-a617-7714ef9a0b56",
+    "translationKey": "portlet.public-rescue-information-bmw-convertible-z4-browser.title",
+    "name": "z4"
+   },
+   "key": "Rescue-information/BMW/convertible/z4/de_Z4-BMW-G29.pdf",
+   "language": "de-DE",
+   "name": "BMW Z4 G29 (ab - 11/2018)"
+  },
+  {
+   "id": "99808106-5ab7-41d6-aae7-fd8c6bc74054",
+   "brand": "bmw",
+   "bodyType": {
+    "id": "12e02376-9e85-4abe-a5d3-828f15761d66",
+    "translationKey": "article.public-bmw-suv.Name",
+    "name": "suv"
+   },
+   "series": {
+    "id": "27c8b18e-68b6-4abe-9e8e-65915f426892",
+    "translationKey": "portlet.private-rescue-information-bmw-suv-x3-browser.title",
+    "name": "x3"
+   },
+   "key": "Rescue-information/BMW/suv/x3/VUL-REK-P-BMW_G01PHE_de-DE.pdf",
+   "language": "de-DE",
+   "name": "X3 G01 PHEV (ab 112019)"
+  },
+  {
+   "id": "5efd3044-6117-4a5d-9cc3-86765d79198b",
+   "brand": "bmw",
+   "bodyType": {
+    "id": "975be68e-8ae5-45a0-825b-880767e7e6a7",
+    "translationKey": "article.public-bmw-suv.Name",
+    "name": "suv"
+   },
+   "series": {
+    "id": "c15cf999-4b64-4a16-ace4-a688198a2933",
+    "translationKey": "portlet.private-rescue-information-bmw-suv-x5-browser.title",
+    "name": "x5"
+   },
+   "key": "Rescue-information/BMW/suv/x5/VUL-REK-P-F15_PHEV_de-DE.pdf",
+   "language": "de-DE",
+   "name": "X5 ActiveHybrid F15PHEV(seit 10/2015)"
+  },
+  {
+   "id": "1bc9116b-1bc4-4c83-a5e9-c286d8bf1aa6",
+   "brand": "bmw",
+   "bodyType": {
+    "id": "6ff2f480-6c33-4020-a40c-fd85512ed203",
+    "translationKey": "article.public-bmw-sedan.Name",
+    "name": "sedan"
+   },
+   "series": {
+    "id": "bc0cafe2-468d-4268-bf7c-203a2dea8815",
+    "translationKey": "portlet.public-rescue-information-bmw-sedan-3-series-browser.title",
+    "name": "3-series"
+   },
+   "key": "Rescue-information/BMW/sedan/3-series/VUL-REK-P-BMW_G80_de-DE.pdf",
+   "language": "de-DE",
+   "name": "3er-Reihe M3 G80 (ab 11/2020)"
+  },
+  {
+   "id": "4833c078-595c-4803-ae81-13bc30355ee4",
+   "brand": "bmw",
+   "bodyType": {
+    "id": "e1a2eb46-b54b-40e3-ae67-9757fa25c79c",
+    "translationKey": "article.public-bmw-touring.Name",
+    "name": "touring"
+   },
+   "series": {
+    "id": "fd2f8505-2563-46f2-8be5-c1f3453c7aa9",
+    "translationKey": "portlet.public-rescue-information-bmw-touring-5-series-browser.title",
+    "name": "5-series"
+   },
+   "key": "Rescue-information/BMW/touring/5-series/VUL-REK-P-G61_BEV_de-DE.pdf",
+   "language": "de-DE",
+   "name": "5-Series I5 G61 BEV (since 03/2024)"
+  },
+  {
+   "id": "65f3f5db-9c29-487a-843a-4a13ad2e698e",
+   "brand": "bmw",
+   "bodyType": {
+    "id": "1cad99d6-2340-44e3-8856-58eac59ea585",
+    "translationKey": "article.public-bmw-sedan.Name",
+    "name": "sedan"
+   },
+   "series": {
+    "id": "e3c53d7d-fc21-4205-8a8c-5f6f6c56302d",
+    "translationKey": "portlet.public-rescue-information-bmw-sedan-7-series-browser.title",
+    "name": "7-series"
+   },
+   "key": "Rescue-information/BMW/sedan/7-series/VUL-REK-P-F01_ACTIVE_de-DE.pdf",
+   "language": "de-DE",
+   "name": "7er-Reihe ActiveHybrid 7 F01 / F02 /F04 (seit 07/2012)"
+  },
+  {
+   "id": "640a660b-ed2c-427f-8ea2-854d9bb408a6",
+   "brand": "bmw",
+   "bodyType": {
+    "id": "4a6c9674-5d62-4248-9452-422c7fde1300",
+    "translationKey": "article.public-bmw-coupe-compact.Name",
+    "name": "coupe-compact"
+   },
+   "series": {
+    "id": "45a12393-08f9-4a82-babb-45cffd1d5742",
+    "translationKey": "portlet.private-rescue-information-bmw-coupe-compact-3-series-browser.title",
+    "name": "3-series"
+   },
+   "key": "Rescue-information/BMW/coupe-compact/3-series/de_3er-Reihe-E36-Compact.pdf",
+   "language": "de-DE",
+   "name": "3er-Reihe E36 Compact (01/1994 - 08/2000)"
+  },
+  {
+   "id": "83088b4a-ad19-4455-8865-f4f05709fd26",
+   "brand": "bmw",
+   "bodyType": {
+    "id": "40dcf92b-bed4-42e8-a7b6-4f3365a29eca",
+    "translationKey": "article.public-bmw-compact-van.Name",
+    "name": "compact-van"
+   },
+   "series": {
+    "id": "25661925-6245-4001-86c4-06cd248d16cd",
+    "translationKey": "article.bmwi-i3.Name",
+    "name": "i3"
+   },
+   "key": "Rescue-information/BMW/compact-van/i3/de_I01.pdf",
+   "language": "de-DE",
+   "name": "I01(11/2013- 11/2015)"
+  }
+ ]
+}

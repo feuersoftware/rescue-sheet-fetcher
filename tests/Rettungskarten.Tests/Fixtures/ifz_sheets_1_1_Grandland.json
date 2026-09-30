@@ -1,0 +1,44 @@
+[
+    {
+        "fabrikat_nr": 1,
+        "land_id": 1,
+        "auto_typ": "Grandland",
+        "detail_text": "Grandland (2021)",
+        "detail_file": "ret_deu_pdf/deu_ov_grandland_2021_1"
+    },
+    {
+        "fabrikat_nr": 1,
+        "land_id": 1,
+        "auto_typ": "Grandland",
+        "detail_text": "Grandland Hybrid (AWD) (2021)",
+        "detail_file": "ret_deu_pdf/deu_ov_grandland_awd_2021_2"
+    },
+    {
+        "fabrikat_nr": 1,
+        "land_id": 1,
+        "auto_typ": "Grandland",
+        "detail_text": "Grandland Hybrid (2WD) (2021)",
+        "detail_file": "ret_deu_pdf/deu_ov_grandland_2wd_2021_3"
+    },
+    {
+        "fabrikat_nr": 1,
+        "land_id": 1,
+        "auto_typ": "Grandland",
+        "detail_text": "Grandland SUV electric (2024)",
+        "detail_file": "ret_deu_pdf/deu_ov_grandland_e_suv_2024"
+    },
+    {
+        "fabrikat_nr": 1,
+        "land_id": 1,
+        "auto_typ": "Grandland",
+        "detail_text": "Grandland SUV (2024)\r\n",
+        "detail_file": "ret_deu_pdf/deu_ov_grandland_suv_2024"
+    },
+    {
+        "fabrikat_nr": 1,
+        "land_id": 1,
+        "auto_typ": "Grandland",
+        "detail_text": "Grandland Hybrid SUV (2024)",
+        "detail_file": "ret_deu_pdf/deu_ov_grandland_suv_hyb_5d"
+    }
+]

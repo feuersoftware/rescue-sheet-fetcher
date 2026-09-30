@@ -1,0 +1,180 @@
+<html>
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=UTF-8"><link rel="stylesheet" href="../../../charte/themes/AP/style_ie.css" type="text/css"><link rel="stylesheet" href="../../../charte/themes/AP/main.css" type="text/css"><link rel="stylesheet" href="../../../charte/themes/AP/bouton.css" type="text/css"><link rel="stylesheet" href="../../../charte/themes/AP/common.css" type="text/css"><script language="javascript">
+		<!--
+		/** Reset subMenus */
+		function resetSousMenus(sousMenu) {
+			for (var i=0; i<=26; i++) {
+				if ((document.getElementById('lien_sous_menu'+ sousMenu + '_' + i))) {
+					document.getElementById('lien_sous_menu'+ sousMenu + '_' +i).style.textDecoration='none';
+					document.getElementById('lien_sous_menu'+ sousMenu + '_' +i).style.fontWeight='normal';
+				}
+			}
+		}
+		
+		/** cache tout les titres des paragraphes */
+		function resetTitrePara() {
+			for (var i=0; i<=26; i++) {
+			
+				var titrePara = document.getElementsByName('sous_sous_menu'+i)
+				if (titrePara) {
+					for(var j=0; j<titrePara.length; j++) {
+						if(titrePara[j].parentNode.id.indexOf('sous_sous_menu')!=-1) {
+							titrePara[j].parentNode.style.display='none';
+						}
+					}
+				}
+			}
+		}
+
+
+		/** Reset menus */
+		function resetMenus() {
+			for (var i=0; i<=1; i++) {
+				if ((document.getElementById('sous_menu'+i))) {
+					document.getElementById('sous_menu'+i).style.display='none';
+				}
+				resetSousMenus('sous_menu'+i);
+			}	
+		}
+	
+		/** Hide all div for chapters by document type */
+		function hideAllDiv() {
+			var div;
+		
+			div = document.getElementById('div_AIDE');
+			if (div) {
+				div.style.display = "none";
+			}
+					
+			resetMenus();
+		}
+		
+		/** Display the div identified with id */
+		function showDiv(id) {
+			var div = document.getElementById(id);
+			if (div) {
+				hideAllDiv();
+				div.style.display = 'block';
+			}
+		}
+
+		/** Display subMenu */
+		function showSousMenus(id) {
+			var d = document.getElementById('sous_menu'+id);
+			if (d.style.display=='none') {
+				resetMenus();
+				resetSousMenus(id);
+				resetTitrePara();
+				/* On affiche le premier document du sous-menu */
+				var a = d.getElementsByTagName("a")[0];
+				parent.content.location = a;
+				
+				a.style.fontWeight = 'bold';
+				d.style.display='block';
+			}
+			else {
+				d.style.display='none';
+			}
+		}
+				
+		/** Bold Link */
+		function boldLienSousMenu(id, sousMenu) {
+			var titrePara = document.getElementsByName('sous_sous_menu'+id);
+			
+			var j = 0;
+					var atrie = new Array();
+					for (var i=0; i<titrePara.length; i++) {
+						if(titrePara[i].name == 'sous_sous_menu'+id){	
+							atrie[j] = titrePara[i];
+							j++;
+						}	
+					}
+					titrePara = atrie;
+			i=0;
+			if (titrePara[i] && (titrePara[i].parentNode.style.display=='none')) {
+				/* enlève le gras des liens sous Menu */
+				resetSousMenus(sousMenu);
+				
+				resetTitrePara();
+				var d = document.getElementById('lien_sous_menu'+ sousMenu + '_' +id);
+				
+				d.style.fontWeight = 'bold';	
+
+				for(i=0; i<titrePara.length; i++) {
+					titrePara[i].parentNode.style.display='block';
+				}
+			} else {
+				resetSousMenus(sousMenu);
+				resetTitrePara();
+				var d = document.getElementById('lien_sous_menu'+ sousMenu + '_' +id);				
+				
+				d.style.fontWeight = 'bold';
+			}
+		}
+		
+		/** Pour imprimer l'aide globale */
+		function printPage(page) {
+			if (window.print) {
+				parent.printGlobal.location=page;
+			}
+		}		
+		-->
+		</script>
+</head>
+<body onload="if (parent.content.location=='about:blank') {showDiv('div_AIDE'); parent.content.location='AIDE/indexAIDE.html'; return true;}">
+<table border="0" cellspacing="0" cellpadding="0" width="100%">
+<tr>
+<td class="fondMenu" valign="top" height="400" width="154">
+<table border="0" cellspacing="0" cellpadding="0">
+<tr>
+<td>
+<table class="left_menu" cellspacing="0" cellpadding="0" border="0">
+<thead>
+<tr>
+<td height="46" class="titreMenu">Menü</td>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="item"><a style="display:inline" href="AIDE/indexAIDE.html" target="content" onclick="showDiv('div_AIDE'); return true;">Hilfe</a></td>
+</tr>
+<tr>
+<td class="table_footer">&nbsp;</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</table>
+<div style="display: block" id="div_AIDE">
+<table border="0" cellspacing="0" cellpadding="0">
+<tr>
+<td>
+<table class="left_menu" cellspacing="0" cellpadding="0" border="0">
+<thead>
+<tr>
+<td height="46" class="titreMenu">Hilfe</td>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="item"><a href="#" onClick="showSousMenus('0');">Unterst&uuml;tzung und Erste Hilfe</a>
+<div style="display: none;" class="sous_menu" id="sous_menu0">
+<a target="content" href="AIDE/14693/FAD_AP_107.html?id=sous_menu0|0_0" name="sous_menu0" id="lien_sous_menu0_0" onClick="boldLienSousMenu(0, 0);">107</a><a target="content" href="AIDE/14706/FAD_AP_3008.html?id=sous_menu0|0_15" name="sous_menu0" id="lien_sous_menu0_15" onClick="boldLienSousMenu(15, 0);">3008</a><a target="content" href="AIDE/14709/FAD_AP_EXPERT.html?id=sous_menu0|0_20" name="sous_menu0" id="lien_sous_menu0_20" onClick="boldLienSousMenu(20, 0);">EXPERT</a></div>
+</td>
+</tr>
+<tr>
+<td class="table_footer">&nbsp;</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</table>
+</div>
+</td>
+</tr>
+</table>
+</body>
+</html>

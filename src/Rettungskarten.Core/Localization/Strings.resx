@@ -43,15 +43,12 @@
   </resheader>
 
   <!-- App / global -->
-  <data name="App_Description" xml:space="preserve"><value>Rescue-sheet and vehicle-stock tool for fire brigades (VW Group)</value></data>
   <data name="Option_Verbose_Description" xml:space="preserve"><value>Verbose logs</value></data>
   <data name="Option_Lang_Description" xml:space="preserve"><value>Output language (de, en) - defaults to the OS language</value></data>
   <data name="Error_InvalidLanguage" xml:space="preserve"><value>Invalid --lang value '{0}'. Must be 'de' or 'en'.</value></data>
 
   <!-- fetch rescue-cards -->
   <data name="Command_Fetch_Description" xml:space="preserve"><value>Fetches data from external sources</value></data>
-  <data name="Command_RescueCards_Description" xml:space="preserve"><value>Downloads rescue data sheets for VW Group vehicle brands (German only)</value></data>
-  <data name="Option_Brand_Description" xml:space="preserve"><value>Brand (vw, audi, skoda, seat, cupra, porsche, all)</value></data>
   <data name="Option_Output_RescueCards_Description" xml:space="preserve"><value>Target directory for rescue data sheets</value></data>
   <data name="Option_DryRun_Description" xml:space="preserve"><value>Discovery and metadata only, no PDF downloads</value></data>
   <data name="Option_SiblingConfig_Description" xml:space="preserve"><value>Path to sibling-models.json (default: bundled file)</value></data>
@@ -69,12 +66,6 @@
   <data name="Option_Aliases_Description" xml:space="preserve"><value>Path to model-aliases.json (default: bundled file)</value></data>
 
   <!-- split porsche -->
-  <data name="Command_Split_Description" xml:space="preserve"><value>Post-processes already-downloaded rescue cards</value></data>
-  <data name="Command_SplitPorsche_Description" xml:space="preserve"><value>Splits Porsche's combined all-models PDF(s) into one file per model</value></data>
-  <data name="Split_Porsche_NoCombinedEntriesFound" xml:space="preserve"><value>No downloaded Porsche entries found - run 'fetch rescue-cards --brand porsche' first.</value></data>
-  <data name="Split_Porsche_NoModelsDetected" xml:space="preserve"><value>Could not detect any models in '{0}' - the document layout may have changed.</value></data>
-  <data name="Split_Porsche_Result" xml:space="preserve"><value>{0} combined document(s) split into {1} per-model rescue card(s).</value></data>
-  <data name="Split_Porsche_DocumentFailed" xml:space="preserve"><value>Failed to split '{0}': {1}</value></data>
 
   <!-- list brands -->
   <data name="Command_List_Description" xml:space="preserve"><value>Lists information</value></data>
@@ -188,4 +179,118 @@
   <data name="Error_UnknownBrand" xml:space="preserve"><value>Unknown brand</value></data>
   <data name="FailureReason_NoDownloadUrl" xml:space="preserve"><value>No download URL discovered</value></data>
   <data name="FailureReason_DryRunSkipped" xml:space="preserve"><value>dry-run: download skipped</value></data>
+  <data name="App_Description" xml:space="preserve"><value>Rescue-sheet and vehicle-stock tool for fire brigades</value></data>
+  <data name="Command_RescueCards_Description" xml:space="preserve"><value>Downloads the manufacturers' official rescue data sheets (German where available, otherwise English)</value></data>
+  <data name="Option_Brand_Description" xml:space="preserve"><value>Brand (lower-case name as shown by 'list brands', e.g. vw, mercedesbenz, landrover) or 'all'</value></data>
+  <data name="Command_Split_Description" xml:space="preserve"><value>Splits a brand's already-downloaded combined all-models PDF(s) into one file per model</value></data>
+  <data name="Argument_SplitBrand_Description" xml:space="preserve"><value>Brand whose combined PDFs to split, or 'all' for every brand that has any</value></data>
+  <data name="Split_NoLayoutForBrand" xml:space="preserve"><value>'{0}' does not publish combined PDFs that this tool can split.</value></data>
+  <data name="Split_NoCombinedEntriesFound" xml:space="preserve"><value>No downloaded combined {0} documents found - run 'fetch rescue-cards --brand {1}' first.</value></data>
+  <data name="Split_NoCombinedEntriesFoundAnyBrand" xml:space="preserve"><value>No downloaded combined documents found for any brand - run 'fetch rescue-cards' first.</value></data>
+  <data name="Split_NoModelsDetected" xml:space="preserve"><value>Could not detect any models in '{0}' - the document layout may have changed.</value></data>
+  <data name="Split_Result" xml:space="preserve"><value>{0} combined document(s) split into {1} per-model rescue card(s).</value></data>
+  <data name="Split_DocumentFailed" xml:space="preserve"><value>Failed to split '{0}': {1}</value></data>
+  <data name="ListBrands_Column_Group" xml:space="preserve"><value>Group</value></data>
+  <data name="Group_VolkswagenGroup" xml:space="preserve"><value>Volkswagen Group</value></data>
+  <data name="Group_MercedesBenzGroup" xml:space="preserve"><value>Mercedes-Benz Group</value></data>
+  <data name="Group_BmwGroup" xml:space="preserve"><value>BMW Group</value></data>
+  <data name="Group_Stellantis" xml:space="preserve"><value>Stellantis</value></data>
+  <data name="Group_RenaultGroup" xml:space="preserve"><value>Renault Group</value></data>
+  <data name="Group_HyundaiMotorGroup" xml:space="preserve"><value>Hyundai Motor Group</value></data>
+  <data name="Group_ToyotaGroup" xml:space="preserve"><value>Toyota Group</value></data>
+  <data name="Group_Geely" xml:space="preserve"><value>Geely</value></data>
+  <data name="Group_TataMotors" xml:space="preserve"><value>Tata Motors (JLR)</value></data>
+  <data name="Group_GeneralMotors" xml:space="preserve"><value>General Motors</value></data>
+  <data name="Group_SaicMotor" xml:space="preserve"><value>SAIC Motor</value></data>
+  <data name="Group_Independent" xml:space="preserve"><value>Independent</value></data>
+  <data name="RescueCards_Generic_DiscoveredCount" xml:space="preserve"><value>{0}: {1} rescue cards discovered</value></data>
+  <data name="RescueCards_Generic_PageReadFailed" xml:space="preserve"><value>{0}: could not read page {1}</value></data>
+  <data name="Http_NotAPdf" xml:space="preserve"><value>Response is not a PDF file (no %PDF signature)</value></data>
+  <data name="Http_RobotsTxtUnavailable" xml:space="preserve"><value>robots.txt at {0} could not be read ({1}) - continuing without restrictions for this host.</value></data>
+  <data name="FailureReason_RobotsTxtDisallowed" xml:space="preserve"><value>Download skipped: disallowed by the host's robots.txt</value></data>
+  <data name="FailureReason_DownloadUrlResolutionFailed" xml:space="preserve"><value>Could not resolve the PDF download URL: {0}</value></data>
+  <data name="FailureReason_DownloadUrlNotResolved" xml:space="preserve"><value>No PDF link found for this entry at download time</value></data>
+  <data name="Brand_BMW_Source" xml:space="preserve"><value>aos.bmwgroup.com JSON API</value></data>
+  <data name="Brand_Mini_Source" xml:space="preserve"><value>aos.bmwgroup.com JSON API</value></data>
+  <data name="Brand_RollsRoyce_Source" xml:space="preserve"><value>aos.bmwgroup.com JSON API</value></data>
+  <data name="RescueCards_BmwGroup_IncompleteEntry" xml:space="preserve"><value>{0}: skipped a rescue-sheet API entry without file key or name (id {1})</value></data>
+  <data name="Brand_Fiat_Source" xml:space="preserve"><value>fiat.de static HTML page</value></data>
+  <data name="Brand_Fiat_Status" xml:space="preserve"><value>Metadata only (robots.txt forbids PDF downloads)</value></data>
+  <data name="Brand_FiatProfessional_Source" xml:space="preserve"><value>fiat.de/professional static HTML page</value></data>
+  <data name="Brand_FiatProfessional_Status" xml:space="preserve"><value>Metadata only (robots.txt forbids PDF downloads)</value></data>
+  <data name="Brand_Jeep_Source" xml:space="preserve"><value>jeep.de static HTML page</value></data>
+  <data name="Brand_Jeep_Status" xml:space="preserve"><value>Metadata only (robots.txt forbids PDF downloads)</value></data>
+  <data name="Brand_AlfaRomeo_Source" xml:space="preserve"><value>alfaromeo.de static HTML page</value></data>
+  <data name="Brand_AlfaRomeo_Status" xml:space="preserve"><value>Metadata only (robots.txt forbids PDF downloads)</value></data>
+  <data name="Brand_Lancia_Source" xml:space="preserve"><value>lancia.de static HTML page</value></data>
+  <data name="Brand_Lancia_Status" xml:space="preserve"><value>Metadata only (robots.txt forbids PDF downloads)</value></data>
+  <data name="Brand_Abarth_Source" xml:space="preserve"><value>abarth.de static HTML pages (2)</value></data>
+  <data name="Brand_Abarth_Status" xml:space="preserve"><value>Metadata only (robots.txt forbids PDF downloads)</value></data>
+  <data name="Brand_Dodge_Source" xml:space="preserve"><value>dodge.de legacy static HTML page</value></data>
+  <data name="Brand_Dodge_Status" xml:space="preserve"><value>Fully functional (legacy models up to 2013 only)</value></data>
+  <data name="Brand_Maserati_Source" xml:space="preserve"><value>maserati.com aftersales page</value></data>
+  <data name="Brand_Maserati_Status" xml:space="preserve"><value>Fully functional (1 combined PDF from 2016, split with 'split maserati')</value></data>
+  <data name="Brand_MercedesBenz_Source" xml:space="preserve"><value>rk.mb-qr.com static HTML + detail pages</value></data>
+  <data name="Brand_MercedesAmg_Source" xml:space="preserve"><value>rk.mb-qr.com static HTML + detail pages</value></data>
+  <data name="Brand_MercedesEq_Source" xml:space="preserve"><value>rk.mb-qr.com static HTML + detail pages</value></data>
+  <data name="Brand_Maybach_Source" xml:space="preserve"><value>rk.mb-qr.com static HTML + detail pages</value></data>
+  <data name="Brand_Smart_Source" xml:space="preserve"><value>rk.mb-qr.com (fortwo/forfour/roadster) + rescuecard.smart.com app bundle (#1/#3/#5)</value></data>
+  <data name="RescueCards_Mercedes_CardListNotFound" xml:space="preserve"><value>rk.mb-qr.com: card list not found on {0} - page layout has likely changed.</value></data>
+  <data name="RescueCards_Smart_BundleNotFound" xml:space="preserve"><value>smart: application script not referenced on {0} - site layout has likely changed.</value></data>
+  <data name="RescueCards_Smart_ModelListNotFound" xml:space="preserve"><value>smart: model list not found in application script {0} - site layout has likely changed.</value></data>
+  <data name="Brand_Renault_Source" xml:space="preserve"><value>renault.de static HTML page (Renault Group CDN PDFs)</value></data>
+  <data name="Brand_Dacia_Source" xml:space="preserve"><value>dacia.de static HTML page (Renault Group CDN PDFs)</value></data>
+  <data name="Brand_Toyota_Source" xml:space="preserve"><value>toyota.de static HTML page (Scene7 PDFs)</value></data>
+  <data name="Brand_Lexus_Source" xml:space="preserve"><value>lexus.de static HTML page (Scene7 PDFs)</value></data>
+  <data name="Brand_Daihatsu_Source" xml:space="preserve"><value>daihatsu.de combined PDF linked from the homepage</value></data>
+  <data name="Brand_Daihatsu_Status" xml:space="preserve"><value>Fully functional (1 combined PDF, split with 'split daihatsu')</value></data>
+  <data name="Brand_Mazda_Status" xml:space="preserve"><value>Fully functional (a few sheets English only)</value></data>
+  <data name="Brand_Mazda_Source" xml:space="preserve"><value>mazda.de page with embedded JSON content blocks</value></data>
+  <data name="Brand_Honda_Source" xml:space="preserve"><value>honda.de static HTML page</value></data>
+  <data name="Brand_Volvo_Source" xml:space="preserve"><value>volvocars.com static HTML page (browser client, Akamai)</value></data>
+  <data name="Brand_Jaguar_Source" xml:space="preserve"><value>jaguar.com static HTML page</value></data>
+  <data name="Brand_LandRover_Source" xml:space="preserve"><value>landrover.de static HTML page</value></data>
+  <data name="Brand_Tesla_Status" xml:space="preserve"><value>Fully functional (several sheets English only)</value></data>
+  <data name="Brand_Tesla_Source" xml:space="preserve"><value>tesla.com first-responder page (browser client, Akamai)</value></data>
+  <data name="Brand_MG_Status" xml:space="preserve"><value>Fully functional (no build years published, one sheet English only)</value></data>
+  <data name="Brand_MG_Source" xml:space="preserve"><value>mgmotor.de static HTML page</value></data>
+  <data name="Brand_KGM_Status" xml:space="preserve"><value>Fully functional (newer sheets English only)</value></data>
+  <data name="Brand_KGM_Source" xml:space="preserve"><value>kgm.de static HTML table</value></data>
+  <data name="RescueCards_Generic_CardListNotFound" xml:space="preserve"><value>{0}: rescue-card list not found on page {1} - the page layout has probably changed.</value></data>
+  <data name="RescueCards_Generic_MislabelledLinkSkipped" xml:space="preserve"><value>{0}: skipped link '{1}' - its file {2} is for a different body style</value></data>
+  <data name="Brand_Mitsubishi_Source" xml:space="preserve"><value>mitsubishi-motors.de page embedding the PressMatrix catalogue mitsubishi-publikationen.de</value></data>
+  <data name="Brand_Mitsubishi_Status" xml:space="preserve"><value>Not available (robots.txt of mitsubishi-publikationen.de forbids automated access)</value></data>
+  <data name="Brand_Subaru_Source" xml:space="preserve"><value>subaru.de safety page</value></data>
+  <data name="Brand_Subaru_Status" xml:space="preserve"><value>Fully functional (1 combined PDF, split with 'split subaru')</value></data>
+  <data name="Brand_Suzuki_Source" xml:space="preserve"><value>auto.suzuki.de document pages (overview, categories, model pages)</value></data>
+  <data name="Brand_BYD_Source" xml:space="preserve"><value>bydauto.at downloads page (Austrian importer)</value></data>
+  <data name="Brand_BYD_Status" xml:space="preserve"><value>Fully functional (Austrian importer's site; BYD has no German page with rescue sheets)</value></data>
+  <data name="Brand_Isuzu_Source" xml:space="preserve"><value>isuzu-sales.de static HTML page</value></data>
+  <data name="Brand_Maxus_Source" xml:space="preserve"><value>maxus.de static HTML page (Storyblok assets)</value></data>
+  <data name="Brand_Ruf_Source" xml:space="preserve"><value>ruf-automobile.de static HTML page</value></data>
+  <data name="Brand_Streetscooter_Source" xml:space="preserve"><value>streetscooter.com customer support page</value></data>
+  <data name="Brand_Polestar_Source" xml:space="preserve"><value>polestar.com (single PDFs only, no page links them)</value></data>
+  <data name="Brand_Polestar_Status" xml:space="preserve"><value>Not implemented (no discoverable overview page)</value></data>
+  <data name="RescueCards_Mitsubishi_CatalogueNotFound" xml:space="preserve"><value>Mitsubishi: no embedded PressMatrix rescue-sheet catalogue found on {0}</value></data>
+  <data name="RescueCards_Mitsubishi_RobotsTxtBlocked" xml:space="preserve"><value>the rescue-sheet catalogue on {0} is disallowed for automated access by that host's robots.txt</value></data>
+  <data name="RescueCards_Polestar_NoOverviewPage" xml:space="preserve"><value>Polestar publishes its rescue sheets only as individual PDFs on polestar.com that no page links; they cannot be discovered without a headless browser</value></data>
+  <data name="Brand_Peugeot_Source" xml:space="preserve"><value>public.servicebox-parts.com static frameset (model pages)</value></data>
+  <data name="Brand_Citroen_Source" xml:space="preserve"><value>public.servicebox-parts.com static frameset (model pages)</value></data>
+  <data name="Brand_DS_Source" xml:space="preserve"><value>public.servicebox-parts.com static frameset (model pages)</value></data>
+  <data name="Brand_Opel_Source" xml:space="preserve"><value>ifz-berlin.de JSON API (Stellantis Aftersales portal)</value></data>
+  <data name="Brand_Saab_Source" xml:space="preserve"><value>ifz-berlin.de JSON API (Stellantis Aftersales portal)</value></data>
+  <data name="Brand_Chevrolet_Source" xml:space="preserve"><value>ifz-berlin.de JSON API (Stellantis Aftersales portal)</value></data>
+  <data name="Brand_Cadillac_Source" xml:space="preserve"><value>ifz-berlin.de JSON API (Stellantis Aftersales portal)</value></data>
+  <data name="Brand_Hyundai_Source" xml:space="preserve"><value>hyundai.com/de static HTML (Scene7 PDFs)</value></data>
+  <data name="Brand_Hyundai_Status" xml:space="preserve"><value>Fully functional (models before 11/2019 in 1 combined PDF, split with 'split hyundai')</value></data>
+  <data name="Brand_Kia_Source" xml:space="preserve"><value>kia.com/de static HTML</value></data>
+  <data name="Brand_Kia_Status" xml:space="preserve"><value>Fully functional (some sheets English only; older models in 1 combined PDF, split with 'split kia')</value></data>
+  <data name="Brand_Nissan_Source" xml:space="preserve"><value>nissan.de rescuers page (static HTML tables)</value></data>
+  <data name="Brand_Nissan_Status" xml:space="preserve"><value>Fully functional (older models in 1 combined PDF, split with 'split nissan')</value></data>
+  <data name="Brand_Ford_Source" xml:space="preserve"><value>fordserviceinfo.com vehicle lookup (German market)</value></data>
+  <data name="Brand_Ford_Status" xml:space="preserve"><value>Fully functional (models up to ~2020 in 1 combined PDF, split with 'split ford'; newer ones per model)</value></data>
+  <data name="RescueCards_Ford_PortalLookups" xml:space="preserve"><value>Ford: looking up rescue cards for {0} vehicle lines/model years on the Ford service portal (takes a few minutes)</value></data>
+  <data name="RescueCards_Ford_MarketNotAccepted" xml:space="preserve"><value>Ford: the service portal no longer accepts the German market selection (redirected to {0})</value></data>
+  <data name="Option_ExcludeBrands_Description" xml:space="preserve"><value>Brands to skip (space-separated lower-case names), e.g. for CI runners whose network some manufacturer sites block</value></data>
+  <data name="Log_BrandsExcluded" xml:space="preserve"><value>Skipping excluded brands: {0}</value></data>
 </root>

@@ -12,7 +12,7 @@ jobs:
   check-links:
     name: Check rescue-card and stock sources
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
 
     steps:
       - name: Checkout
@@ -35,14 +35,26 @@ jobs:
       # page URLs exactly like a normal `fetch rescue-cards` run would (same HTTP client, same
       # per-host politeness delays), just without pulling every PDF on a weekly schedule.
       #
+      # With every brand running in parallel this takes about 5 minutes (measured 2026-09-29): the
+      # slowest single source is Ford, whose discovery queries the fordserviceinfo.com lookup once
+      # per European vehicle line and model year (~210 requests at the 1 request/second per-host
+      # politeness delay). Hosts are rate-limited independently, so more brands don't add up.
+      #
       # Exit code is non-zero only for an *unexpected* discovery failure (see
       # RunSummaryPrinter.HasUnexpectedFailures) - a not-yet-implemented brand stub or Cupra AT's
       # known auth-gateway redirect doesn't fail this job, only a source page that's actually
       # moved/broken does.
-      - name: Check rescue-card sources (dry run, all brands)
+      #
+      # Excluded brands: their sites answer every request from GitHub-hosted runners with 403 - bot
+      # protection that blocks cloud/datacenter networks, not our request (verified 2026-09-30: even
+      # Suzuki, which uses the plain client and works from a normal network, gets 403 here). They
+      # work from a normal network and have to be checked locally instead, see the README's "Known
+      # limitations". Remove a brand from this list once a run shows it reachable again.
+      - name: Check rescue-card sources (dry run, all brands reachable from CI)
         run: >
           dotnet run --project src/Rettungskarten.Cli --no-build --configuration Release --
           fetch rescue-cards --brand all --dry-run --output "${{ runner.temp }}/rescue-cards"
+          --exclude-brands bentley fiat fiatprofessional abarth alfaromeo lancia jeep maserati volvo tesla suzuki
 
       # Discovery (even in --dry-run) already populates BodyType/FuelType/Doors from each source's
       # free text, so this runs straight against the previous step's output with no extra downloads.

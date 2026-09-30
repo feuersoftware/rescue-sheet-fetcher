@@ -10,7 +10,7 @@ namespace Rettungskarten.Core.Reporting;
 /// non-nested table this size (at most a few thousand rows) - <see cref="PriorityReportRow.ModelName"/>
 /// is the only field that's ever free text with commas/quotes/newlines.
 ///
-/// Enum fields (Brand/BundlePriority) are rendered as their literal C# names (e.g. "High", not JSON's
+/// Enum fields (Brand/ManufacturerGroup/BundlePriority) are rendered as their literal C# names (e.g. "High", not JSON's
 /// camelCase "high", and not a localized/translated value) - deliberately, not by accident: this keeps
 /// the CSV's content stable regardless of which --lang a given run used, unlike the console summary
 /// output (which is deliberately localized via DisplayText, since that's read once, live, not
@@ -21,13 +21,13 @@ public static class PriorityReportCsvFormatter
     public static string Format(IEnumerable<PriorityReportRow> rows)
     {
         var builder = new StringBuilder();
-        builder.AppendLine("Brand,ModelName,CardCount,NotDownloadedCount,EstimatedFleetSize,BundlePriority");
+        builder.AppendLine("Brand,ManufacturerGroup,ModelName,CardCount,NotDownloadedCount,EstimatedFleetSize,BundlePriority");
 
         foreach (var row in rows)
         {
             var fields = new[]
             {
-                row.Brand.ToString(), row.ModelName, row.CardCount.ToString(), row.NotDownloadedCount.ToString(),
+                row.Brand.ToString(), row.ManufacturerGroup.ToString(), row.ModelName, row.CardCount.ToString(), row.NotDownloadedCount.ToString(),
                 row.EstimatedFleetSize?.ToString(), row.BundlePriority.ToString()
             };
             builder.AppendLine(string.Join(',', fields.Select(Escape)));
