@@ -123,17 +123,17 @@ public class DataQualityCheckerTests
     public void CheckAll_PorscheUnknownCountExceedsBaseline_ReportsIssue()
     {
         // Porsche's ultra-low-volume specials (GT2/GT3/Turbo/...) are deliberately left unmatched
-        // (see commit b19a397: 65/85 -> 19/85 Unknown), so 19 Unknown is expected. If that count grows
+        // (see DataQualityChecker's doc comment), so 34 Unknown is expected. If that count grows
         // - a new unmatched model, or a broken alias - this should surface instead of blending in.
         var cards = new List<RescueCardMetadata>
         {
             Card("vw-golf-1", brand: Brand.VW, priority: BundlePriority.High)
         };
-        for (var i = 0; i < 66; i++)
+        for (var i = 0; i < 51; i++)
         {
             cards.Add(Card($"porsche-matched-{i}", brand: Brand.Porsche, priority: BundlePriority.Medium));
         }
-        for (var i = 0; i < 20; i++)
+        for (var i = 0; i < 35; i++)
         {
             cards.Add(Card($"porsche-unknown-{i}", brand: Brand.Porsche, priority: BundlePriority.Unknown));
         }
@@ -152,11 +152,11 @@ public class DataQualityCheckerTests
         {
             Card("vw-golf-1", brand: Brand.VW, priority: BundlePriority.High)
         };
-        for (var i = 0; i < 66; i++)
+        for (var i = 0; i < 51; i++)
         {
             cards.Add(Card($"porsche-matched-{i}", brand: Brand.Porsche, priority: BundlePriority.Medium));
         }
-        for (var i = 0; i < 19; i++)
+        for (var i = 0; i < 34; i++)
         {
             cards.Add(Card($"porsche-unknown-{i}", brand: Brand.Porsche, priority: BundlePriority.Unknown));
         }

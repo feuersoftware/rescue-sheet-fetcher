@@ -40,10 +40,18 @@ public sealed record DataQualityIssue(string CardId, Brand Brand, DataQualityIss
 /// Porsche is the known case (see model-aliases.json and commit b19a397's message) - its ultra-low-
 /// volume specials (GT2/GT2 RS/GT3/GT3 RS/R/Turbo, 718 Cayman GT4) are deliberately NOT aliased to a
 /// base KBA series, since lumping them into that series' aggregate fleet count would overstate their
-/// real commonality far more than for an ordinary trim. That fix took Porsche's Unknown count from
-/// 65/85 to a stable 19/85 - KnownUnknownBaselines records that 19 so a *further* increase (a new
-/// unmatched model, or an alias that broke) gets flagged instead of silently blending into "business as
-/// usual", which is exactly the kind of partial, permanent gap that only firing at 100% would miss.
+/// real commonality far more than for an ordinary trim. KnownUnknownBaselines records the expected
+/// count so a *further* increase (a new unmatched model, or an alias that broke) gets flagged instead of
+/// silently blending into "business as usual", which is exactly the kind of partial, permanent gap
+/// that only firing at 100% would miss.
+///
+/// Porsche: 34 of 85 split parts, recounted 2026-10-01 against the 2025 editions of both combined PDFs
+/// (now on files.porsche.com): 10 deliberately unaliased specials (GT2, GT2 RS, GT3, GT3 RS, R, Turbo,
+/// 718 Cayman GT4), 5 more of the same kind (911 G-Model Turbo, Boxster Spyder), 14 classics FZ12
+/// doesn't list (356, 550, 912, 914, 924, 944, 959, 918 Spyder, 980) and 5 E-Hybrid supplement pages
+/// without a header (named by document id). The earlier baseline of 19 (commit b19a397) can't be
+/// reproduced from these documents - the code as of 8cb6089 gives 34 on them as well - so it was either
+/// counted on an older edition of the PDFs or miscounted.
 /// </summary>
 public static class DataQualityChecker
 {
@@ -53,7 +61,7 @@ public static class DataQualityChecker
 
     private static readonly IReadOnlyDictionary<Brand, int> KnownUnknownBaselines = new Dictionary<Brand, int>
     {
-        [Brand.Porsche] = 19
+        [Brand.Porsche] = 34
     };
 
     public static IReadOnlyList<DataQualityIssue> CheckAll(IReadOnlyList<RescueCardMetadata> cards)
