@@ -21,9 +21,9 @@ public static class FetchRescueCardsCommand
         };
         brandOption.AcceptOnlyFromAmong(BrandArgument.AllowedValues());
 
-        // For the weekly link check: some manufacturer sites block requests from cloud/CI networks
-        // outright (403 for every client, verified on the GitHub-hosted runner), so CI skips them
-        // explicitly instead of failing every week on something no code change can fix.
+        // For the weekly link check: some manufacturer sites answer every request from GitHub-hosted
+        // runners with 403 (see link-check.yml for why), so CI skips them explicitly instead of
+        // failing every week on something no code change can fix.
         var excludeBrandsOption = new Option<string[]>("--exclude-brands")
         {
             Description = Strings.Get("Option_ExcludeBrands_Description"),

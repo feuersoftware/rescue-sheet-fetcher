@@ -45,11 +45,13 @@ jobs:
       # known auth-gateway redirect doesn't fail this job, only a source page that's actually
       # moved/broken does.
       #
-      # Excluded brands: their sites answer every request from GitHub-hosted runners with 403 - bot
-      # protection that blocks cloud/datacenter networks, not our request (verified 2026-09-30: even
-      # Suzuki, which uses the plain client and works from a normal network, gets 403 here). They
-      # work from a normal network and have to be checked locally instead, see the README's "Known
-      # limitations". Remove a brand from this list once a run shows it reachable again.
+      # Excluded brands answer every request from GitHub-hosted runners with 403 (tested 2026-09-30
+      # on ubuntu-latest and 2026-10-06 on windows-latest - a Windows runner doesn't help). Two
+      # different blocks, see the README's "Known limitations": the Akamai sites (Bentley, Fiat,
+      # Fiat Professional, Abarth, Alfa Romeo, Lancia, Jeep, Maserati, Volvo, Tesla) also reject
+      # .NET's Linux TLS client from any network, and additionally GitHub's IP ranges; Suzuki only
+      # blocks GitHub's IP ranges. No code change fixes either, so check these brands with a local
+      # dry run on Windows instead. Remove a brand once a run shows it reachable again.
       - name: Check rescue-card sources (dry run, all brands reachable from CI)
         run: >
           dotnet run --project src/Rettungskarten.Cli --no-build --configuration Release --
