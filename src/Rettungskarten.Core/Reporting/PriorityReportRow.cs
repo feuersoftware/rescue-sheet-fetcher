@@ -27,11 +27,16 @@ public sealed record PriorityReportRow(
 /// actual purpose (deciding which *models* are common enough to bundle) - the full per-variant detail
 /// is still available in each model's own JSON sidecars under data/rescue-cards/{brand}/{model}/, this
 /// report just doesn't need to repeat it.
+///
+/// <see cref="DocumentScope.Combined"/> documents are left out: they cover many models (their model
+/// name is a placeholder like "All Models"), so they'd show up as a pseudo-model with an Unknown priority
+/// and count once more next to the split parts cut from them. The parts are what the report is about.
 /// </summary>
 public static class PriorityReportAggregator
 {
     public static IReadOnlyList<PriorityReportRow> Aggregate(IEnumerable<RescueCardMetadata> cards) =>
         cards
+            .Where(c => c.DocumentScope != DocumentScope.Combined)
             .GroupBy(c => (c.Brand, c.ModelName))
             .Select(g =>
             {

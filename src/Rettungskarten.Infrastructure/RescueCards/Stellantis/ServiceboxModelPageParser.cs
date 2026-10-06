@@ -1,4 +1,3 @@
-using System.Text;
 using System.Text.RegularExpressions;
 using AngleSharp.Dom;
 using AngleSharp.Html.Parser;
@@ -42,7 +41,11 @@ public sealed record ServiceboxSheetLink(string Label, string PdfUrl, string? Fu
 public static class ServiceboxModelPageParser
 {
     private static readonly Regex WindowOpenPdf = new(@"window\.open\(\s*'([^']+?\.pdf)'", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-    private static readonly Regex LocaleSuffix = new(@"[_-]([a-z]{2})(?:_[A-Z]{2})?\.pdf$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    // Case-sensitive on purpose: the locale suffix is always a lower-case language with an optional
+    // upper-case region ("_de_DE", "_de", "_en_GB", "_fr"). Ignoring case read any upper-case two-letter
+    // body/trim token at the end of a suffix-less name ("..._SW.pdf", "..._GT.pdf", "..._GD.pdf") as a
+    // language, and the row was dropped as "neither German nor English".
+    private static readonly Regex LocaleSuffix = new(@"[_-]([a-z]{2})(?:_[A-Z]{2})?\.(?i:pdf)$", RegexOptions.Compiled);
 
     private static readonly Regex SectionMarker = new(
         @"(?<erg>Handbuch\s+zur\s+Rettung\s*(?:\(\s*ERG\s*\))?|\(\s*ERG\s*\))|(?<sheet>\(\s*Rescue\s+Sheet\s*\))",
@@ -125,7 +128,7 @@ public static class ServiceboxModelPageParser
                     continue;
                 }
 
-                var label = Collapse(row.QuerySelector("td")?.TextContent ?? string.Empty);
+                var label = LabelText.Collapse(row.QuerySelector("td")?.TextContent ?? string.Empty);
                 var rowIcon = row.QuerySelector("img")?.GetAttribute("src");
                 results.Add(new ServiceboxSheetLink(label, HttpDownloadHelper.ResolveUrl(pageUrl, preferred.FileUrl), rowIcon, preferred.Language));
             }
@@ -149,7 +152,7 @@ public static class ServiceboxModelPageParser
             var match = WindowOpenPdf.Match(anchor.GetAttribute("onclick") ?? string.Empty);
             if (match.Success)
             {
-                yield return (Collapse(anchor.TextContent), match.Groups[1].Value);
+                yield return (LabelText.Collapse(anchor.TextContent), match.Groups[1].Value);
             }
         }
     }
@@ -180,9 +183,6 @@ public static class ServiceboxModelPageParser
         }
 
         parts.Reverse();
-        return (Collapse(string.Join(' ', parts)), icon);
+        return (LabelText.Collapse(string.Join(' ', parts)), icon);
     }
-
-    private static string Collapse(string value) =>
-        new StringBuilder().AppendJoin(' ', value.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries)).ToString();
 }

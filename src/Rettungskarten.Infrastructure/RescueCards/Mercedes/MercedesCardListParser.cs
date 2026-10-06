@@ -79,7 +79,7 @@ public static class MercedesCardListParser
                 continue;
             }
 
-            var label = Collapse(anchor.GetAttribute("aria-label") ?? anchor.TextContent);
+            var label = LabelText.Collapse(anchor.GetAttribute("aria-label") ?? anchor.TextContent);
             var className = classNames.GetValueOrDefault(item.GetAttribute("data-class") ?? string.Empty);
             var bodyName = bodyNames.GetValueOrDefault(item.GetAttribute("data-model") ?? string.Empty);
             var drives = item.QuerySelectorAll("img[alt]")
@@ -177,8 +177,5 @@ public static class MercedesCardListParser
     private static Dictionary<string, string> ReadLookup(IDocument document, string listSelector) =>
         document.QuerySelectorAll($"{listSelector} li[data-value]")
             .GroupBy(li => li.GetAttribute("data-value")!, StringComparer.Ordinal)
-            .ToDictionary(g => g.Key, g => Collapse(g.First().TextContent), StringComparer.Ordinal);
-
-    private static string Collapse(string value) =>
-        string.Join(' ', value.Replace(' ', ' ').Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+            .ToDictionary(g => g.Key, g => LabelText.Collapse(g.First().TextContent), StringComparer.Ordinal);
 }

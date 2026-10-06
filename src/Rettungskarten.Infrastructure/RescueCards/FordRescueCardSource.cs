@@ -158,7 +158,7 @@ public sealed class FordRescueCardSource(IHttpClientFactory httpClientFactory, I
             EnsureMarketAccepted(finalUrl);
             return ParseVehicles(json);
         }
-        catch (Exception ex) when (ex is HttpRequestException or JsonException or TaskCanceledException && !ct.IsCancellationRequested)
+        catch (Exception ex) when (ex is JsonException || HttpRequestFailures.IsRequestFailure(ex, ct))
         {
             logger.LogWarning(ex, "{Message}", Strings.Get("RescueCards_Generic_PageReadFailed", Brand, url));
             return [];
@@ -195,7 +195,7 @@ public sealed class FordRescueCardSource(IHttpClientFactory httpClientFactory, I
             EnsureMarketAccepted(response.RequestMessage?.RequestUri);
             return ParseLookupResult(await response.Content.ReadAsStringAsync(ct), LookupUrl);
         }
-        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException && !ct.IsCancellationRequested)
+        catch (Exception ex) when (HttpRequestFailures.IsRequestFailure(ex, ct))
         {
             logger.LogWarning(ex, "{Message}", Strings.Get("RescueCards_Generic_PageReadFailed", Brand, $"{LookupUrl} ({vehicle.Model} {vehicle.Year})"));
             return [];

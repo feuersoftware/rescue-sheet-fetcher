@@ -56,19 +56,19 @@ public sealed class NissanRescueCardSource(IHttpClientFactory httpClientFactory,
         {
             if (element.LocalName == "h2")
             {
-                sectionHeading = Collapse(element.TextContent);
+                sectionHeading = LabelText.Collapse(element.TextContent);
                 continue;
             }
 
-            var version = Collapse(element.QuerySelector("th[scope=row]")?.TextContent ?? string.Empty);
+            var version = LabelText.Collapse(element.QuerySelector("th[scope=row]")?.TextContent ?? string.Empty);
             var links = element.QuerySelectorAll("td a[href]");
             if (links.Length == 0)
             {
                 continue; // header row
             }
 
-            var years = Collapse(element.QuerySelector("td[data-th=Jahr]")?.TextContent ?? string.Empty);
-            var powertrain = Collapse(element.QuerySelector("td[data-th=Motorisierung]")?.TextContent ?? string.Empty);
+            var years = LabelText.Collapse(element.QuerySelector("td[data-th=Jahr]")?.TextContent ?? string.Empty);
+            var powertrain = LabelText.Collapse(element.QuerySelector("td[data-th=Motorisierung]")?.TextContent ?? string.Empty);
 
             foreach (var link in links)
             {
@@ -100,7 +100,7 @@ public sealed class NissanRescueCardSource(IHttpClientFactory httpClientFactory,
         }
 
         var fileName = HttpDownloadHelper.GetFileName(url);
-        var label = Collapse(link.TextContent);
+        var label = LabelText.Collapse(link.TextContent);
         if (!fileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase) || !RescueDocumentClassifier.IsRescueSheet(label, fileName))
         {
             return null;
@@ -119,7 +119,4 @@ public sealed class NissanRescueCardSource(IHttpClientFactory httpClientFactory,
         var parsed = NissanRescueTableRowParser.Parse(sectionHeading, version, years, powertrain, fileName);
         return new RescueCardEntry(Brand, PageUrl, url, fileName, parsed);
     }
-
-    private static string Collapse(string value) =>
-        string.Join(' ', value.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
 }

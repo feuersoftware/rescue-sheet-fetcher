@@ -28,7 +28,7 @@ public sealed class FordCombinedPdfLayout : PageTextCombinedPdfLayout
     protected override string? TryGetPageKey(string pageText)
     {
         var match = Header.Match(pageText);
-        return match.Success ? CombinedPdfHeaderText.Collapse(match.Groups["header"].Value) : null;
+        return match.Success ? LabelText.Collapse(match.Groups["header"].Value) : null;
     }
 
     protected override ParsedModelInfo ParseGroup(string key, IReadOnlyList<string> pageTexts) =>

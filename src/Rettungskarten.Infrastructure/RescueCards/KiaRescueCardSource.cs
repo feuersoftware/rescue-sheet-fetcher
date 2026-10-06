@@ -61,7 +61,7 @@ public sealed class KiaRescueCardSource(IHttpClientFactory httpClientFactory, IL
         if (CombinedHeading.IsMatch(label))
         {
             // "Kia_Rettungsdatenblaetter_08_2020+Sorento_GER.pdf": models up to 08/2020.
-            return new ParsedModelInfo(CombinedModelName, CollapseWhitespace(label), null, null, 2020, null, null, "DE", ParseConfidence.Heuristic);
+            return new ParsedModelInfo(CombinedModelName, LabelText.Collapse(label), null, null, 2020, null, null, "DE", ParseConfidence.Heuristic);
         }
 
         var heading = EnglishMarker.Replace(label, string.Empty).Trim();

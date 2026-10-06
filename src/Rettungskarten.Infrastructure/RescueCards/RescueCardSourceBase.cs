@@ -73,9 +73,13 @@ public abstract class RescueCardSourceBase(IHttpClientFactory httpClientFactory)
         {
             return RescueCardDownloadResult.Fail(Strings.Get("FailureReason_DownloadUrlResolutionFailed", ex.Message), (int?)ex.StatusCode);
         }
-        catch (TaskCanceledException ex) when (!ct.IsCancellationRequested)
+        catch (Exception ex) when (HttpRequestFailures.IsTimeout(ex, ct))
         {
             return RescueCardDownloadResult.Fail(Strings.Get("Http_Timeout", ex.Message));
+        }
+        catch (Exception ex) when (HttpRequestFailures.IsRequestFailure(ex, ct))
+        {
+            return RescueCardDownloadResult.Fail(Strings.Get("FailureReason_DownloadUrlResolutionFailed", ex.Message));
         }
 
         if (string.IsNullOrWhiteSpace(pdfUrl))

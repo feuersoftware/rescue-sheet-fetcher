@@ -22,6 +22,17 @@ public class PorscheCombinedPdfLayoutTests
     }
 
     [Fact]
+    public void FindUnassignedPages_ListsOnlyGapsAfterTheFirstAssignedPage()
+    {
+        // 6 pages, parts cover pages 2, 3 and 5 (0-based 1, 2, 4): page 1 is leading furniture (cover,
+        // legal notice) and expected; pages 4 and 6 are not - something there matched no model.
+        var parsed = new Rettungskarten.Core.Models.ParsedModelInfo("X", null, null, null, null, null, null, "DE", Rettungskarten.Core.Models.ParseConfidence.Heuristic);
+        var groups = new[] { new CombinedPdfPageGroup("a", parsed, [1, 2]), new CombinedPdfPageGroup("b", parsed, [4]) };
+
+        Assert.Equal([4, 6], CombinedPdfSplitter.FindUnassignedPages(groups, pageCount: 6));
+    }
+
+    [Fact]
     public void Split_SinglePageModel_ExtractsNameAndYearRange()
     {
         var results = CombinedPdfSplitter.Split(LoadFixture(), new PorscheCombinedPdfLayout());

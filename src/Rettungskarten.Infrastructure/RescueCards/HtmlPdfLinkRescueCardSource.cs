@@ -108,7 +108,7 @@ public abstract class HtmlPdfLinkRescueCardSource(IHttpClientFactory httpClientF
                     continue;
                 }
 
-                var label = CollapseWhitespace(GetLabel(anchor));
+                var label = LabelText.Collapse(GetLabel(anchor));
                 if (IsExcluded(label, absoluteUrl))
                 {
                     continue;
@@ -139,7 +139,4 @@ public abstract class HtmlPdfLinkRescueCardSource(IHttpClientFactory httpClientF
 
     protected static string? FirstNonEmpty(params string?[] values) =>
         values.Select(v => v?.Trim()).FirstOrDefault(v => !string.IsNullOrEmpty(v));
-
-    protected static string CollapseWhitespace(string value) =>
-        string.Join(' ', value.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
 }

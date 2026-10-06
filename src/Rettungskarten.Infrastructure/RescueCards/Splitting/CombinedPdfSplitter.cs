@@ -17,20 +17,32 @@ public static class CombinedPdfSplitter
     /// <summary>One model's extracted pages, already assembled into a standalone PDF.
     /// <paramref name="DocumentId"/> is the group's <see cref="CombinedPdfPageGroup.Key"/> - unique
     /// per document by contract, so callers building a persisted id should use it rather than any
-    /// free-text field of <paramref name="Parsed"/>.</summary>
-    public sealed record SplitResult(ParsedModelInfo Parsed, string DocumentId, byte[] PdfBytes);
+    /// free-text field of <paramref name="Parsed"/>. <paramref name="HeaderlessPageNumbers"/> (1-based)
+    /// are the pages included only because they follow the model's first page.</summary>
+    public sealed record SplitResult(ParsedModelInfo Parsed, string DocumentId, byte[] PdfBytes, IReadOnlyList<int> HeaderlessPageNumbers);
 
-    public static IReadOnlyList<SplitResult> Split(byte[] combinedPdfBytes, ICombinedPdfLayout layout)
+    /// <summary>The parts, plus every page (1-based) after the first part's first page that no part
+    /// contains. Leading pages (cover, contents, legal notice) are expected to belong to no model and
+    /// aren't listed; a page further in that ends up nowhere is either furniture or a model whose
+    /// header wasn't recognized.</summary>
+    public sealed record SplitOutcome(IReadOnlyList<SplitResult> Parts, IReadOnlyList<int> UnassignedPageNumbers);
+
+    public static IReadOnlyList<SplitResult> Split(byte[] combinedPdfBytes, ICombinedPdfLayout layout) =>
+        SplitDocument(combinedPdfBytes, layout).Parts;
+
+    public static SplitOutcome SplitDocument(byte[] combinedPdfBytes, ICombinedPdfLayout layout)
     {
         IReadOnlyList<CombinedPdfPageGroup> groups;
+        int pageCount;
         using (var document = PigPdfDocument.Open(combinedPdfBytes))
         {
             groups = layout.DetectGroups(document);
+            pageCount = document.NumberOfPages;
         }
 
         if (groups.Count == 0)
         {
-            return [];
+            return new SplitOutcome([], []);
         }
 
         var results = new List<SplitResult>(groups.Count);
@@ -48,9 +60,26 @@ public static class CombinedPdfSplitter
 
             using var outputStream = new MemoryStream();
             outputDocument.Save(outputStream, closeStream: false);
-            results.Add(new SplitResult(group.Parsed, group.Key, outputStream.ToArray()));
+            results.Add(new SplitResult(
+                group.Parsed, group.Key, outputStream.ToArray(),
+                (group.HeaderlessPageIndices ?? []).Select(i => i + 1).Order().ToList()));
         }
 
-        return results;
+        return new SplitOutcome(results, FindUnassignedPages(groups, pageCount));
+    }
+
+    internal static IReadOnlyList<int> FindUnassignedPages(IReadOnlyList<CombinedPdfPageGroup> groups, int pageCount)
+    {
+        var assigned = groups.SelectMany(g => g.PageIndices).ToHashSet();
+        if (assigned.Count == 0)
+        {
+            return [];
+        }
+
+        var firstAssigned = assigned.Min();
+        return Enumerable.Range(firstAssigned, pageCount - firstAssigned)
+            .Where(i => !assigned.Contains(i))
+            .Select(i => i + 1)
+            .ToList();
     }
 }

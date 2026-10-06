@@ -13,6 +13,10 @@ jobs:
     name: Check rescue-card and stock sources
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      # Brands GitHub-hosted runners can't reach - see the comment on the dry-run step below. Kept in
+      # one place for that step and the probe step after it.
+      EXCLUDED_BRANDS: bentley fiat fiatprofessional abarth alfaromeo lancia jeep maserati volvo tesla suzuki
 
     steps:
       - name: Checkout
@@ -51,12 +55,28 @@ jobs:
       # Fiat Professional, Abarth, Alfa Romeo, Lancia, Jeep, Maserati, Volvo, Tesla) also reject
       # .NET's Linux TLS client from any network, and additionally GitHub's IP ranges; Suzuki only
       # blocks GitHub's IP ranges. No code change fixes either, so check these brands with a local
-      # dry run on Windows instead. Remove a brand once a run shows it reachable again.
+      # dry run on Windows instead. The probe step below reports when one becomes reachable again.
       - name: Check rescue-card sources (dry run, all brands reachable from CI)
         run: >
           dotnet run --project src/Rettungskarten.Cli --no-build --configuration Release --
           fetch rescue-cards --brand all --dry-run --output "${{ runner.temp }}/rescue-cards"
-          --exclude-brands bentley fiat fiatprofessional abarth alfaromeo lancia jeep maserati volvo tesla suzuki
+          --exclude-brands ${{ env.EXCLUDED_BRANDS }}
+
+      # Informational only (never fails the job): tries each excluded brand on its own. One that
+      # passes is reachable from GitHub's runners again and gets a warning annotation asking to take it
+      # off EXCLUDED_BRANDS, so the exclusion list can't silently outlive its reason. One that still
+      # fails is only logged - its page could have moved too, which is what the local dry run is for.
+      - name: Probe excluded brands (informational)
+        continue-on-error: true
+        run: |
+          for brand in $EXCLUDED_BRANDS; do
+            if dotnet run --project src/Rettungskarten.Cli --no-build --configuration Release -- \
+                fetch rescue-cards --brand "$brand" --dry-run --output "${{ runner.temp }}/excluded-$brand" > /dev/null 2>&1; then
+              echo "::warning::$brand is reachable from GitHub's runners again - remove it from EXCLUDED_BRANDS in link-check.yml"
+            else
+              echo "$brand: still not reachable from GitHub's runners"
+            fi
+          done
 
       # Discovery (even in --dry-run) already populates BodyType/FuelType/Doors from each source's
       # free text, so this runs straight against the previous step's output with no extra downloads.

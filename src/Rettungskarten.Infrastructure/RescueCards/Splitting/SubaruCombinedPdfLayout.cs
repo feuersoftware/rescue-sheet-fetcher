@@ -48,8 +48,6 @@ public sealed class SubaruCombinedPdfLayout : PageTextCombinedPdfLayout
 
     private static readonly Regex Hybrid = new(@"\bHYBRID\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly Regex FuelWords = new(@"\b(?:HYBRID|Benzin|Diesel|&)\b|&", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-    private static readonly Regex Whitespace = new(@"\s+", RegexOptions.Compiled);
-
     public override Brand Brand => Brand.Subaru;
 
     protected override bool UnkeyedPagesContinuePreviousGroup => true;
@@ -65,11 +63,11 @@ public sealed class SubaruCombinedPdfLayout : PageTextCombinedPdfLayout
         var old = OldHeader.Match(pageText);
         if (old.Success)
         {
-            return Collapse($"{old.Groups["model"].Value} {old.Groups["type"].Value} {old.Groups["years"].Value}");
+            return LabelText.Collapse($"{old.Groups["model"].Value} {old.Groups["type"].Value} {old.Groups["years"].Value}");
         }
 
         var type = TypeHeader.Match(pageText);
-        return type.Success ? Collapse($"{type.Groups["model"].Value} {type.Groups["type"].Value} ab {type.Groups["year"].Value}") : null;
+        return type.Success ? LabelText.Collapse($"{type.Groups["model"].Value} {type.Groups["type"].Value} ab {type.Groups["year"].Value}") : null;
     }
 
     protected override ParsedModelInfo ParseGroup(string key, IReadOnlyList<string> pageTexts)
@@ -85,7 +83,7 @@ public sealed class SubaruCombinedPdfLayout : PageTextCombinedPdfLayout
             var firstModel = CleanModelName(models.Split("SUBARU", StringSplitOptions.TrimEntries)[0]);
             var years = ModelYearRangeTextHelper.Extract(iso.Groups["years"].Value);
             return new ParsedModelInfo(
-                ModelName: firstModel, Variant: Collapse(iso.Value), BodyType: iso.Groups["body"].Value,
+                ModelName: firstModel, Variant: LabelText.Collapse(iso.Value), BodyType: iso.Groups["body"].Value,
                 BuildYearFrom: years.From, BuildYearTo: years.To, Doors: DoorWordToCount(iso.Groups["doors"].Value),
                 FuelType: Hybrid.IsMatch(models) ? "Hybrid" : null, LanguageCode: "DE", ParseConfidence.Heuristic,
                 ChassisCode: iso.Groups["type"].Value.Trim());
@@ -98,11 +96,11 @@ public sealed class SubaruCombinedPdfLayout : PageTextCombinedPdfLayout
             var years = ModelYearRangeTextHelper.Extract(old.Groups["years"].Value);
             return new ParsedModelInfo(
                 ModelName: CleanModelName(model.Split('/', StringSplitOptions.TrimEntries)[0]),
-                Variant: Collapse($"{model} Typ {old.Groups["type"].Value} {old.Groups["years"].Value}"), BodyType: null,
+                Variant: LabelText.Collapse($"{model} Typ {old.Groups["type"].Value} {old.Groups["years"].Value}"), BodyType: null,
                 BuildYearFrom: years.From, BuildYearTo: years.To, Doors: null,
                 // "Outback Benzin & Diesel": one card for both engines - no single fuel type.
                 FuelType: model.Contains('&') ? null : VehicleAttributeTextHelper.ExtractLastWordMatch(model, VehicleAttributeTextHelper.CommonFuelTypes),
-                LanguageCode: "DE", ParseConfidence.Heuristic, ChassisCode: Collapse(old.Groups["type"].Value));
+                LanguageCode: "DE", ParseConfidence.Heuristic, ChassisCode: LabelText.Collapse(old.Groups["type"].Value));
         }
 
         var type = TypeHeader.Match(first);
@@ -110,7 +108,7 @@ public sealed class SubaruCombinedPdfLayout : PageTextCombinedPdfLayout
         {
             var year = int.Parse(type.Groups["year"].Value);
             return new ParsedModelInfo(
-                ModelName: ToTitleCase(type.Groups["model"].Value.Trim()), Variant: Collapse(type.Value), BodyType: null,
+                ModelName: ToTitleCase(type.Groups["model"].Value.Trim()), Variant: LabelText.Collapse(type.Value), BodyType: null,
                 BuildYearFrom: year, BuildYearTo: null, Doors: null, FuelType: null, LanguageCode: "DE",
                 ParseConfidence.Heuristic, ChassisCode: type.Groups["type"].Value);
         }
@@ -119,7 +117,7 @@ public sealed class SubaruCombinedPdfLayout : PageTextCombinedPdfLayout
         return new ParsedModelInfo(key, null, null, null, null, null, null, "DE", ParseConfidence.Unparsed);
     }
 
-    private static string CleanModelName(string value) => Collapse(FuelWords.Replace(value, " "));
+    private static string CleanModelName(string value) => LabelText.Collapse(FuelWords.Replace(value, " "));
 
     // "SOLTERRA" is set in capitals on its card only; every other card writes "Solterra"-style names.
     private static string ToTitleCase(string value) =>
@@ -135,6 +133,4 @@ public sealed class SubaruCombinedPdfLayout : PageTextCombinedPdfLayout
         "Fünf" => 5,
         _ => null
     };
-
-    private static string Collapse(string value) => Whitespace.Replace(value, " ").Trim();
 }

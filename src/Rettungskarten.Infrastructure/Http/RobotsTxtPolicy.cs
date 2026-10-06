@@ -11,14 +11,21 @@ namespace Rettungskarten.Infrastructure.Http;
 /// after the first request to a host.
 ///
 /// What an unreadable robots.txt means follows RFC 9309 for the common case - a 4xx (including 404:
-/// the site simply has none) means no restrictions. A 5xx or network error is where this deliberately
-/// deviates from the RFC's "assume complete disallow": the actual request to that host almost always
-/// fails the same way right after, and treating a transient outage as "blocked" would turn one flaky
-/// response into a permanently missing card for the whole run. It is logged as a warning instead.
+/// the site simply has none) means no restrictions, and that answer is cached like real rules. A 5xx,
+/// 429, timeout or network error is where this deliberately deviates from the RFC's "assume complete
+/// disallow": the actual request to that host almost always fails the same way right after, and treating
+/// a transient outage as "blocked" would turn one flaky response into a permanently missing card. Such a
+/// failure is logged and lets the requests that were waiting for it through, but it is *not* cached - the
+/// next request to that host asks again, so one transient error can't switch off a host's real rules
+/// (e.g. fiat.de's <c>Disallow: *.pdf$</c>) for the rest of the run.
+///
+/// The fetch itself runs through the inner handlers - the per-host rate limiter and
+/// <see cref="SendTimeoutDelegatingHandler"/>, which bounds it - and follows redirects like any request
+/// (RFC 9309 asks for at least five).
 /// </summary>
 public sealed class RobotsTxtPolicy(ILogger<RobotsTxtPolicy> logger)
 {
-    private readonly ConcurrentDictionary<string, Lazy<Task<RobotsTxtRules>>> _rulesByOrigin =
+    private readonly ConcurrentDictionary<string, Lazy<Task<FetchedRules>>> _rulesByOrigin =
         new(StringComparer.OrdinalIgnoreCase);
 
     /// <param name="clientIdentity">The requesting client's User-Agent. Part of the cache key because
@@ -41,45 +48,53 @@ public sealed class RobotsTxtPolicy(ILogger<RobotsTxtPolicy> logger)
 
         var origin = url.GetLeftPart(UriPartial.Authority);
         var cacheKey = $"{origin}|{clientIdentity}";
-        var lazy = _rulesByOrigin.GetOrAdd(cacheKey, _ => new Lazy<Task<RobotsTxtRules>>(
+        var lazy = _rulesByOrigin.GetOrAdd(cacheKey, _ => new Lazy<Task<FetchedRules>>(
             // Not tied to any one caller's token: the first request's cancellation must not fail
             // every other request waiting on the same host's rules. Each caller only stops waiting.
-            () => FetchRulesAsync(new Uri($"{origin}/robots.txt"), send, copyHeaders, CancellationToken.None)));
+            () => FetchRulesAsync(new Uri($"{origin}/robots.txt"), send, copyHeaders)));
 
-        var rules = await lazy.Value.WaitAsync(ct);
+        var fetched = await lazy.Value.WaitAsync(ct);
+        if (!fetched.Cacheable)
+        {
+            _rulesByOrigin.TryRemove(new KeyValuePair<string, Lazy<Task<FetchedRules>>>(cacheKey, lazy));
+        }
 
-        return rules.IsAllowed(url.PathAndQuery);
+        return fetched.Rules.IsAllowed(url.PathAndQuery);
     }
 
-    private async Task<RobotsTxtRules> FetchRulesAsync(
+    private async Task<FetchedRules> FetchRulesAsync(
         Uri robotsUrl,
         Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> send,
-        Action<HttpRequestMessage> copyHeaders,
-        CancellationToken ct)
+        Action<HttpRequestMessage> copyHeaders)
     {
         try
         {
             using var request = new HttpRequestMessage(HttpMethod.Get, robotsUrl);
             copyHeaders(request);
-            using var response = await send(request, ct);
+            using var response = await send(request, CancellationToken.None);
 
             if (response.IsSuccessStatusCode)
             {
-                var content = await response.Content.ReadAsStringAsync(ct);
-                return RobotsTxtRules.Parse(content, PolitenessOptions.ProductToken);
+                var content = await response.Content.ReadAsStringAsync(CancellationToken.None);
+                return new FetchedRules(RobotsTxtRules.Parse(content, PolitenessOptions.ProductToken), Cacheable: true);
             }
 
             if ((int)response.StatusCode >= 500 || response.StatusCode == HttpStatusCode.TooManyRequests)
             {
                 logger.LogWarning("{Message}", Strings.Get("Http_RobotsTxtUnavailable", robotsUrl, (int)response.StatusCode));
+                return new FetchedRules(RobotsTxtRules.AllowAll, Cacheable: false);
             }
 
-            return RobotsTxtRules.AllowAll;
+            return new FetchedRules(RobotsTxtRules.AllowAll, Cacheable: true);
         }
-        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException && !ct.IsCancellationRequested)
+        catch (Exception ex)
         {
+            // No caller token is involved here, so every exception is a failed fetch (network error,
+            // timeout, open circuit) - never cached, see the class comment.
             logger.LogWarning("{Message}", Strings.Get("Http_RobotsTxtUnavailable", robotsUrl, ex.Message));
-            return RobotsTxtRules.AllowAll;
+            return new FetchedRules(RobotsTxtRules.AllowAll, Cacheable: false);
         }
     }
+
+    private sealed record FetchedRules(RobotsTxtRules Rules, bool Cacheable);
 }

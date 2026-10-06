@@ -70,6 +70,7 @@ public static class SplitCombinedCommand
 
             var totalSplit = 0;
             var documentsProcessed = 0;
+            var documentsFailed = 0;
             var anyCombinedFound = false;
 
             foreach (var layout in layouts)
@@ -99,15 +100,20 @@ public static class SplitCombinedCommand
                     try
                     {
                         var splitCount = await SplitOneCombinedDocumentAsync(store, siblingConfig, layout, allCards, combined, ct);
-                        totalSplit += splitCount;
-                        if (splitCount > 0)
+                        if (splitCount is { } parts)
                         {
+                            totalSplit += parts;
                             documentsProcessed++;
+                        }
+                        else
+                        {
+                            documentsFailed++;
                         }
                     }
                     catch (Exception ex) when (ex is not OperationCanceledException)
                     {
                         Console.Error.WriteLine(Strings.Get("Split_DocumentFailed", combined.Variant ?? combined.Id, ex.Message));
+                        documentsFailed++;
                     }
                 }
 
@@ -126,42 +132,54 @@ public static class SplitCombinedCommand
 
             // documentsProcessed (not the number of combined entries) - a document skipped because its
             // PDF was missing on disk or because no models could be detected in it must not be
-            // silently counted as "processed" in this summary, or a caller scripting around this
-            // command's output would have no signal that one of the documents produced zero output.
+            // silently counted as "processed" in this summary. The other documents are still split,
+            // but any failed one makes the exit code non-zero, so a script around this command can't
+            // mistake a corrupted or no-longer-recognized document for a successful split.
             Console.WriteLine(Strings.Get("Split_Result", documentsProcessed, totalSplit));
-            return 0;
+            return documentsFailed > 0 ? 1 : 0;
         });
     }
 
     /// <summary>Splits one combined document and saves its per-model results; returns how many
-    /// per-model cards were created (0 if the PDF was missing on disk or no models could be detected,
-    /// in which case the document's existing parts are left untouched and it doesn't count as
-    /// processed).</summary>
-    private static async Task<int> SplitOneCombinedDocumentAsync(
+    /// per-model cards were created, or null if the document failed (PDF missing on disk, or no models
+    /// detected - the reason is printed, and the document's existing parts are left untouched).</summary>
+    private static async Task<int?> SplitOneCombinedDocumentAsync(
         IRescueCardFileStore store, SiblingModelsConfig siblingConfig, ICombinedPdfLayout layout,
         IReadOnlyList<RescueCardMetadata> allCards, RescueCardMetadata combined, CancellationToken ct)
     {
+        var documentName = combined.Variant ?? combined.ModelName ?? combined.Id;
         var pdfPath = store.GetPdfPath(combined);
         if (pdfPath is null || !File.Exists(pdfPath))
         {
-            return 0;
+            Console.Error.WriteLine(Strings.Get("Split_PdfMissing", documentName, pdfPath ?? "-"));
+            return null;
         }
 
         var bytes = await File.ReadAllBytesAsync(pdfPath, ct);
-        var splitResults = CombinedPdfSplitter.Split(bytes, layout);
+        var outcome = CombinedPdfSplitter.SplitDocument(bytes, layout);
+        var splitResults = outcome.Parts;
 
         if (splitResults.Count == 0)
         {
-            Console.Error.WriteLine(
-                Strings.Get("Split_NoModelsDetected", combined.Variant ?? combined.ModelName ?? combined.Id));
-            return 0;
+            Console.Error.WriteLine(Strings.Get("Split_NoModelsDetected", documentName));
+            return null;
         }
 
-        foreach (var previousPart in allCards.Where(c => c.DocumentScope == DocumentScope.SplitPart && c.SplitSourceId == combined.Id))
+        // Neither is an error on its own (pages after a model's header page, a closing notes page),
+        // but both are what a model whose header stopped matching looks like - so they are listed for
+        // a person to check rather than silently becoming a wrongly labelled or missing card.
+        var headerless = splitResults.SelectMany(s => s.HeaderlessPageNumbers).Order().ToList();
+        if (headerless.Count > 0)
         {
-            await store.DeleteAsync(previousPart, ct);
+            Console.Error.WriteLine(Strings.Get("Split_HeaderlessPagesJoined", documentName, PageList(headerless)));
         }
 
+        if (outcome.UnassignedPageNumbers.Count > 0)
+        {
+            Console.Error.WriteLine(Strings.Get("Split_PagesNotAssigned", documentName, PageList(outcome.UnassignedPageNumbers)));
+        }
+
+        var saved = new List<RescueCardMetadata>(splitResults.Count);
         var now = DateTimeOffset.UtcNow;
         foreach (var split in splitResults)
         {
@@ -179,7 +197,7 @@ public static class SplitCombinedCommand
                 BuildYearFrom: split.Parsed.BuildYearFrom,
                 BuildYearTo: split.Parsed.BuildYearTo,
                 Doors: split.Parsed.Doors,
-                FuelType: split.Parsed.FuelType,
+                FuelType: FuelTypes.Normalize(split.Parsed.FuelType),
                 LanguageCode: split.Parsed.LanguageCode,
                 Status: RescueCardStatus.Downloaded,
                 SourcePageUrl: combined.SourcePageUrl,
@@ -197,9 +215,41 @@ public static class SplitCombinedCommand
                 ChassisCode: split.Parsed.ChassisCode,
                 SplitSourceId: combined.Id);
 
-            await store.SaveAsync(newMetadata, split.PdfBytes, ct);
+            saved.Add(await store.SaveAsync(newMetadata, split.PdfBytes, ct));
+        }
+
+        // Previous parts are removed only after the new ones are saved (a failure halfway through
+        // must not leave the document with fewer parts than before), and only those the new split
+        // didn't just overwrite in place.
+        var current = saved.Select(m => (m.Id, RescueCardIdBuilder.BuildModelFolderSlug(m.ModelName))).ToHashSet();
+        foreach (var previousPart in allCards.Where(c => c.DocumentScope == DocumentScope.SplitPart && c.SplitSourceId == combined.Id))
+        {
+            if (!current.Contains((previousPart.Id, RescueCardIdBuilder.BuildModelFolderSlug(previousPart.ModelName))))
+            {
+                await store.DeleteAsync(previousPart, ct);
+            }
         }
 
         return splitResults.Count;
+    }
+
+    /// <summary>"3, 5-7, 12" for 1-based page numbers.</summary>
+    public static string PageList(IReadOnlyList<int> pageNumbers)
+    {
+        var ranges = new List<string>();
+        for (var i = 0; i < pageNumbers.Count;)
+        {
+            var start = pageNumbers[i];
+            var end = start;
+            while (i + 1 < pageNumbers.Count && pageNumbers[i + 1] == end + 1)
+            {
+                end = pageNumbers[++i];
+            }
+
+            ranges.Add(start == end ? $"{start}" : $"{start}-{end}");
+            i++;
+        }
+
+        return string.Join(", ", ranges);
     }
 }

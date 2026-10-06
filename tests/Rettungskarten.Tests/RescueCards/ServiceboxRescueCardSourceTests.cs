@@ -116,5 +116,19 @@ public sealed class ServiceboxRescueCardSourceTests
     public void IsRescueSheet_RejectsManualsAndErgFiles(string fileName) =>
         Assert.False(ServiceboxRescueCardSource.IsRescueSheet("Ion (1PMS) 2011→", fileName));
 
+    [Theory]
+    [InlineData("../../../PDF_FAD/FAD_208_1PP2_de_DE.pdf", "DE")]
+    [InlineData("../../../PDF_FAD/e308_(1PP5)_2023_de.pdf", "DE")]
+    [InlineData("../../../PDF_FAD/FAD_3008_en_GB.pdf", "EN")]
+    [InlineData("../../../PDF_FAD/FAD_C5_fr.pdf", "FR")]
+    [InlineData("../../../PDF_FAD/FAD_208_1PIA.pdf", "DE")] // no suffix: the page's own locale
+    // Regression: matching ignored case, so a trailing upper-case body/trim token was read as a
+    // language and the row was dropped as neither German nor English.
+    [InlineData("../../../PDF_FAD/FAD_308_SW.pdf", "DE")]
+    [InlineData("../../../PDF_FAD/e208_GT.pdf", "DE")]
+    [InlineData("../../../PDF_FAD/FAD_C3_1CSC_2024_5d_GD.pdf", "DE")]
+    public void LanguageOf_ReadsOnlyRealLocaleSuffixes(string fileUrl, string expected) =>
+        Assert.Equal(expected, ServiceboxModelPageParser.LanguageOf(fileUrl));
+
     private static string Fixture(string name) => File.ReadAllText(Path.Combine("Fixtures", name));
 }

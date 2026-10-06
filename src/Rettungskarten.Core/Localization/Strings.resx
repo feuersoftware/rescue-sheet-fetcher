@@ -175,6 +175,7 @@
   <data name="Orchestrator_NotImplementedLog" xml:space="preserve"><value>{0}: not implemented - {1}</value></data>
   <data name="Orchestrator_DiscoveryFailedLog" xml:space="preserve"><value>{0}: discovery failed</value></data>
   <data name="Orchestrator_DownloadFailedLog" xml:space="preserve"><value>{0}: download failed for {1}</value></data>
+  <data name="Orchestrator_BrandFailedLog" xml:space="preserve"><value>{0}: run stopped by an unexpected error - the cards processed so far are kept</value></data>
   <data name="Orchestrator_NoSourceRegistered" xml:space="preserve"><value>No source registered for this brand.</value></data>
   <data name="Error_UnknownBrand" xml:space="preserve"><value>Unknown brand</value></data>
   <data name="FailureReason_NoDownloadUrl" xml:space="preserve"><value>No download URL discovered</value></data>
@@ -190,6 +191,9 @@
   <data name="Split_NoModelsDetected" xml:space="preserve"><value>Could not detect any models in '{0}' - the document layout may have changed.</value></data>
   <data name="Split_Result" xml:space="preserve"><value>{0} combined document(s) split into {1} per-model rescue card(s).</value></data>
   <data name="Split_DocumentFailed" xml:space="preserve"><value>Failed to split '{0}': {1}</value></data>
+  <data name="Split_PdfMissing" xml:space="preserve"><value>The PDF of '{0}' is missing on disk ({1}) - run 'fetch rescue-cards' for this brand again.</value></data>
+  <data name="Split_HeaderlessPagesJoined" xml:space="preserve"><value>'{0}': page(s) {1} carry no model header of their own and were added to the model before them - check that they belong to it.</value></data>
+  <data name="Split_PagesNotAssigned" xml:space="preserve"><value>'{0}': page(s) {1} match no model and are not in any split part - check whether a model is missing.</value></data>
   <data name="ListBrands_Column_Group" xml:space="preserve"><value>Group</value></data>
   <data name="Group_VolkswagenGroup" xml:space="preserve"><value>Volkswagen Group</value></data>
   <data name="Group_MercedesBenzGroup" xml:space="preserve"><value>Mercedes-Benz Group</value></data>
@@ -206,7 +210,8 @@
   <data name="RescueCards_Generic_DiscoveredCount" xml:space="preserve"><value>{0}: {1} rescue cards discovered</value></data>
   <data name="RescueCards_Generic_PageReadFailed" xml:space="preserve"><value>{0}: could not read page {1}</value></data>
   <data name="Http_NotAPdf" xml:space="preserve"><value>Response is not a PDF file (no %PDF signature)</value></data>
-  <data name="Http_RobotsTxtUnavailable" xml:space="preserve"><value>robots.txt at {0} could not be read ({1}) - continuing without restrictions for this host.</value></data>
+  <data name="Http_RobotsTxtUnavailable" xml:space="preserve"><value>robots.txt at {0} could not be read ({1}) - continuing without restrictions for now; it is fetched again with the next request to this host.</value></data>
+  <data name="Http_SendTimeout" xml:space="preserve"><value>The request to {0} did not complete within {1}.</value></data>
   <data name="FailureReason_RobotsTxtDisallowed" xml:space="preserve"><value>Download skipped: disallowed by the host's robots.txt</value></data>
   <data name="FailureReason_DownloadUrlResolutionFailed" xml:space="preserve"><value>Could not resolve the PDF download URL: {0}</value></data>
   <data name="FailureReason_DownloadUrlNotResolved" xml:space="preserve"><value>No PDF link found for this entry at download time</value></data>

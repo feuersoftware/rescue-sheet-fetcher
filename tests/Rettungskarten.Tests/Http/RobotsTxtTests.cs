@@ -85,6 +85,38 @@ public class RobotsTxtRulesTests
 
         Assert.True(rules.IsAllowed("/card.pdf"));
     }
+
+    [Fact]
+    public void Parse_EmptyUserAgentValue_IsNotMistakenForThisTool()
+    {
+        // "".Contains-style matching made an empty "User-agent:" line a group naming this tool.
+        var rules = RobotsTxtRules.Parse("""
+            User-agent:
+            Disallow: /
+
+            User-agent: *
+            Disallow: /private/
+            """, PolitenessOptions.ProductToken);
+
+        Assert.True(rules.IsAllowed("/card.pdf"));
+        Assert.False(rules.IsAllowed("/private/card.pdf"));
+    }
+
+    [Theory]
+    [InlineData("/content/rettungsdatenbl%C3%A4tter/aygo.pdf")] // what HttpClient sends
+    [InlineData("/content/rettungsdatenbl%c3%a4tter/aygo.pdf")] // lower-case escapes
+    public void IsAllowed_NonAsciiPattern_MatchesThePercentEncodedPath(string pathAndQuery)
+    {
+        // RFC 9309 2.2.2: patterns and paths are compared as percent-encoded octets. A pattern written
+        // with the literal umlaut never matched the escaped path HttpClient actually requests.
+        var rules = RobotsTxtRules.Parse("""
+            User-agent: *
+            Disallow: /content/rettungsdatenblätter/
+            """, PolitenessOptions.ProductToken);
+
+        Assert.False(rules.IsAllowed(pathAndQuery));
+        Assert.True(rules.IsAllowed("/content/other/aygo.pdf"));
+    }
 }
 
 public class RobotsTxtDelegatingHandlerTests
@@ -151,6 +183,53 @@ public class RobotsTxtDelegatingHandlerTests
 
         Assert.Equal(HttpStatusCode.OK, plain.StatusCode);
         Assert.True(RobotsTxtDelegatingHandler.IsBlockedResponse(browser));
+    }
+
+    [Fact]
+    public async Task TransientRobotsTxtFailure_IsNotCached()
+    {
+        // A 5xx used to be cached as "no restrictions" for the rest of the run, so one flaky response
+        // switched off a host's real rules (fiat.de's "Disallow: *.pdf$") for every later download.
+        var robotsCalls = 0;
+        var inner = new RecordingHandler(request =>
+        {
+            if (request.RequestUri!.AbsolutePath != "/robots.txt")
+            {
+                return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("ok") };
+            }
+
+            return Interlocked.Increment(ref robotsCalls) == 1
+                ? new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)
+                : new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("User-agent: *\nDisallow: *.pdf$") };
+        });
+        using var client = CreateClient(inner);
+
+        using var duringOutage = await client.GetAsync("https://example.test/first.pdf");
+        using var afterOutage = await client.GetAsync("https://example.test/second.pdf");
+        using var cached = await client.GetAsync("https://example.test/third.pdf");
+
+        Assert.Equal(HttpStatusCode.OK, duringOutage.StatusCode);
+        Assert.True(RobotsTxtDelegatingHandler.IsBlockedResponse(afterOutage));
+        Assert.True(RobotsTxtDelegatingHandler.IsBlockedResponse(cached));
+        Assert.Equal(2, robotsCalls); // the real rules are cached once they could be read
+    }
+
+    [Fact]
+    public async Task RobotsTxtRedirect_IsFollowed()
+    {
+        // RFC 9309 asks crawlers to follow robots.txt redirects; with automatic redirects off in the
+        // primary handlers, an unfollowed 301 would have read as "4xx-like, no restrictions".
+        var inner = new RecordingHandler(request => request.RequestUri!.AbsoluteUri switch
+        {
+            "https://example.test/robots.txt" => new HttpResponseMessage(HttpStatusCode.MovedPermanently) { Headers = { Location = new Uri("https://www.example.test/robots.txt") } },
+            "https://www.example.test/robots.txt" => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("User-agent: *\nDisallow: /") },
+            _ => new HttpResponseMessage(HttpStatusCode.OK)
+        });
+        using var client = CreateClient(inner);
+
+        using var response = await client.GetAsync("https://example.test/card.pdf");
+
+        Assert.True(RobotsTxtDelegatingHandler.IsBlockedResponse(response));
     }
 
     private static HttpClient CreateClient(RecordingHandler inner, RobotsTxtPolicy? policy = null, string userAgent = "RettungskartenTool/1.0")

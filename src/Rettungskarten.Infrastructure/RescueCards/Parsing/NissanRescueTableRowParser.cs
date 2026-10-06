@@ -50,7 +50,7 @@ public static class NissanRescueTableRowParser
         var body = VehicleAttributeTextHelper.ExtractLastWordMatch(version, VehicleAttributeTextHelper.CommonBodyTypes)
             ?? (standard.ParseConfidence != ParseConfidence.Unparsed ? standard.BodyType : null);
 
-        var variant = string.Join(", ", new[] { suffix, CollapseWhitespace(version) }.Where(s => !string.IsNullOrWhiteSpace(s)));
+        var variant = string.Join(", ", new[] { suffix, LabelText.Collapse(version) }.Where(s => !string.IsNullOrWhiteSpace(s)));
 
         return new ParsedModelInfo(
             ModelName: modelToken,
@@ -59,7 +59,7 @@ public static class NissanRescueTableRowParser
             BuildYearFrom: yearRange.From,
             BuildYearTo: yearRange.To,
             Doors: VehicleAttributeTextHelper.ExtractDoors(version) ?? standard.Doors,
-            FuelType: string.IsNullOrWhiteSpace(powertrain) ? null : CollapseWhitespace(powertrain),
+            FuelType: string.IsNullOrWhiteSpace(powertrain) ? null : LabelText.Collapse(powertrain),
             LanguageCode: "DE",
             ParseConfidence: yearRange.From is not null ? ParseConfidence.High : ParseConfidence.Heuristic,
             ChassisCode: ExtractChassisCode(version));
@@ -69,7 +69,4 @@ public static class NissanRescueTableRowParser
         version.Split([' ', ','], StringSplitOptions.RemoveEmptyEntries)
             .FirstOrDefault(t => ChassisCode.IsMatch(t) &&
                 !VehicleAttributeTextHelper.CommonBodyTypes.Contains(t, StringComparer.OrdinalIgnoreCase));
-
-    private static string CollapseWhitespace(string value) =>
-        string.Join(' ', value.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
 }

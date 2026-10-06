@@ -50,11 +50,11 @@ public static class ServiceboxLabelParser
     [
         (new Regex(@"verglaster\s+kastenwagen|fourgon[\s_]+vitr[eé]", RegexOptions.Compiled | RegexOptions.IgnoreCase), "Verglaster Kastenwagen"),
         (new Regex(@"lieferwagen|kastenwagen|fourgon", RegexOptions.Compiled | RegexOptions.IgnoreCase), "Kastenwagen"),
-        (WholeWord("SW|Break|Tourer|Estate"), "Kombi"),
-        (WholeWord("CC"), "Coupé-Cabriolet"),
-        (WholeWord("Coup[eé]"), "Coupé"),
-        (WholeWord("Hatchback"), "Schrägheck"),
-        (WholeWord("SUV"), "SUV")
+        (LabelText.WholeWord("SW|Break|Tourer|Estate"), "Kombi"),
+        (LabelText.WholeWord("CC"), "Coupé-Cabriolet"),
+        (LabelText.WholeWord("Coup[eé]"), "Coupé"),
+        (LabelText.WholeWord("Hatchback"), "Schrägheck"),
+        (LabelText.WholeWord("SUV"), "SUV")
     ];
 
     // Checked in this order: the specific hybrid kinds before the generic "Hybrid", and every hybrid
@@ -62,13 +62,13 @@ public static class ServiceboxLabelParser
     // "PLUG IN": Citroën labels its C5 Aircross mild hybrid "Hybrid PLUG IN Mhev" (the file says MHEV).
     private static readonly (Regex Pattern, string FuelType)[] FuelTypes =
     [
-        (WholeWord("MHEV"), "Mild-Hybrid"),
-        (WholeWord(@"PHEV|PLUG[\s_-]*IN"), "Plug-in-Hybrid"),
-        (WholeWord(@"Hydrogen|Hydrog[eè]ne|Fuel[\s_]+Cell"), "Wasserstoff"),
-        (WholeWord("Hybrid4|Hybride?"), "Hybrid"),
+        (LabelText.WholeWord("MHEV"), "Mild-Hybrid"),
+        (LabelText.WholeWord(@"PHEV|PLUG[\s_-]*IN"), "Plug-in-Hybrid"),
+        (LabelText.WholeWord(@"Hydrogen|Hydrog[eè]ne|Fuel[\s_]+Cell"), "Wasserstoff"),
+        (LabelText.WholeWord("Hybrid4|Hybride?"), "Hybrid"),
         // DS' "E-TENSE" alone is the battery-electric version ("DS 3 CROSSBACK E-TENSE" is the eDS3
         // - verified on the PDF); the plug-in hybrids are labelled "E-TENSE Hybride" and match above.
-        (WholeWord(@"BEV|Electric|[ée]lectrique|E[-_]TENSE"), "Elektro")
+        (LabelText.WholeWord(@"BEV|Electric|[ée]lectrique|E[-_]TENSE"), "Elektro")
     ];
 
     private static readonly (string IconPrefix, string FuelType)[] FuelIcons =
@@ -105,9 +105,9 @@ public static class ServiceboxLabelParser
             years = new YearRange(fileYear, null);
         }
 
-        var fuelType = FirstMatch(FuelTypes, text)
+        var fuelType = LabelText.FirstMatch(FuelTypes, text)
             ?? (isElectricByPrefix ? "Elektro" : null)
-            ?? FirstMatch(FuelTypes, fileText)
+            ?? LabelText.FirstMatch(FuelTypes, fileText)
             ?? FuelFromIcon(fuelIcon);
 
         var doors = VehicleAttributeTextHelper.ExtractDoors(text)
@@ -123,7 +123,7 @@ public static class ServiceboxLabelParser
         return new ParsedModelInfo(
             ModelName: modelName,
             Variant: text,
-            BodyType: FirstMatch(BodyTypes, text) ?? FirstMatch(BodyTypes, fileText),
+            BodyType: LabelText.FirstMatch(BodyTypes, text) ?? LabelText.FirstMatch(BodyTypes, fileText),
             BuildYearFrom: years.From,
             BuildYearTo: years.To,
             Doors: doors,
@@ -173,10 +173,4 @@ public static class ServiceboxLabelParser
         var iconName = fuelIcon.Split('/')[^1];
         return FuelIcons.FirstOrDefault(i => iconName.StartsWith(i.IconPrefix, StringComparison.OrdinalIgnoreCase)).FuelType;
     }
-
-    private static string? FirstMatch((Regex Pattern, string Value)[] vocabulary, string text) =>
-        vocabulary.FirstOrDefault(v => v.Pattern.IsMatch(text)).Value;
-
-    private static Regex WholeWord(string alternatives) =>
-        new($@"(?<![\p{{L}}\p{{N}}])(?:{alternatives})(?![\p{{L}}\p{{N}}])", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 }

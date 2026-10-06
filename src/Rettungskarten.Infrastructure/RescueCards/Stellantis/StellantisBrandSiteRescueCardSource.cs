@@ -3,6 +3,7 @@ using AngleSharp.Dom;
 using Microsoft.Extensions.Logging;
 using Rettungskarten.Core.Models;
 using Rettungskarten.Infrastructure.Http;
+using Rettungskarten.Infrastructure.RescueCards.Parsing;
 
 namespace Rettungskarten.Infrastructure.RescueCards.Stellantis;
 
@@ -88,7 +89,7 @@ public sealed class StellantisBrandSiteRescueCardSource(
             return string.Empty; // Parse falls back to the filename
         }
 
-        var text = CollapseWhitespace(anchor.TextContent);
+        var text = LabelText.Collapse(anchor.TextContent);
         if (text.Length > 0 && !GenericLinkText.IsMatch(text))
         {
             return text;
@@ -98,7 +99,7 @@ public sealed class StellantisBrandSiteRescueCardSource(
         // Only the link's own box (parent, grandparent) is searched - further up is the page heading.
         var heading = anchor.ParentElement?.QuerySelector("h1, h2, h3, h4, h5, h6")
             ?? anchor.ParentElement?.ParentElement?.QuerySelector("h1, h2, h3, h4, h5, h6");
-        return heading is null ? string.Empty : CollapseWhitespace(heading.TextContent);
+        return heading is null ? string.Empty : LabelText.Collapse(heading.TextContent);
     }
 
     protected override ParsedModelInfo Parse(string label, string absoluteUrl) =>

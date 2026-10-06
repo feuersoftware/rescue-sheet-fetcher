@@ -27,7 +27,6 @@ namespace Rettungskarten.Infrastructure.RescueCards.Parsing;
 public static class MazdaLabelParser
 {
     private static readonly Regex DownloadHint = new(@">|PDF\s+herunterladen", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-    private static readonly Regex VonBis = new(@"\bvon\s+((?:19|20)\d{2})\s+bis\s+((?:19|20)\d{2})\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly Regex YearThenAb = new(@"\b((?:19|20)\d{2})\s+ab\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly Regex ChassisSegment = new(@"^(?<code>[A-Z][A-Z0-9]{1,4})(?:\s*\([A-Z]+\))?$", RegexOptions.Compiled);
     private static readonly Regex BracketedChassis = new(@"\((?<code>[A-Z][A-Z0-9]{1,4})\)", RegexOptions.Compiled);
@@ -42,7 +41,6 @@ public static class MazdaLabelParser
     public static ParsedModelInfo Parse(string groupTitle, string label, string fileName)
     {
         var text = DownloadHint.Replace(label, " ");
-        text = VonBis.Replace(text, "$1 - $2");
         text = YearThenAb.Replace(text, "ab $1");
         text = string.Join(' ', text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
 

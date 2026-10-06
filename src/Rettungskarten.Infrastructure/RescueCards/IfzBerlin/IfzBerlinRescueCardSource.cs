@@ -84,7 +84,7 @@ public sealed class IfzBerlinRescueCardSource : RescueCardSourceBase
                     .Where(s => !string.IsNullOrWhiteSpace(s.DetailFile))
                     .Select(s => (autoTyp!, s, s.DetailFile!.Trim().TrimStart('/'))));
             }
-            catch (Exception ex) when (ex is HttpRequestException or JsonException or TaskCanceledException && !ct.IsCancellationRequested)
+            catch (Exception ex) when (ex is JsonException || HttpRequestFailures.IsRequestFailure(ex, ct))
             {
                 _logger.LogWarning(ex, "{Message}", Strings.Get("RescueCards_Generic_PageReadFailed", Brand, url));
             }

@@ -37,6 +37,25 @@ public sealed class TeslaRescueCardSourceTests
         Assert.Equal(2025, modelY.Parsed.BuildYearFrom);
 
         Assert.Single(entries, e => e.Parsed.ModelName == "Model 3" && e.Parsed.LanguageCode == "DE");
-        Assert.Single(entries, e => e.Parsed.ModelName == "Roadster");
+
+        // Regression: the label says "2010+", the file "2010-13" - the closed filename range wins.
+        var roadster = Assert.Single(entries, e => e.Parsed.ModelName == "Roadster");
+        Assert.Equal(2010, roadster.Parsed.BuildYearFrom);
+        Assert.Equal(2013, roadster.Parsed.BuildYearTo);
     }
+
+    [Theory]
+    [InlineData("2010-13_Roadster_Rescue_Sheet_en", 2010, 2013)]
+    [InlineData("2016-2020_Model_S_Rescue_Sheet_de", 2016, 2020)]
+    [InlineData("1998-02_Some_Sheet_en", 1998, 2002)]
+    public void FileNameYears_ReadsClosedRanges(string name, int from, int to) =>
+        Assert.Equal(new Rettungskarten.Infrastructure.RescueCards.Parsing.YearRange(from, to),
+            Rettungskarten.Infrastructure.RescueCards.Parsing.TeslaLabelParser.FileNameYears(name));
+
+    [Theory]
+    [InlineData("2022_Model_S_Rescue_Sheet_en_eu")]
+    [InlineData("2025-Model-Y-Rescue-Sheet-EN")]
+    [InlineData("2024_10_Model_3_Rescue_Sheet_de")] // a date, not a generation: would read as 2024-2110
+    public void FileNameYears_IgnoresASingleYear(string name) =>
+        Assert.Null(Rettungskarten.Infrastructure.RescueCards.Parsing.TeslaLabelParser.FileNameYears(name));
 }

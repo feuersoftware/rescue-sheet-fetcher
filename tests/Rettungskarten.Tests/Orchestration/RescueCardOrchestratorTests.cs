@@ -59,6 +59,45 @@ public class RescueCardOrchestratorTests
         Assert.Equal(ManufacturerGroup.Independent, saved.ManufacturerGroup);
     }
 
+    [Fact]
+    public async Task StoreFailing_IsReportedAsAFailedBrand_NotThrown()
+    {
+        // Regression: brands run in parallel via Task.WhenAll; an exception from the store escaped
+        // RunForBrandAsync and discarded every other brand's result and the run summary.
+        var source = new FakeSource(Brand.Smart, Entry("fortwo", null), Entry("forfour", null));
+        var store = new RecordingStore { FailAfter = 1 };
+        var orchestrator = new RescueCardOrchestrator([source], store, SiblingModelsConfig.Empty, NullLogger<RescueCardOrchestrator>.Instance);
+
+        var result = await orchestrator.RunForBrandAsync(Brand.Smart, dryRun: false, CancellationToken.None);
+
+        Assert.Equal(BrandRunOutcome.DiscoveryFailed, result.Outcome);
+        Assert.Contains("disk full", result.Note);
+        Assert.Equal(1, result.Discovered); // the card saved before the failure is still reported
+    }
+
+    [Theory]
+    [InlineData("PHEV", "Plug-in Hybrid")]
+    [InlineData("Plug-in-Hybrid", "Plug-in Hybrid")]
+    [InlineData("Elektro", "Electric")]
+    [InlineData("BEV", "Electric")]
+    [InlineData("GD", "Petrol/Diesel")]
+    [InlineData("Hybride", "Hybrid")]
+    [InlineData("Wasserstoff", "Hydrogen")]
+    [InlineData("FHybrid", "Hybrid")] // Ford
+    [InlineData("Energi", "Plug-in Hybrid")] // Ford C-MAX/Fusion Energi
+    [InlineData("Hybrid Benzin", "Hybrid Benzin")] // unknown combination: kept, not guessed
+    public async Task FuelType_IsStoredInTheSharedVocabulary(string parsedFuel, string storedFuel)
+    {
+        var parsed = new ParsedModelInfo("X", null, null, null, null, null, parsedFuel, "DE", ParseConfidence.Heuristic);
+        var source = new FakeSource(Brand.BMW, new RescueCardEntry(Brand.BMW, "https://page.test", "https://page.test/x.pdf", "x.pdf", parsed));
+        var store = new RecordingStore();
+        var orchestrator = new RescueCardOrchestrator([source], store, SiblingModelsConfig.Empty, NullLogger<RescueCardOrchestrator>.Instance);
+
+        await orchestrator.RunForBrandAsync(Brand.BMW, dryRun: true, CancellationToken.None);
+
+        Assert.Equal(storedFuel, Assert.Single(store.Saved).FuelType);
+    }
+
     private static RescueCardEntry Entry(string model, ManufacturerGroup? group) => new(
         Brand.Smart, "https://page.test", $"https://page.test/{Uri.EscapeDataString(model)}.pdf", model,
         new ParsedModelInfo(model, null, null, null, null, null, null, "DE", ParseConfidence.Heuristic),
@@ -86,8 +125,15 @@ public class RescueCardOrchestratorTests
     {
         public List<RescueCardMetadata> Saved { get; } = [];
 
+        public int? FailAfter { get; init; }
+
         public Task<RescueCardMetadata> SaveAsync(RescueCardMetadata metadata, byte[]? pdfContentOrNull, CancellationToken ct)
         {
+            if (Saved.Count == FailAfter)
+            {
+                throw new IOException("disk full");
+            }
+
             Saved.Add(metadata);
             return Task.FromResult(metadata);
         }

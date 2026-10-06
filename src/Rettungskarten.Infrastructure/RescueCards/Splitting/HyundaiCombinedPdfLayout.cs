@@ -69,7 +69,7 @@ public sealed class HyundaiCombinedPdfLayout : PageTextCombinedPdfLayout
 
     internal static (string Name, string Typ)? FindHeader(string text)
     {
-        var match = Header.Match(CombinedPdfHeaderText.Collapse(text));
+        var match = Header.Match(LabelText.Collapse(text));
         if (!match.Success)
         {
             return null;

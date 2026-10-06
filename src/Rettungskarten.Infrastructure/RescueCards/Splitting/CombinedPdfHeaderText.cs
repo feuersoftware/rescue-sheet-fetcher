@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using Rettungskarten.Infrastructure.RescueCards.Parsing;
 
 namespace Rettungskarten.Infrastructure.RescueCards.Splitting;
 
@@ -13,14 +14,10 @@ namespace Rettungskarten.Infrastructure.RescueCards.Splitting;
 /// </summary>
 internal static class CombinedPdfHeaderText
 {
-    private static readonly Regex Whitespace = new(@"\s+", RegexOptions.Compiled);
-
     // The sheet's revision date is printed right before the footer's "|" separator (Kia "08/2020 |",
     // Nissan "10/2012 |", once even "04//2012 |") - it's the date of the sheet, not a build year, and
     // must not reach the year parsing.
     private static readonly Regex RevisionDate = new(@"\b\d{1,2}\s*/+\s*(?:19|20)\d{2}\s*\|", RegexOptions.Compiled);
-
-    public static string Collapse(string text) => Whitespace.Replace(text, " ").Trim();
 
     /// <summary>Removes the publisher footer (<paramref name="footer"/>, matched case-insensitively), the
     /// revision date in front of it and the "|" separator, and collapses whitespace.</summary>
@@ -28,7 +25,7 @@ internal static class CombinedPdfHeaderText
     {
         var text = RevisionDate.Replace(pageText, " ");
         text = text.Replace(footer, " ", StringComparison.OrdinalIgnoreCase).Replace('|', ' ');
-        return Collapse(text);
+        return LabelText.Collapse(text);
     }
 
     /// <summary>

@@ -14,8 +14,9 @@ namespace Rettungskarten.Infrastructure.Http;
 /// <see cref="HttpDownloadHelper"/> turns the marker into a localized "blocked by robots.txt" failure
 /// reason; a blocked discovery page simply fails discovery like any other non-success status.
 ///
-/// Registered after (= inside) the resilience handler and before (= outside) the rate limiter, so
-/// the robots.txt fetch itself is rate-limited like every other request to that host.
+/// Registered inside <see cref="RedirectDelegatingHandler"/> (every redirect hop is checked as a
+/// request of its own) and outside the rate limiter, so the robots.txt fetch itself is rate-limited
+/// and time-bounded like every other request to that host.
 /// </summary>
 public sealed class RobotsTxtDelegatingHandler(RobotsTxtPolicy policy) : DelegatingHandler
 {
@@ -35,7 +36,7 @@ public sealed class RobotsTxtDelegatingHandler(RobotsTxtPolicy policy) : Delegat
         var allowed = await policy.IsAllowedAsync(
             uri,
             request.Headers.UserAgent.ToString(),
-            (robotsRequest, ct) => base.SendAsync(robotsRequest, ct),
+            (robotsRequest, ct) => RedirectFollower.SendAsync(robotsRequest, (hop, hopCt) => base.SendAsync(hop, hopCt), ct),
             robotsRequest => CopyHeaders(request, robotsRequest),
             cancellationToken);
 

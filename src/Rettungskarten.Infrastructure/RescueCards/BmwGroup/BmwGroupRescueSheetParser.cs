@@ -125,7 +125,7 @@ public static class BmwGroupRescueSheetParser
     {
         var fileName = HttpDownloadHelper.GetFileName(key);
         var chassisCode = ExtractChassisCode(brand, label);
-        var variant = Collapse(DateParenthetical.Replace(label, " "));
+        var variant = LabelText.Collapse(DateParenthetical.Replace(label, " "));
 
         var yearText = GluedMonthYear.Replace(label, "$1/$2");
         var years = ModelYearRangeTextHelper.Extract(yearText, singleYearIsStartYear: true);
@@ -307,8 +307,6 @@ public static class BmwGroupRescueSheetParser
 
         return Regex.IsMatch(fileName, @"_GD_", RegexOptions.IgnoreCase) ? "ICE" : null;
     }
-
-    private static string Collapse(string text) => Regex.Replace(text, @"\s+", " ").Trim();
 
     private static string Capitalize(string word) =>
         word.Length == 0 ? word : char.ToUpperInvariant(word[0]) + word[1..].ToLowerInvariant();

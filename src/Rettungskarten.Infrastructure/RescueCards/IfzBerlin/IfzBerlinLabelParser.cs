@@ -34,25 +34,25 @@ public static class IfzBerlinLabelParser
 
     private static readonly (Regex Pattern, string BodyType)[] BodyTypes =
     [
-        (WholeWord(@"Kombi|Caravan|Sports\s+Tourer|SportCombi|Estate|Station"), "Kombi"),
-        (WholeWord(@"Cabrio|Convertible|Twin\s+Top"), "Cabriolet"),
-        (WholeWord("Coup[eé]"), "Coupé"),
-        (WholeWord("SUV|CUV"), "SUV"),
-        (WholeWord("Hatchback"), "Schrägheck"),
-        (WholeWord(@"Crew\s+Cab"), "Doppelkabine"),
-        (WholeWord("Cargo|Van"), "Kastenwagen"),
-        (WholeWord("Combi"), "Kleinbus"),
-        (WholeWord("Tour"), "Hochdachkombi")
+        (LabelText.WholeWord(@"Kombi|Caravan|Sports\s+Tourer|SportCombi|Estate|Station"), "Kombi"),
+        (LabelText.WholeWord(@"Cabrio|Convertible|Twin\s+Top"), "Cabriolet"),
+        (LabelText.WholeWord("Coup[eé]"), "Coupé"),
+        (LabelText.WholeWord("SUV|CUV"), "SUV"),
+        (LabelText.WholeWord("Hatchback"), "Schrägheck"),
+        (LabelText.WholeWord(@"Crew\s+Cab"), "Doppelkabine"),
+        (LabelText.WholeWord("Cargo|Van"), "Kastenwagen"),
+        (LabelText.WholeWord("Combi"), "Kleinbus"),
+        (LabelText.WholeWord("Tour"), "Hochdachkombi")
     ];
 
     // Hydrogen first ("Vivaro_C Hydrogen electric Fuel Cell"), then hybrid, then electric.
     private static readonly (Regex Pattern, string FuelType)[] FuelTypes =
     [
-        (WholeWord(@"Hydrogen|HydroGen4|Fuel\s+Cell|Wasserstoff"), "Wasserstoff"),
-        (WholeWord(@"Hybrid|Hybrid\s*4"), "Hybrid"),
-        (WholeWord("electric|Elektro"), "Elektro"),
-        (WholeWord(@"CNG|Erdgas|Compressed\s+Natural\s+Gas"), "CNG"),
-        (WholeWord("LPG|Autogas"), "LPG")
+        (LabelText.WholeWord(@"Hydrogen|HydroGen4|Fuel\s+Cell|Wasserstoff"), "Wasserstoff"),
+        (LabelText.WholeWord(@"Hybrid|Hybrid\s*4"), "Hybrid"),
+        (LabelText.WholeWord("electric|Elektro"), "Elektro"),
+        (LabelText.WholeWord(@"CNG|Erdgas|Compressed\s+Natural\s+Gas"), "CNG"),
+        (LabelText.WholeWord("LPG|Autogas"), "LPG")
     ];
 
     public static ParsedModelInfo Parse(string autoTyp, string? detailText, string detailFile, string languageCode)
@@ -77,14 +77,14 @@ public static class IfzBerlinLabelParser
             years = new YearRange(int.Parse(fileYear.Value), null);
         }
 
-        var fuelType = FirstMatch(FuelTypes, attributeText)
+        var fuelType = LabelText.FirstMatch(FuelTypes, attributeText)
             ?? (isElectric || (!hasLabel && Regex.IsMatch(fileTokens, @"(?<![\p{L}\p{N}])e(?![\p{L}\p{N}])")) ? "Elektro" : null);
 
         var hasYear = years.From is not null || years.To is not null;
         return new ParsedModelInfo(
             ModelName: modelName,
             Variant: label,
-            BodyType: FirstMatch(BodyTypes, attributeText) ?? typeBody,
+            BodyType: LabelText.FirstMatch(BodyTypes, attributeText) ?? typeBody,
             BuildYearFrom: years.From,
             BuildYearTo: years.To,
             Doors: VehicleAttributeTextHelper.ExtractDoors(label)
@@ -126,7 +126,7 @@ public static class IfzBerlinLabelParser
         }
 
         string? bodyType = null;
-        if (tokens.Count > 1 && FirstMatch(BodyTypes, tokens[^1]) is { } body)
+        if (tokens.Count > 1 && LabelText.FirstMatch(BodyTypes, tokens[^1]) is { } body)
         {
             bodyType = body;
             tokens.RemoveAt(tokens.Count - 1);
@@ -147,10 +147,4 @@ public static class IfzBerlinLabelParser
 
         return (model.Length == 0 ? null : model, generation, isElectric, bodyType);
     }
-
-    private static string? FirstMatch((Regex Pattern, string Value)[] vocabulary, string text) =>
-        vocabulary.FirstOrDefault(v => v.Pattern.IsMatch(text)).Value;
-
-    private static Regex WholeWord(string alternatives) =>
-        new($@"(?<![\p{{L}}\p{{N}}])(?:{alternatives})(?![\p{{L}}\p{{N}}])", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 }

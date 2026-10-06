@@ -175,6 +175,7 @@
   <data name="Orchestrator_NotImplementedLog" xml:space="preserve"><value>{0}: nicht implementiert - {1}</value></data>
   <data name="Orchestrator_DiscoveryFailedLog" xml:space="preserve"><value>{0}: Discovery fehlgeschlagen</value></data>
   <data name="Orchestrator_DownloadFailedLog" xml:space="preserve"><value>{0}: Download fehlgeschlagen für {1}</value></data>
+  <data name="Orchestrator_BrandFailedLog" xml:space="preserve"><value>{0}: Lauf durch einen unerwarteten Fehler abgebrochen - die bis dahin verarbeiteten Karten bleiben erhalten</value></data>
   <data name="Orchestrator_NoSourceRegistered" xml:space="preserve"><value>Keine Quelle für diese Marke registriert.</value></data>
   <data name="Error_UnknownBrand" xml:space="preserve"><value>Unbekannte Marke</value></data>
   <data name="FailureReason_NoDownloadUrl" xml:space="preserve"><value>Keine Download-URL entdeckt</value></data>
@@ -190,6 +191,9 @@
   <data name="Split_NoModelsDetected" xml:space="preserve"><value>Konnte keine Modelle in '{0}' erkennen - das Dokumentlayout hat sich vermutlich geändert.</value></data>
   <data name="Split_Result" xml:space="preserve"><value>{0} kombinierte(s) Dokument(e) in {1} Rettungskarte(n) je Modell aufgeteilt.</value></data>
   <data name="Split_DocumentFailed" xml:space="preserve"><value>Aufteilen von '{0}' fehlgeschlagen: {1}</value></data>
+  <data name="Split_PdfMissing" xml:space="preserve"><value>Die PDF von '{0}' fehlt auf der Festplatte ({1}) - 'fetch rescue-cards' für diese Marke erneut ausführen.</value></data>
+  <data name="Split_HeaderlessPagesJoined" xml:space="preserve"><value>'{0}': Seite(n) {1} haben keinen eigenen Modell-Kopf und wurden dem Modell davor zugeordnet - prüfen, ob sie dazugehören.</value></data>
+  <data name="Split_PagesNotAssigned" xml:space="preserve"><value>'{0}': Seite(n) {1} passen zu keinem Modell und sind in keinem Teil enthalten - prüfen, ob ein Modell fehlt.</value></data>
   <data name="ListBrands_Column_Group" xml:space="preserve"><value>Konzern</value></data>
   <data name="Group_VolkswagenGroup" xml:space="preserve"><value>Volkswagen-Konzern</value></data>
   <data name="Group_MercedesBenzGroup" xml:space="preserve"><value>Mercedes-Benz Group</value></data>
@@ -206,7 +210,8 @@
   <data name="RescueCards_Generic_DiscoveredCount" xml:space="preserve"><value>{0}: {1} Rettungskarten gefunden</value></data>
   <data name="RescueCards_Generic_PageReadFailed" xml:space="preserve"><value>{0}: Seite {1} konnte nicht gelesen werden</value></data>
   <data name="Http_NotAPdf" xml:space="preserve"><value>Antwort ist keine PDF-Datei (keine %PDF-Signatur)</value></data>
-  <data name="Http_RobotsTxtUnavailable" xml:space="preserve"><value>robots.txt unter {0} konnte nicht gelesen werden ({1}) - für diesen Host wird ohne Einschränkungen fortgefahren.</value></data>
+  <data name="Http_RobotsTxtUnavailable" xml:space="preserve"><value>robots.txt unter {0} konnte nicht gelesen werden ({1}) - vorerst wird ohne Einschränkungen fortgefahren; mit der nächsten Anfrage an diesen Host wird sie erneut abgerufen.</value></data>
+  <data name="Http_SendTimeout" xml:space="preserve"><value>Die Anfrage an {0} wurde nicht innerhalb von {1} abgeschlossen.</value></data>
   <data name="FailureReason_RobotsTxtDisallowed" xml:space="preserve"><value>Download übersprungen: durch robots.txt des Hosts gesperrt</value></data>
   <data name="FailureReason_DownloadUrlResolutionFailed" xml:space="preserve"><value>PDF-Download-URL konnte nicht ermittelt werden: {0}</value></data>
   <data name="FailureReason_DownloadUrlNotResolved" xml:space="preserve"><value>Beim Download wurde für diesen Eintrag kein PDF-Link gefunden</value></data>

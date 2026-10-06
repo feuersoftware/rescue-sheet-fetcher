@@ -2,6 +2,7 @@ using AngleSharp.Dom;
 using Microsoft.Extensions.Logging;
 using Rettungskarten.Core.Models;
 using Rettungskarten.Infrastructure.Http;
+using Rettungskarten.Infrastructure.RescueCards.Parsing;
 
 namespace Rettungskarten.Infrastructure.RescueCards.RenaultGroup;
 
@@ -62,8 +63,8 @@ public sealed class RenaultGroupRescueCardSource : HtmlPdfLinkRescueCardSource
 
     protected override string GetLabel(IElement anchor)
     {
-        var text = CollapseWhitespace(anchor.TextContent).TrimStart('>', ' ');
-        var title = CollapseWhitespace(anchor.GetAttribute("title") ?? string.Empty);
+        var text = LabelText.Collapse(anchor.TextContent).TrimStart('>', ' ');
+        var title = LabelText.Collapse(anchor.GetAttribute("title") ?? string.Empty);
         return title.Length == 0 || string.Equals(title, text, StringComparison.OrdinalIgnoreCase)
             ? text
             : $"{text} | {title}";

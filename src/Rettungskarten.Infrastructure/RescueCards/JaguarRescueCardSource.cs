@@ -39,7 +39,7 @@ public sealed class JaguarRescueCardSource(IHttpClientFactory httpClientFactory,
             return false;
         }
 
-        var label = CollapseWhitespace(GetLabel(anchor));
+        var label = LabelText.Collapse(GetLabel(anchor));
         var fileName = HttpDownloadHelper.GetFileName(absoluteUrl);
         var labelBody = JaguarLabelParser.BodyStyleOf(label);
         var fileBody = JaguarLabelParser.BodyStyleOf(fileName);

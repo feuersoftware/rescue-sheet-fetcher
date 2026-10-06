@@ -41,10 +41,6 @@ public static class RenaultGroupLabelParser
     private static readonly Regex ExplicitFileNameFrom = new(
         @"(?<![A-Za-z])ab[-_ ]((?:19|20)\d{2})(?![0-9])", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-    // Dacia's titles say "2008 bis 2012", which the shared helper would read as "bis 2012" only.
-    private static readonly Regex YearBisYear = new(
-        @"((?:19|20)\d{2})\s+bis\s+((?:19|20)\d{2})", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-
     private static readonly Regex DocumentWords = new(
         @"\b(?:Rettungsdatenblatt|Rettungskarte)\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
@@ -131,8 +127,9 @@ public static class RenaultGroupLabelParser
         return string.IsNullOrEmpty(firstWord) ? null : TitleCase(firstWord);
     }
 
+    // Dacia's titles say "2008 bis 2012" - the shared helper reads such worded ranges as a range.
     private static YearRange ExtractLabelYears(string text) =>
-        ModelYearRangeTextHelper.Extract(YearBisYear.Replace(text, "$1-$2"), singleYearIsStartYear: true);
+        ModelYearRangeTextHelper.Extract(text, singleYearIsStartYear: true);
 
     private static YearRange ExtractExplicitFileNameYears(string fileStem)
     {

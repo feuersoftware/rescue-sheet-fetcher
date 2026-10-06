@@ -153,4 +153,16 @@ public sealed class FordRescueCardSourceTests
         Assert.Null(results[4].Parsed.BuildYearFrom); // "Transit CourierT": the header states no dates
         Assert.Equal(results.Count, results.Select(r => r.DocumentId).Distinct().Count());
     }
+
+    [Fact]
+    public void Layout_ReportsTheHeaderlessPagesItAppended()
+    {
+        // The Energi card's four high-voltage pages have no header and join the card before them -
+        // exactly what an unrecognized model header would look like too, so `split` lists them.
+        var outcome = CombinedPdfSplitter.SplitDocument(File.ReadAllBytes(Path.Combine("Fixtures", "ford_sample_pages.pdf")), new FordCombinedPdfLayout());
+
+        Assert.Equal([5, 6, 7, 8], outcome.Parts[2].HeaderlessPageNumbers);
+        Assert.All(outcome.Parts.Where((_, i) => i != 2), p => Assert.Empty(p.HeaderlessPageNumbers));
+        Assert.Empty(outcome.UnassignedPageNumbers); // the leading contents page isn't reported
+    }
 }

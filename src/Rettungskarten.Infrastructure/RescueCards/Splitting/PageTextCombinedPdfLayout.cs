@@ -11,7 +11,10 @@ namespace Rettungskarten.Infrastructure.RescueCards.Splitting;
 /// <see cref="TryGetPageKey"/> returns a page's group key (or null). Pages without a key either join
 /// the preceding group (<see cref="UnkeyedPagesContinuePreviousGroup"/>, for layouts where only a
 /// model's first page carries the header) or are skipped (cover/legal-notice/legend pages in layouts
-/// where every model page is keyed). With <see cref="MergeNonConsecutivePagesWithSameKey"/> (the
+/// where every model page is keyed). Both outcomes are reported back - joined pages as the group's
+/// <see cref="CombinedPdfPageGroup.HeaderlessPageIndices"/>, skipped ones as pages no group covers -
+/// because both are also exactly what a model whose header stops matching after a document update
+/// looks like. With <see cref="MergeNonConsecutivePagesWithSameKey"/> (the
 /// default) a key seen again later appends to its first group; without it, it starts a new group under
 /// a suffixed key.
 /// </summary>
@@ -36,6 +39,7 @@ public abstract class PageTextCombinedPdfLayout : ICombinedPdfLayout
     {
         var order = new List<string>();
         var pagesByKey = new Dictionary<string, List<(int Index, string Text)>>();
+        var headerlessByKey = new Dictionary<string, List<int>>();
         string? previousKey = null;
         string? previousRawKey = null;
         var runCounter = 0;
@@ -54,6 +58,13 @@ public abstract class PageTextCombinedPdfLayout : ICombinedPdfLayout
                 }
 
                 key = previousKey;
+                if (!headerlessByKey.TryGetValue(key, out var headerless))
+                {
+                    headerless = [];
+                    headerlessByKey[key] = headerless;
+                }
+
+                headerless.Add(page.Number - 1);
             }
             else if (!MergeNonConsecutivePagesWithSameKey && rawKey == previousRawKey)
             {
@@ -83,7 +94,8 @@ public abstract class PageTextCombinedPdfLayout : ICombinedPdfLayout
             .Select(k => new CombinedPdfPageGroup(
                 k,
                 ParseGroup(k, pagesByKey[k].Select(p => p.Text).ToList()),
-                pagesByKey[k].Select(p => p.Index).ToList()))
+                pagesByKey[k].Select(p => p.Index).ToList(),
+                headerlessByKey.GetValueOrDefault(k)))
             .ToList();
     }
 }

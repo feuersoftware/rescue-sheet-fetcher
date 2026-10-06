@@ -14,7 +14,9 @@ public readonly record struct YearRange(int? From, int? To);
 /// Before matching, the text is normalized for the phrasings the non-VW sources add: en/em dashes
 /// ("2012 – 2017"), a month in front of the year ("ab 03/2019", "11.2019 - 06.2023" - only the year
 /// is kept, the schema has no month), and the German "Modelljahr"/"MJ" prefix ("ab Modelljahr 2023").
-/// "seit"/"from"/"since" read like "ab", "vor"/"until"/"before" like "bis".
+/// "seit"/"from"/"since" read like "ab", "vor"/"until"/"before" like "bis", and a range spelled out in
+/// words ("von 03/2012 bis 11/2018", "ab 2019 bis 2023", "2008 bis 2012", "from 2019 to 2023") keeps
+/// both of its ends.
 ///
 /// A single bare year is ambiguous: on VW-style filenames it is the one year a sheet applies to, but
 /// on most other brands' labels ("Captur 2 - 2021", "Spring 2024") it's the launch year of a model
@@ -25,6 +27,13 @@ public static class ModelYearRangeTextHelper
     private static readonly Regex DashVariants = new(@"[‒–—―−]", RegexOptions.Compiled);
     private static readonly Regex MonthBeforeYear = new(@"\b(?:0?[1-9]|1[0-2])\s*[./]\s*(?=(?:19|20)\d{2}\b)", RegexOptions.Compiled);
     private static readonly Regex ModelYearPrefix = new(@"\b(?:Modelljahr|MJ)\s*(?=(?:19|20)\d{2}\b)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    // A start and an end year joined by a word - "von 2012 bis 2018", "ab 2019 bis 2023", Dacia's
+    // "2008 bis 2012", "from 2019 to 2023" - is rewritten to "2012 - 2018" for RangePattern. Without
+    // this, AbPattern/BisPattern below each returned only their own end of the range.
+    private static readonly Regex WordedRange = new(
+        @"(?:\b(?:ab|von|seit|from|since)\s+)?(?<!\d)((?:19|20)\d{2})\s+(?:bis|to|until)\s+((?:19|20)\d{2})(?!\d)",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     private static readonly Regex RangePattern = new(@"((?:19|20)\d{2})\s*-\s*((?:19|20)\d{2})", RegexOptions.Compiled);
     private static readonly Regex AbPattern = new(@"\b(?:ab|seit|from|since)\s+((?:19|20)\d{2})\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
@@ -99,6 +108,7 @@ public static class ModelYearRangeTextHelper
     {
         text = DashVariants.Replace(text, "-");
         text = MonthBeforeYear.Replace(text, string.Empty);
-        return ModelYearPrefix.Replace(text, string.Empty);
+        text = ModelYearPrefix.Replace(text, string.Empty);
+        return WordedRange.Replace(text, "$1 - $2");
     }
 }

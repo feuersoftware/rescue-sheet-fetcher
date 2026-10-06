@@ -68,6 +68,28 @@ public sealed class RescueCardOrchestrator(
         }
 
         var results = new List<ModelRunResult>(discovered.Count);
+        try
+        {
+            await DownloadAndStoreAsync(brand, dryRun, discovered, results, ct);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            // Anything else here (the store failing to write - disk full, a locked or too-long path) is
+            // still confined to this brand: brands run in parallel, and one brand's exception escaping
+            // would discard every other brand's result and the run summary.
+            logger.LogError(ex, "{Message}", Strings.Get("Orchestrator_BrandFailedLog", brand));
+            failureNotes.Add(ex.Message);
+        }
+
+        return failureNotes.Count > 0
+            ? BrandRunResult.DiscoveryFailed(brand, results, string.Join("; ", failureNotes))
+            : BrandRunResult.Completed(brand, results);
+    }
+
+    private async Task DownloadAndStoreAsync(
+        Brand brand, bool dryRun, List<(IRescueCardSource Source, RescueCardEntry Entry)> discovered,
+        List<ModelRunResult> results, CancellationToken ct)
+    {
         var now = _time.GetUtcNow();
 
         foreach (var (source, entry) in discovered)
@@ -95,7 +117,7 @@ public sealed class RescueCardOrchestrator(
                 BuildYearFrom: entry.Parsed.BuildYearFrom,
                 BuildYearTo: entry.Parsed.BuildYearTo,
                 Doors: entry.Parsed.Doors,
-                FuelType: entry.Parsed.FuelType,
+                FuelType: FuelTypes.Normalize(entry.Parsed.FuelType),
                 LanguageCode: entry.Parsed.LanguageCode,
                 Status: status,
                 SourcePageUrl: entry.SourcePageUrl,
@@ -120,10 +142,6 @@ public sealed class RescueCardOrchestrator(
         {
             await store.WriteBrandManifestAsync(brand, ct);
         }
-
-        return failureNotes.Count > 0
-            ? BrandRunResult.DiscoveryFailed(brand, results, string.Join("; ", failureNotes))
-            : BrandRunResult.Completed(brand, results);
     }
 
     private async Task<RescueCardDownloadResult> TryDownloadAsync(

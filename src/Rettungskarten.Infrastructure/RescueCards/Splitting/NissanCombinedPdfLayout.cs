@@ -38,7 +38,7 @@ public sealed class NissanCombinedPdfLayout : PageTextCombinedPdfLayout
         }
 
         var name = CombinedPdfHeaderText.CollapseRepeatedPrefix(match.Groups["name"].Value.Trim());
-        return $"{name} Typ: {match.Groups["code"].Value}, {CombinedPdfHeaderText.Collapse(match.Groups["years"].Value)}";
+        return $"{name} Typ: {match.Groups["code"].Value}, {LabelText.Collapse(match.Groups["years"].Value)}";
     }
 
     protected override ParsedModelInfo ParseGroup(string key, IReadOnlyList<string> pageTexts)
