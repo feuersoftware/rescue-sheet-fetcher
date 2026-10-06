@@ -187,6 +187,7 @@
   <data name="Argument_SplitBrand_Description" xml:space="preserve"><value>Brand whose combined PDFs to split, or 'all' for every brand that has any</value></data>
   <data name="Split_NoLayoutForBrand" xml:space="preserve"><value>'{0}' does not publish combined PDFs that this tool can split.</value></data>
   <data name="Split_NoCombinedEntriesFound" xml:space="preserve"><value>No downloaded combined {0} documents found - run 'fetch rescue-cards --brand {1}' first.</value></data>
+  <data name="Split_CombinedEntryNotDownloaded" xml:space="preserve"><value>The combined {0} document was discovered but not downloaded ({1}). If robots.txt forbids the download, see '--ignore-robots-txt' in the README.</value></data>
   <data name="Split_NoCombinedEntriesFoundAnyBrand" xml:space="preserve"><value>No downloaded combined documents found for any brand - run 'fetch rescue-cards' first.</value></data>
   <data name="Split_NoModelsDetected" xml:space="preserve"><value>Could not detect any models in '{0}' - the document layout may have changed.</value></data>
   <data name="Split_Result" xml:space="preserve"><value>{0} combined document(s) split into {1} per-model rescue card(s).</value></data>
@@ -220,17 +221,17 @@
   <data name="Brand_RollsRoyce_Source" xml:space="preserve"><value>aos.bmwgroup.com JSON API</value></data>
   <data name="RescueCards_BmwGroup_IncompleteEntry" xml:space="preserve"><value>{0}: skipped a rescue-sheet API entry without file key or name (id {1})</value></data>
   <data name="Brand_Fiat_Source" xml:space="preserve"><value>fiat.de static HTML page</value></data>
-  <data name="Brand_Fiat_Status" xml:space="preserve"><value>Metadata only (robots.txt forbids PDF downloads)</value></data>
+  <data name="Brand_Fiat_Status" xml:space="preserve"><value>Metadata only (robots.txt forbids PDF downloads; --ignore-robots-txt downloads them anyway - see the disclaimer in the README)</value></data>
   <data name="Brand_FiatProfessional_Source" xml:space="preserve"><value>fiat.de/professional static HTML page</value></data>
-  <data name="Brand_FiatProfessional_Status" xml:space="preserve"><value>Metadata only (robots.txt forbids PDF downloads)</value></data>
+  <data name="Brand_FiatProfessional_Status" xml:space="preserve"><value>Metadata only (robots.txt forbids PDF downloads; --ignore-robots-txt downloads them anyway - see the disclaimer in the README)</value></data>
   <data name="Brand_Jeep_Source" xml:space="preserve"><value>jeep.de static HTML page</value></data>
-  <data name="Brand_Jeep_Status" xml:space="preserve"><value>Metadata only (robots.txt forbids PDF downloads)</value></data>
+  <data name="Brand_Jeep_Status" xml:space="preserve"><value>Metadata only (robots.txt forbids PDF downloads; --ignore-robots-txt downloads them anyway - see the disclaimer in the README)</value></data>
   <data name="Brand_AlfaRomeo_Source" xml:space="preserve"><value>alfaromeo.de static HTML page</value></data>
-  <data name="Brand_AlfaRomeo_Status" xml:space="preserve"><value>Metadata only (robots.txt forbids PDF downloads)</value></data>
+  <data name="Brand_AlfaRomeo_Status" xml:space="preserve"><value>Metadata only (robots.txt forbids PDF downloads; --ignore-robots-txt downloads them anyway - see the disclaimer in the README)</value></data>
   <data name="Brand_Lancia_Source" xml:space="preserve"><value>lancia.de static HTML page</value></data>
-  <data name="Brand_Lancia_Status" xml:space="preserve"><value>Metadata only (robots.txt forbids PDF downloads)</value></data>
+  <data name="Brand_Lancia_Status" xml:space="preserve"><value>Metadata only (robots.txt forbids PDF downloads; --ignore-robots-txt downloads them anyway - see the disclaimer in the README)</value></data>
   <data name="Brand_Abarth_Source" xml:space="preserve"><value>abarth.de static HTML pages (2)</value></data>
-  <data name="Brand_Abarth_Status" xml:space="preserve"><value>Metadata only (robots.txt forbids PDF downloads)</value></data>
+  <data name="Brand_Abarth_Status" xml:space="preserve"><value>Metadata only (robots.txt forbids PDF downloads; --ignore-robots-txt downloads them anyway - see the disclaimer in the README)</value></data>
   <data name="Brand_Dodge_Source" xml:space="preserve"><value>dodge.de legacy static HTML page</value></data>
   <data name="Brand_Dodge_Status" xml:space="preserve"><value>Fully functional (legacy models up to 2013 only)</value></data>
   <data name="Brand_Maserati_Source" xml:space="preserve"><value>maserati.com aftersales page</value></data>
@@ -296,4 +297,11 @@
   <data name="RescueCards_Ford_MarketNotAccepted" xml:space="preserve"><value>Ford: the service portal no longer accepts the German market selection (redirected to {0})</value></data>
   <data name="Option_ExcludeBrands_Description" xml:space="preserve"><value>Brands to skip (space-separated lower-case names), e.g. for CI runners whose network some manufacturer sites block</value></data>
   <data name="Log_BrandsExcluded" xml:space="preserve"><value>Skipping excluded brands: {0}</value></data>
+  <data name="Log_IgnoreRobotsTxtBrandsNotInRun" xml:space="preserve"><value>--ignore-robots-txt names brands that are not part of this run (ignored): {0}</value></data>
+  <data name="Option_IgnoreRobotsTxt_Description" xml:space="preserve"><value>Brands whose sources ignore the sites' robots.txt (space-separated lower-case names, e.g. fiat) - read the disclaimer in the README first. All other brands keep honouring robots.txt; requests stay rate-limited.</value></data>
+  <data name="RobotsTxt_BypassDisclaimer" xml:space="preserve"><value>DISCLAIMER - robots.txt is ignored for: {0}
+These sites' robots.txt asks automated clients not to fetch some of their files (e.g. the rescue-sheet PDFs), and this run fetches them anyway.
+robots.txt is the site owner's stated wish, not an access control: ignoring it may breach the site's terms of use, and the owner may block this tool.
+You alone are responsible for whether this use is permitted - if in doubt, ask the manufacturer for permission. The authors accept no liability.
+Requests stay rate-limited. Use the downloaded files only for their purpose: rescuing people from vehicles.</value></data>
 </root>

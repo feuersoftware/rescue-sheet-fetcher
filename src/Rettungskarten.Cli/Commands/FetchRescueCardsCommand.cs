@@ -6,6 +6,7 @@ using Rettungskarten.Core.Localization;
 using Rettungskarten.Core.Models;
 using Rettungskarten.Core.Orchestration;
 using Rettungskarten.Infrastructure.Config;
+using Rettungskarten.Infrastructure.Http;
 using Rettungskarten.Infrastructure.Storage;
 
 namespace Rettungskarten.Cli.Commands;
@@ -31,6 +32,15 @@ public static class FetchRescueCardsCommand
         };
         excludeBrandsOption.AcceptOnlyFromAmong(BrandArgument.AllowedValues().Where(v => v != BrandArgument.All).ToArray());
 
+        // Opt-in and per brand on purpose (no "all"): every brand not named here keeps honouring
+        // robots.txt in the same run, even on a shared host - see RobotsTxtBypass.
+        var ignoreRobotsTxtOption = new Option<string[]>("--ignore-robots-txt")
+        {
+            Description = Strings.Get("Option_IgnoreRobotsTxt_Description"),
+            AllowMultipleArgumentsPerToken = true
+        };
+        ignoreRobotsTxtOption.AcceptOnlyFromAmong(BrandArgument.AllowedValues().Where(v => v != BrandArgument.All).ToArray());
+
         var outputOption = new Option<string>("--output")
         {
             Description = Strings.Get("Option_Output_RescueCards_Description"),
@@ -51,6 +61,7 @@ public static class FetchRescueCardsCommand
         var command = new Command("rescue-cards", Strings.Get("Command_RescueCards_Description"));
         command.Add(brandOption);
         command.Add(excludeBrandsOption);
+        command.Add(ignoreRobotsTxtOption);
         command.Add(outputOption);
         command.Add(dryRunOption);
         command.Add(siblingConfigOption);
@@ -73,6 +84,23 @@ public static class FetchRescueCardsCommand
                 logger.LogInformation("{Message}", Strings.Get("Log_BrandsExcluded", string.Join(", ", excluded.Order())));
             }
 
+            // Only brands that actually run: the disclaimer must not claim a bypass for a brand that
+            // isn't fetched (a typo'd or excluded name), and such a name is called out instead.
+            var ignoreRobotsTxtNamed = (parseResult.GetValue(ignoreRobotsTxtOption) ?? []).Select(BrandArgument.Parse).ToHashSet();
+            var ignoreRobotsTxt = ignoreRobotsTxtNamed.Where(brands.Contains).ToHashSet();
+            var notInRun = ignoreRobotsTxtNamed.Except(ignoreRobotsTxt).ToList();
+            if (notInRun.Count > 0)
+            {
+                logger.LogWarning("{Message}", Strings.Get("Log_IgnoreRobotsTxtBrandsNotInRun", string.Join(", ", notInRun.Order())));
+            }
+
+            if (ignoreRobotsTxt.Count > 0)
+            {
+                // Printed on its own (not as a log line) so it can't be missed or filtered out.
+                Console.Error.WriteLine(Strings.Get("RobotsTxt_BypassDisclaimer", string.Join(", ", ignoreRobotsTxt.Order())));
+                Console.Error.WriteLine();
+            }
+
             var siblingConfig = await ConfigLoader.LoadSiblingModelsAsync(siblingConfigPath, ct);
             var sources = services.GetServices<IRescueCardSource>();
             var store = new FileSystemRescueCardStore(new RescueCardStoreOptions { RootPath = output });
@@ -90,7 +118,8 @@ public static class FetchRescueCardsCommand
             var results = await Task.WhenAll(brands.Select(async brand =>
             {
                 logger.LogInformation("{Message}", Strings.Get("Log_StartingBrand", brand));
-                return await orchestrator.RunForBrandAsync(brand, dryRun, ct);
+                return await RobotsTxtBypass.RunAsync(
+                    ignoreRobotsTxt.Contains(brand), () => orchestrator.RunForBrandAsync(brand, dryRun, ct));
             }));
 
             RunSummaryPrinter.Print(results);

@@ -48,6 +48,38 @@ public sealed class SplitCombinedCommandTests : IDisposable
         Assert.Equal(1, await RunSplitAsync("kia"));
     }
 
+    [Fact]
+    public async Task CombinedEntryThatWasNotDownloaded_SaysWhy_InsteadOfAskingForTheSameFetchAgain()
+    {
+        // Fiat's collection without --ignore-robots-txt: discovered, stored metadata-only. Re-running
+        // the fetch the generic message suggests could never produce its PDF.
+        const string reason = "test: disallowed by robots.txt";
+        var store = new FileSystemRescueCardStore(new RescueCardStoreOptions { RootPath = _root });
+        await store.SaveAsync(new RescueCardMetadata(
+            Id: "fiat-collection", Brand: Brand.Fiat, ModelName: "Various Models", Variant: null,
+            BodyType: null, BuildYearFrom: null, BuildYearTo: null, Doors: null, FuelType: null, LanguageCode: "DE",
+            Status: RescueCardStatus.MetadataOnly, SourcePageUrl: "https://www.fiat.de/", DownloadUrl: "https://www.fiat.de/ShedaSoccorso.pdf",
+            FailureReason: reason, ParseConfidence: ParseConfidence.Heuristic, DiscoveredAtUtc: DateTimeOffset.UtcNow,
+            DownloadedAtUtc: null, LocalPdfRelativePath: null, SiblingModelIds: [], EstimatedFleetSize: null,
+            BundlePriority: BundlePriority.Unknown, DocumentScope: DocumentScope.Combined), null, CancellationToken.None);
+
+        var originalError = Console.Error;
+        using var error = new StringWriter();
+        int exitCode;
+        try
+        {
+            Console.SetError(error);
+            exitCode = await RunSplitAsync("fiat");
+        }
+        finally
+        {
+            Console.SetError(originalError);
+        }
+
+        Assert.Equal(1, exitCode);
+        Assert.Contains(reason, error.ToString());
+    }
+
     [Theory]
     [InlineData(new[] { 5, 6, 7, 8 }, "5-8")]
     [InlineData(new[] { 3, 5, 6, 7, 12 }, "3, 5-7, 12")]

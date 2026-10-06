@@ -10,6 +10,10 @@ namespace Rettungskarten.Infrastructure.Http;
 /// only add load on the manufacturer's server and wait time behind its per-host rate limit. The first
 /// caller fetches, everyone else awaits the same task; a failed fetch is evicted so a later caller
 /// retries instead of inheriting the failure.
+///
+/// Callers inside a <see cref="RobotsTxtBypass"/> scope get their own cache entry: the shared fetch runs
+/// in the first caller's async flow, so one entry for both would hand a bypassed response to a brand
+/// that honours robots.txt (or a robots.txt refusal to a brand that bypasses it).
 /// </summary>
 public sealed class DiscoveryResponseCache
 {
@@ -20,14 +24,15 @@ public sealed class DiscoveryResponseCache
     {
         // The shared fetch isn't tied to the first caller's token (its cancellation would otherwise
         // fail every other brand awaiting the same response); each caller only stops waiting.
-        var lazy = _responses.GetOrAdd(url, u => new Lazy<Task<string>>(() => client.GetStringAsync(u, CancellationToken.None)));
+        var key = RobotsTxtBypass.IsActive ? "robots.txt-bypass " + url : url;
+        var lazy = _responses.GetOrAdd(key, _ => new Lazy<Task<string>>(() => client.GetStringAsync(url, CancellationToken.None)));
         try
         {
             return await lazy.Value.WaitAsync(ct);
         }
         catch (Exception) when (!ct.IsCancellationRequested)
         {
-            _responses.TryRemove(new KeyValuePair<string, Lazy<Task<string>>>(url, lazy));
+            _responses.TryRemove(new KeyValuePair<string, Lazy<Task<string>>>(key, lazy));
             throw;
         }
     }

@@ -16,7 +16,8 @@ namespace Rettungskarten.Infrastructure.Http;
 ///
 /// Registered inside <see cref="RedirectDelegatingHandler"/> (every redirect hop is checked as a
 /// request of its own) and outside the rate limiter, so the robots.txt fetch itself is rate-limited
-/// and time-bounded like every other request to that host.
+/// and time-bounded like every other request to that host. Skipped only for requests inside an
+/// explicit <see cref="RobotsTxtBypass"/> scope.
 /// </summary>
 public sealed class RobotsTxtDelegatingHandler(RobotsTxtPolicy policy) : DelegatingHandler
 {
@@ -28,7 +29,7 @@ public sealed class RobotsTxtDelegatingHandler(RobotsTxtPolicy policy) : Delegat
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        if (request.RequestUri is not { IsAbsoluteUri: true } uri)
+        if (request.RequestUri is not { IsAbsoluteUri: true } uri || RobotsTxtBypass.IsActive)
         {
             return await base.SendAsync(request, cancellationToken);
         }

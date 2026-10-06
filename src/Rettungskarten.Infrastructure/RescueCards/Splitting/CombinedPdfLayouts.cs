@@ -18,7 +18,9 @@ public static class CombinedPdfLayouts
         new HyundaiCombinedPdfLayout(),
         new KiaCombinedPdfLayout(),
         new NissanCombinedPdfLayout(),
-        new FordCombinedPdfLayout()
+        new FordCombinedPdfLayout(),
+        new StellantisCollectionCombinedPdfLayout(Brand.Fiat, "Fiat"),
+        new StellantisCollectionCombinedPdfLayout(Brand.Abarth, "Abarth")
     ];
 
     public static IReadOnlyList<ICombinedPdfLayout> For(Brand brand) =>

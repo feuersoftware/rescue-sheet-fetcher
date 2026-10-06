@@ -187,6 +187,7 @@
   <data name="Argument_SplitBrand_Description" xml:space="preserve"><value>Marke, deren kombinierte PDFs aufgeteilt werden sollen, oder 'all' für alle Marken, die welche haben</value></data>
   <data name="Split_NoLayoutForBrand" xml:space="preserve"><value>'{0}' veröffentlicht keine kombinierten PDFs, die dieses Werkzeug aufteilen kann.</value></data>
   <data name="Split_NoCombinedEntriesFound" xml:space="preserve"><value>Keine geladenen kombinierten {0}-Dokumente gefunden - zuerst 'fetch rescue-cards --brand {1}' ausführen.</value></data>
+  <data name="Split_CombinedEntryNotDownloaded" xml:space="preserve"><value>Das kombinierte {0}-Dokument wurde gefunden, aber nicht geladen ({1}). Verbietet robots.txt den Download, siehe '--ignore-robots-txt' in der README.</value></data>
   <data name="Split_NoCombinedEntriesFoundAnyBrand" xml:space="preserve"><value>Für keine Marke geladene kombinierte Dokumente gefunden - zuerst 'fetch rescue-cards' ausführen.</value></data>
   <data name="Split_NoModelsDetected" xml:space="preserve"><value>Konnte keine Modelle in '{0}' erkennen - das Dokumentlayout hat sich vermutlich geändert.</value></data>
   <data name="Split_Result" xml:space="preserve"><value>{0} kombinierte(s) Dokument(e) in {1} Rettungskarte(n) je Modell aufgeteilt.</value></data>
@@ -220,17 +221,17 @@
   <data name="Brand_RollsRoyce_Source" xml:space="preserve"><value>aos.bmwgroup.com JSON-API</value></data>
   <data name="RescueCards_BmwGroup_IncompleteEntry" xml:space="preserve"><value>{0}: Eintrag der Rettungsdatenblatt-API ohne Dateischlüssel oder Namen übersprungen (ID {1})</value></data>
   <data name="Brand_Fiat_Source" xml:space="preserve"><value>fiat.de statische HTML-Seite</value></data>
-  <data name="Brand_Fiat_Status" xml:space="preserve"><value>Nur Metadaten (robots.txt verbietet PDF-Downloads)</value></data>
+  <data name="Brand_Fiat_Status" xml:space="preserve"><value>Nur Metadaten (robots.txt verbietet PDF-Downloads; --ignore-robots-txt lädt sie trotzdem - siehe Haftungshinweis in der README)</value></data>
   <data name="Brand_FiatProfessional_Source" xml:space="preserve"><value>fiat.de/professional statische HTML-Seite</value></data>
-  <data name="Brand_FiatProfessional_Status" xml:space="preserve"><value>Nur Metadaten (robots.txt verbietet PDF-Downloads)</value></data>
+  <data name="Brand_FiatProfessional_Status" xml:space="preserve"><value>Nur Metadaten (robots.txt verbietet PDF-Downloads; --ignore-robots-txt lädt sie trotzdem - siehe Haftungshinweis in der README)</value></data>
   <data name="Brand_Jeep_Source" xml:space="preserve"><value>jeep.de statische HTML-Seite</value></data>
-  <data name="Brand_Jeep_Status" xml:space="preserve"><value>Nur Metadaten (robots.txt verbietet PDF-Downloads)</value></data>
+  <data name="Brand_Jeep_Status" xml:space="preserve"><value>Nur Metadaten (robots.txt verbietet PDF-Downloads; --ignore-robots-txt lädt sie trotzdem - siehe Haftungshinweis in der README)</value></data>
   <data name="Brand_AlfaRomeo_Source" xml:space="preserve"><value>alfaromeo.de statische HTML-Seite</value></data>
-  <data name="Brand_AlfaRomeo_Status" xml:space="preserve"><value>Nur Metadaten (robots.txt verbietet PDF-Downloads)</value></data>
+  <data name="Brand_AlfaRomeo_Status" xml:space="preserve"><value>Nur Metadaten (robots.txt verbietet PDF-Downloads; --ignore-robots-txt lädt sie trotzdem - siehe Haftungshinweis in der README)</value></data>
   <data name="Brand_Lancia_Source" xml:space="preserve"><value>lancia.de statische HTML-Seite</value></data>
-  <data name="Brand_Lancia_Status" xml:space="preserve"><value>Nur Metadaten (robots.txt verbietet PDF-Downloads)</value></data>
+  <data name="Brand_Lancia_Status" xml:space="preserve"><value>Nur Metadaten (robots.txt verbietet PDF-Downloads; --ignore-robots-txt lädt sie trotzdem - siehe Haftungshinweis in der README)</value></data>
   <data name="Brand_Abarth_Source" xml:space="preserve"><value>abarth.de statische HTML-Seiten (2)</value></data>
-  <data name="Brand_Abarth_Status" xml:space="preserve"><value>Nur Metadaten (robots.txt verbietet PDF-Downloads)</value></data>
+  <data name="Brand_Abarth_Status" xml:space="preserve"><value>Nur Metadaten (robots.txt verbietet PDF-Downloads; --ignore-robots-txt lädt sie trotzdem - siehe Haftungshinweis in der README)</value></data>
   <data name="Brand_Dodge_Source" xml:space="preserve"><value>dodge.de statische HTML-Altseite</value></data>
   <data name="Brand_Dodge_Status" xml:space="preserve"><value>Voll funktionsfähig (nur Altmodelle bis 2013)</value></data>
   <data name="Brand_Maserati_Source" xml:space="preserve"><value>maserati.com Aftersales-Seite</value></data>
@@ -296,4 +297,11 @@
   <data name="RescueCards_Ford_MarketNotAccepted" xml:space="preserve"><value>Ford: das Serviceportal akzeptiert die Auswahl des deutschen Markts nicht mehr (Weiterleitung auf {0})</value></data>
   <data name="Option_ExcludeBrands_Description" xml:space="preserve"><value>Zu überspringende Marken (Namen in Kleinbuchstaben, durch Leerzeichen getrennt), z. B. für CI-Runner, deren Netz manche Herstellerseiten sperren</value></data>
   <data name="Log_BrandsExcluded" xml:space="preserve"><value>Ausgeschlossene Marken werden übersprungen: {0}</value></data>
+  <data name="Log_IgnoreRobotsTxtBrandsNotInRun" xml:space="preserve"><value>--ignore-robots-txt nennt Marken, die nicht Teil dieses Laufs sind (ignoriert): {0}</value></data>
+  <data name="Option_IgnoreRobotsTxt_Description" xml:space="preserve"><value>Marken, deren Quellen die robots.txt der Seiten ignorieren (Namen in Kleinbuchstaben, durch Leerzeichen getrennt, z. B. fiat) - vorher den Haftungshinweis in der README lesen. Alle anderen Marken beachten robots.txt weiterhin; die Anfragen bleiben gedrosselt.</value></data>
+  <data name="RobotsTxt_BypassDisclaimer" xml:space="preserve"><value>HAFTUNGSHINWEIS - robots.txt wird ignoriert für: {0}
+Die robots.txt dieser Seiten bittet automatisierte Programme, bestimmte Dateien (z. B. die Rettungsdatenblatt-PDFs) nicht abzurufen, und dieser Lauf ruft sie trotzdem ab.
+Die robots.txt ist der erklärte Wunsch des Seitenbetreibers, keine Zugriffssperre: sie zu ignorieren kann gegen die Nutzungsbedingungen der Seite verstoßen, und der Betreiber kann dieses Werkzeug sperren.
+Ob diese Nutzung zulässig ist, verantworten allein Sie - im Zweifel beim Hersteller um Erlaubnis bitten. Die Autoren übernehmen keine Haftung.
+Die Anfragen bleiben gedrosselt. Die geladenen Dateien nur für ihren Zweck verwenden: die Rettung von Menschen aus Fahrzeugen.</value></data>
 </root>

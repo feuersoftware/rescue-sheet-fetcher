@@ -23,7 +23,8 @@ namespace Rettungskarten.Infrastructure.RescueCards.Stellantis;
 /// - Every host, including the static 2011-era dodge.de (http only - https doesn't resolve), answers
 ///   plain requests with 403 (Akamai), so discovery and downloads use the browser-header client.
 /// - fiat.de, jeep.de, alfaromeo.de, lancia.de and abarth.de forbid "*.pdf" in robots.txt: the HTTP
-///   pipeline reports those downloads as metadata-only. dodge.de has no robots.txt.
+///   pipeline reports those downloads as metadata-only unless the brand is named in
+///   <c>--ignore-robots-txt</c> (<see cref="RobotsTxtBypass"/>). dodge.de has no robots.txt.
 /// - Link labels are the link text ("Jeep® Grand Cherokee 4xe (PHEV)", "Tonale Ibrida Plug-in"), except
 ///   on abarth.de, whose buttons all say "PDF DOWNLOADEN" under an &lt;h2&gt; with the model name, and a
 ///   few "Hier"/"hier downloaden"/image-only links - for those the heading of the link's own box is
@@ -39,7 +40,7 @@ namespace Rettungskarten.Infrastructure.RescueCards.Stellantis;
 ///   Abarth Mopar page (the same file linked as "Abarth Punto", "Abarth 500", "Abarth Punto Evo", ...)
 ///   link a brand-wide "ShedaSoccorso" collection PDF. It is kept as one
 ///   <see cref="DocumentScope.Combined"/> entry named <see cref="StellantisRescueSheetLabelParser.CollectionModelName"/>;
-///   there is no split layout for it because robots.txt forbids fetching it even once to design one.
+///   `split fiat`/`split abarth` cut it into one card per sheet (<see cref="Splitting.StellantisCollectionCombinedPdfLayout"/>).
 /// </summary>
 public sealed class StellantisBrandSiteRescueCardSource(
     Brand brand, IHttpClientFactory httpClientFactory, ILogger<StellantisBrandSiteRescueCardSource> logger)

@@ -232,6 +232,78 @@ public class RobotsTxtDelegatingHandlerTests
         Assert.True(RobotsTxtDelegatingHandler.IsBlockedResponse(response));
     }
 
+    [Fact]
+    public async Task BypassScope_SkipsTheCheck_OnlyUntilDisposed()
+    {
+        var inner = new RecordingHandler(request => request.RequestUri!.AbsolutePath == "/robots.txt"
+            ? new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("User-agent: *\nDisallow: *.pdf$") }
+            : new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("ok") });
+        using var client = CreateClient(inner);
+
+        HttpResponseMessage bypassed;
+        using (RobotsTxtBypass.Enable())
+        {
+            bypassed = await client.GetAsync("https://example.test/card.pdf");
+        }
+
+        using var afterScope = await client.GetAsync("https://example.test/card.pdf");
+
+        Assert.Equal(HttpStatusCode.OK, bypassed.StatusCode);
+        Assert.False(RobotsTxtBypass.IsActive);
+        Assert.True(RobotsTxtDelegatingHandler.IsBlockedResponse(afterScope));
+        Assert.Equal(["/card.pdf", "/robots.txt"], inner.Paths); // robots.txt not even fetched inside the scope
+        bypassed.Dispose();
+    }
+
+    [Fact]
+    public async Task RunAsync_ScopesEachBrandOfOneSynchronousLoop_LikeTheCli()
+    {
+        // The CLI's own pattern: every brand started from one synchronous Select, all running in
+        // parallel, the bypass only for the named ones. The brands after a bypassed one start in the
+        // same flow, and all of them only send once every brand has started.
+        var inner = new RecordingHandler(request => request.RequestUri!.AbsolutePath == "/robots.txt"
+            ? new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("User-agent: *\nDisallow: *.pdf$") }
+            : new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("ok") });
+        using var client = CreateClient(inner);
+        var allStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        (string Brand, bool Bypass)[] brands = [("honoured-before", false), ("bypassed", true), ("honoured-after", false)];
+
+        var runs = brands.Select(b => RobotsTxtBypass.RunAsync(b.Bypass, async () =>
+        {
+            await allStarted.Task;
+            using var response = await client.GetAsync($"https://example.test/{b.Brand}.pdf");
+            return RobotsTxtDelegatingHandler.IsBlockedResponse(response);
+        })).ToList();
+        allStarted.SetResult();
+        var blocked = await Task.WhenAll(runs);
+
+        Assert.Equal([true, false, true], blocked);
+        Assert.False(RobotsTxtBypass.IsActive);
+    }
+
+    [Fact]
+    public async Task DiscoveryResponseCache_KeepsBypassedAndHonouringCallersApart()
+    {
+        // Mercedes, AMG, EQ, Maybach and smart share one cached portal response; with one entry for
+        // all of them, a brand named in --ignore-robots-txt fetching first would hand its bypassed
+        // response to the brands that honour robots.txt.
+        var inner = new RecordingHandler(request => request.RequestUri!.AbsolutePath == "/robots.txt"
+            ? new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("User-agent: *\nDisallow: /portal") }
+            : new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("portal") });
+        using var client = CreateClient(inner);
+        var cache = new DiscoveryResponseCache();
+
+        string bypassed;
+        using (RobotsTxtBypass.Enable())
+        {
+            bypassed = await cache.GetStringAsync(client, "https://example.test/portal", CancellationToken.None);
+        }
+
+        Assert.Equal("portal", bypassed);
+        await Assert.ThrowsAsync<HttpRequestException>(
+            () => cache.GetStringAsync(client, "https://example.test/portal", CancellationToken.None));
+    }
+
     private static HttpClient CreateClient(RecordingHandler inner, RobotsTxtPolicy? policy = null, string userAgent = "RettungskartenTool/1.0")
     {
         policy ??= new RobotsTxtPolicy(NullLogger<RobotsTxtPolicy>.Instance);

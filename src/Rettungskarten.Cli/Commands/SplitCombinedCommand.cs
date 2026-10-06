@@ -83,7 +83,14 @@ public static class SplitCombinedCommand
                 {
                     if (!isAll)
                     {
-                        Console.Error.WriteLine(Strings.Get("Split_NoCombinedEntriesFound", layout.Brand, BrandArgument.ToArgument(layout.Brand)));
+                        // A combined document that was discovered but not downloaded (Fiat's and Abarth's
+                        // collections, which robots.txt forbids) can't be fixed by re-running the same
+                        // fetch - say why instead of pointing at it.
+                        var notDownloaded = allCards.FirstOrDefault(c =>
+                            c.Brand == layout.Brand && c.LocalPdfRelativePath is null && layout.IsCombinedEntry(c));
+                        Console.Error.WriteLine(notDownloaded is null
+                            ? Strings.Get("Split_NoCombinedEntriesFound", layout.Brand, BrandArgument.ToArgument(layout.Brand))
+                            : Strings.Get("Split_CombinedEntryNotDownloaded", layout.Brand, notDownloaded.FailureReason ?? "-"));
                     }
 
                     continue;
