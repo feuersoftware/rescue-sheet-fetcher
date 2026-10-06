@@ -3,8 +3,8 @@ namespace Rettungskarten.Infrastructure.Http;
 /// <summary>
 /// Follows HTTP redirects inside the handler pipeline instead of leaving them to the primary handler
 /// (every named client's primary handler has <c>AllowAutoRedirect</c> off). The primary handler follows
-/// redirects below every delegating handler, so a redirect target - BMW's signed S3 link, Mitsubishi's
-/// short download links, any CDN or host hop - used to be fetched without a robots.txt check and without
+/// redirects below every delegating handler, so a redirect target - BMW's signed S3 link, any CDN or
+/// host hop - used to be fetched without a robots.txt check and without
 /// taking that host's rate-limit slot. Sitting outside <see cref="RobotsTxtDelegatingHandler"/>, this
 /// handler sends every hop back through the robots.txt check, the rate limiter and the send timeout as a
 /// request of its own. See <see cref="RedirectFollower"/> for the redirect rules.

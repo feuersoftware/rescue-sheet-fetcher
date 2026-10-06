@@ -115,7 +115,6 @@
     {"brand": "MG", "modelName": "HS", "kbaModelSeries": "RX6"},
     {"brand": "MG", "modelName": "EHS", "kbaModelSeries": "RX6"},
 
-    {"brand": "Mitsubishi", "modelName": "Lancer Evolution", "kbaModelSeries": "LANCER"},
     {"brand": "Subaru", "modelName": "XV", "kbaModelSeries": "CROSSTREK"},
     {"brand": "Subaru", "modelName": "WRX STI", "kbaModelSeries": "IMPREZA"},
     {"brand": "Subaru", "modelName": "Impreza STI", "kbaModelSeries": "IMPREZA"},

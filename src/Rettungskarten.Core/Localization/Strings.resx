@@ -263,8 +263,8 @@
   <data name="Brand_KGM_Source" xml:space="preserve"><value>kgm.de static HTML table</value></data>
   <data name="RescueCards_Generic_CardListNotFound" xml:space="preserve"><value>{0}: rescue-card list not found on page {1} - the page layout has probably changed.</value></data>
   <data name="RescueCards_Generic_MislabelledLinkSkipped" xml:space="preserve"><value>{0}: skipped link '{1}' - its file {2} is for a different body style</value></data>
-  <data name="Brand_Mitsubishi_Source" xml:space="preserve"><value>mitsubishi-motors.de page embedding the PressMatrix catalogue mitsubishi-publikationen.de</value></data>
-  <data name="Brand_Mitsubishi_Status" xml:space="preserve"><value>Not available (robots.txt of mitsubishi-publikationen.de forbids automated access)</value></data>
+  <data name="Brand_Mitsubishi_Source" xml:space="preserve"><value>mitsubishi-motors.at rescue-card page (Mitsubishi Austria)</value></data>
+  <data name="Brand_Mitsubishi_Status" xml:space="preserve"><value>Fully functional (current European range from Mitsubishi Austria's site; older generations sold in Germany are not on it)</value></data>
   <data name="Brand_Subaru_Source" xml:space="preserve"><value>subaru.de safety page</value></data>
   <data name="Brand_Subaru_Status" xml:space="preserve"><value>Fully functional (1 combined PDF, split with 'split subaru')</value></data>
   <data name="Brand_Suzuki_Source" xml:space="preserve"><value>auto.suzuki.de document pages (overview, categories, model pages)</value></data>
@@ -276,8 +276,6 @@
   <data name="Brand_Streetscooter_Source" xml:space="preserve"><value>streetscooter.com customer support page</value></data>
   <data name="Brand_Polestar_Source" xml:space="preserve"><value>polestar.com (single PDFs only, no page links them)</value></data>
   <data name="Brand_Polestar_Status" xml:space="preserve"><value>Not implemented (no discoverable overview page)</value></data>
-  <data name="RescueCards_Mitsubishi_CatalogueNotFound" xml:space="preserve"><value>Mitsubishi: no embedded PressMatrix rescue-sheet catalogue found on {0}</value></data>
-  <data name="RescueCards_Mitsubishi_RobotsTxtBlocked" xml:space="preserve"><value>the rescue-sheet catalogue on {0} is disallowed for automated access by that host's robots.txt</value></data>
   <data name="RescueCards_Polestar_NoOverviewPage" xml:space="preserve"><value>Polestar publishes its rescue sheets only as individual PDFs on polestar.com that no page links; they cannot be discovered without a headless browser</value></data>
   <data name="Brand_Peugeot_Source" xml:space="preserve"><value>public.servicebox-parts.com static frameset (model pages)</value></data>
   <data name="Brand_Citroen_Source" xml:space="preserve"><value>public.servicebox-parts.com static frameset (model pages)</value></data>

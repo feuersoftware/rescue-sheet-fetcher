@@ -5,7 +5,7 @@ namespace Rettungskarten.Core.Models;
 ///
 /// <see cref="DownloadUrl"/> is the stable URL the card is known by - for most sources the PDF itself,
 /// but for sources whose real PDF URL is short-lived or only reachable through an extra hop (BMW's
-/// signed S3 links, Mercedes' per-card detail pages, PressMatrix redirects) it is that hop's stable
+/// signed S3 links, Mercedes' per-card detail pages) it is that hop's stable
 /// entry point, and the source resolves the real PDF URL only at download time (see
 /// <c>RescueCardSourceBase.ResolveDownloadUrlAsync</c>).
 /// </summary>

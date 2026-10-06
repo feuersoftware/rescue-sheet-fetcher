@@ -263,8 +263,8 @@
   <data name="Brand_KGM_Source" xml:space="preserve"><value>kgm.de statische HTML-Tabelle</value></data>
   <data name="RescueCards_Generic_CardListNotFound" xml:space="preserve"><value>{0}: Rettungskarten-Liste auf Seite {1} nicht gefunden - das Seitenlayout hat sich vermutlich geändert.</value></data>
   <data name="RescueCards_Generic_MislabelledLinkSkipped" xml:space="preserve"><value>{0}: Link '{1}' übersprungen - die Datei {2} gehört zu einer anderen Karosserieform</value></data>
-  <data name="Brand_Mitsubishi_Source" xml:space="preserve"><value>mitsubishi-motors.de-Seite mit eingebettetem PressMatrix-Katalog mitsubishi-publikationen.de</value></data>
-  <data name="Brand_Mitsubishi_Status" xml:space="preserve"><value>Nicht verfügbar (robots.txt von mitsubishi-publikationen.de verbietet automatisierten Zugriff)</value></data>
+  <data name="Brand_Mitsubishi_Source" xml:space="preserve"><value>Rettungskarten-Seite von mitsubishi-motors.at (Mitsubishi Österreich)</value></data>
+  <data name="Brand_Mitsubishi_Status" xml:space="preserve"><value>Voll funktionsfähig (aktuelle europäische Modellpalette von der Seite von Mitsubishi Österreich; ältere in Deutschland verkaufte Generationen fehlen dort)</value></data>
   <data name="Brand_Subaru_Source" xml:space="preserve"><value>subaru.de Sicherheitsseite</value></data>
   <data name="Brand_Subaru_Status" xml:space="preserve"><value>Voll funktionsfähig (1 kombiniertes PDF, aufteilen mit 'split subaru')</value></data>
   <data name="Brand_Suzuki_Source" xml:space="preserve"><value>auto.suzuki.de Dokumentseiten (Übersicht, Kategorien, Modellseiten)</value></data>
@@ -276,8 +276,6 @@
   <data name="Brand_Streetscooter_Source" xml:space="preserve"><value>streetscooter.com Bestandskunden-Supportseite</value></data>
   <data name="Brand_Polestar_Source" xml:space="preserve"><value>polestar.com (nur einzelne PDFs, keine Seite verlinkt sie)</value></data>
   <data name="Brand_Polestar_Status" xml:space="preserve"><value>Nicht implementiert (keine auffindbare Übersichtsseite)</value></data>
-  <data name="RescueCards_Mitsubishi_CatalogueNotFound" xml:space="preserve"><value>Mitsubishi: kein eingebetteter PressMatrix-Katalog mit Rettungsdatenblättern auf {0} gefunden</value></data>
-  <data name="RescueCards_Mitsubishi_RobotsTxtBlocked" xml:space="preserve"><value>der Rettungsdatenblatt-Katalog auf {0} ist laut robots.txt dieses Hosts für automatisierten Zugriff gesperrt</value></data>
   <data name="RescueCards_Polestar_NoOverviewPage" xml:space="preserve"><value>Polestar veröffentlicht seine Rettungsdatenblätter nur als einzelne PDFs auf polestar.com, die von keiner Seite verlinkt werden; ohne Headless-Browser sind sie nicht auffindbar</value></data>
   <data name="Brand_Peugeot_Source" xml:space="preserve"><value>public.servicebox-parts.com statisches Frameset (Modellseiten)</value></data>
   <data name="Brand_Citroen_Source" xml:space="preserve"><value>public.servicebox-parts.com statisches Frameset (Modellseiten)</value></data>
