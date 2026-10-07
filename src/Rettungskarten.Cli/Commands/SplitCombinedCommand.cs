@@ -186,6 +186,11 @@ public static class SplitCombinedCommand
             Console.Error.WriteLine(Strings.Get("Split_PagesNotAssigned", documentName, PageList(outcome.UnassignedPageNumbers)));
         }
 
+        if (outcome.PageNumberingMismatchFirstPages.Count > 0)
+        {
+            Console.Error.WriteLine(Strings.Get("Split_PageNumberingMismatch", documentName, PageList(outcome.PageNumberingMismatchFirstPages)));
+        }
+
         var saved = new List<RescueCardMetadata>(splitResults.Count);
         var now = DateTimeOffset.UtcNow;
         foreach (var split in splitResults)

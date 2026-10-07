@@ -24,8 +24,10 @@ public static class CombinedPdfSplitter
     /// <summary>The parts, plus every page (1-based) after the first part's first page that no part
     /// contains. Leading pages (cover, contents, legal notice) are expected to belong to no model and
     /// aren't listed; a page further in that ends up nowhere is either furniture or a model whose
-    /// header wasn't recognized.</summary>
-    public sealed record SplitOutcome(IReadOnlyList<SplitResult> Parts, IReadOnlyList<int> UnassignedPageNumbers);
+    /// header wasn't recognized. <paramref name="PageNumberingMismatchFirstPages"/> (1-based) are the
+    /// first pages of the parts whose own page numbering doesn't add up.</summary>
+    public sealed record SplitOutcome(
+        IReadOnlyList<SplitResult> Parts, IReadOnlyList<int> UnassignedPageNumbers, IReadOnlyList<int> PageNumberingMismatchFirstPages);
 
     public static IReadOnlyList<SplitResult> Split(byte[] combinedPdfBytes, ICombinedPdfLayout layout) =>
         SplitDocument(combinedPdfBytes, layout).Parts;
@@ -42,7 +44,7 @@ public static class CombinedPdfSplitter
 
         if (groups.Count == 0)
         {
-            return new SplitOutcome([], []);
+            return new SplitOutcome([], [], []);
         }
 
         var results = new List<SplitResult>(groups.Count);
@@ -65,7 +67,8 @@ public static class CombinedPdfSplitter
                 (group.HeaderlessPageIndices ?? []).Select(i => i + 1).Order().ToList()));
         }
 
-        return new SplitOutcome(results, FindUnassignedPages(groups, pageCount));
+        var mismatched = groups.Where(g => g.PageNumberingMismatch).Select(g => g.PageIndices.Min() + 1).Order().ToList();
+        return new SplitOutcome(results, FindUnassignedPages(groups, pageCount), mismatched);
     }
 
     internal static IReadOnlyList<int> FindUnassignedPages(IReadOnlyList<CombinedPdfPageGroup> groups, int pageCount)

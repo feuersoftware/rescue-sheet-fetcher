@@ -33,6 +33,10 @@ public sealed class PorscheCombinedPdfLayout : PageTextCombinedPdfLayout
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly Regex HeaderKeyPattern = new(
         @"Porsche AG,\s*(.{1,150}?as from model year\s*\d{4})", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    // The total is read as one digit: PdfPig glues it to the text that follows ("Page 1 of 68" for
+    // "Page 1 of 6" + "8..."), and no sheet runs past 9 pages - a longer one would only be reported.
+    private static readonly Regex PageOfTotalPattern = new(
+        @"Page\s*(\d{1,2})\s*of\s*(\d)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly Regex TrailingDoorCount = new(@"\d\s*door$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private const string HeaderMarker = "Porsche AG,";
     private const int HeaderWindowLength = 200;
@@ -77,6 +81,28 @@ public sealed class PorscheCombinedPdfLayout : PageTextCombinedPdfLayout
     protected override string? TryGetPageKey(string pageText) => GetPageKey(pageText);
 
     protected override ParsedModelInfo ParseGroup(string key, IReadOnlyList<string> pageTexts) => Parse(key, pageTexts);
+
+    protected override bool HasPageNumberingMismatch(IReadOnlyList<string> pageTexts) => PageNumberingMismatch(pageTexts);
+
+    /// <summary>
+    /// Multi-page sheets print "Page x of y" on every page; a sheet whose pages aren't exactly 1..y has
+    /// lost a page or picked up a foreign one - e.g. a misprinted footer ID (see PageKeyCorrections) or
+    /// a correction that hits a real sheet's page. Only checked when every page states "of y": the
+    /// one-page sheets print just "Page 1", and PdfPig glues the 2025 Euro NCAP sheets' "1 of 4" onto
+    /// the neighbouring date, so those can't be read reliably.
+    /// </summary>
+    internal static bool PageNumberingMismatch(IReadOnlyList<string> pageTexts)
+    {
+        var numbers = pageTexts.Select(t => PageOfTotalPattern.Match(t)).ToList();
+        if (numbers.Any(m => !m.Success))
+        {
+            return false;
+        }
+
+        var totals = numbers.Select(m => int.Parse(m.Groups[2].Value)).Distinct().ToList();
+        var pages = numbers.Select(m => int.Parse(m.Groups[1].Value)).Order().ToList();
+        return totals.Count != 1 || !pages.SequenceEqual(Enumerable.Range(1, totals[0]));
+    }
 
     internal static string? GetPageKey(string pageText)
     {

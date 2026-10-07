@@ -9,9 +9,12 @@ namespace Rettungskarten.Infrastructure.RescueCards.Splitting;
 /// <paramref name="PageIndices"/> are 0-based. <paramref name="HeaderlessPageIndices"/> are the pages
 /// among them that didn't identify the model themselves and were assigned only because they follow
 /// one that did - reported by <c>split</c> so a model whose header wasn't recognized can't silently
-/// end up inside the part of the model before it.</summary>
+/// end up inside the part of the model before it. <paramref name="PageNumberingMismatch"/> is set when
+/// the pages' own numbering ("Page x of y") says the group is missing a page or holds a foreign one -
+/// also reported by <c>split</c>.</summary>
 public sealed record CombinedPdfPageGroup(
-    string Key, ParsedModelInfo Parsed, IReadOnlyList<int> PageIndices, IReadOnlyList<int>? HeaderlessPageIndices = null);
+    string Key, ParsedModelInfo Parsed, IReadOnlyList<int> PageIndices, IReadOnlyList<int>? HeaderlessPageIndices = null,
+    bool PageNumberingMismatch = false);
 
 /// <summary>
 /// How one brand's combined "all models" PDF is laid out: which stored entries are such documents and

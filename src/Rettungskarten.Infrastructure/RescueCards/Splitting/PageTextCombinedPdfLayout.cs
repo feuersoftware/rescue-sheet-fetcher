@@ -33,6 +33,10 @@ public abstract class PageTextCombinedPdfLayout : ICombinedPdfLayout
     /// usually carries the header).</summary>
     protected abstract ParsedModelInfo ParseGroup(string key, IReadOnlyList<string> pageTexts);
 
+    /// <summary>Whether the group's pages contradict their own page numbering, for layouts that print
+    /// one. Default: no numbering to check.</summary>
+    protected virtual bool HasPageNumberingMismatch(IReadOnlyList<string> pageTexts) => false;
+
     public virtual bool IsCombinedEntry(RescueCardMetadata entry) => entry.DocumentScope == DocumentScope.Combined;
 
     public IReadOnlyList<CombinedPdfPageGroup> DetectGroups(PigPdfDocument document)
@@ -95,7 +99,8 @@ public abstract class PageTextCombinedPdfLayout : ICombinedPdfLayout
                 k,
                 ParseGroup(k, pagesByKey[k].Select(p => p.Text).ToList()),
                 pagesByKey[k].Select(p => p.Index).ToList(),
-                headerlessByKey.GetValueOrDefault(k)))
+                headerlessByKey.GetValueOrDefault(k),
+                HasPageNumberingMismatch(pagesByKey[k].Select(p => p.Text).ToList())))
             .ToList();
     }
 }

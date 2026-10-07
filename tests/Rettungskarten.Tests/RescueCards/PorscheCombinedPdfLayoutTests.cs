@@ -151,6 +151,19 @@ public class PorscheCombinedPdfLayoutTests
         Assert.Equal("Cayenne E-Hybrid", parsed.ModelName);
     }
 
+    [Theory]
+    [InlineData(new[] { "Page 1 of 3", "Page 2 of 3", "Page 3 of 3" }, false)]
+    [InlineData(new[] { "Page 1 of 3", "Page 3 of 3" }, true)] // a page went missing
+    [InlineData(new[] { "Page 1 of 2", "Page 2 of 2", "Page 2 of 6" }, true)] // a foreign page joined
+    [InlineData(new[] { "Page 1 of 68", "Page 2 of 65" }, true)] // glued text, read as "of 6": two pages missing
+    [InlineData(new[] { "Page 1 of 28", "Page 2 of 24" }, false)]
+    [InlineData(new[] { "Page 1" }, false)] // one-page sheets state no total
+    [InlineData(new[] { "07/20241 of 4Porsche AG, 911", "2 of 4Additional" }, false)] // 2025 layout, unreadable
+    public void PageNumberingMismatch_FlagsMissingOrForeignPages(string[] pageTexts, bool expected)
+    {
+        Assert.Equal(expected, PorscheCombinedPdfLayout.PageNumberingMismatch(pageTexts));
+    }
+
     [Fact]
     public void Parse_KnownIdWithAHeader_UsesTheHeader()
     {

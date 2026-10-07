@@ -195,6 +195,7 @@
   <data name="Split_DocumentFailed" xml:space="preserve"><value>Aufteilen von '{0}' fehlgeschlagen: {1}</value></data>
   <data name="Split_PdfMissing" xml:space="preserve"><value>Die PDF von '{0}' fehlt auf der Festplatte ({1}) - 'fetch rescue-cards' für diese Marke erneut ausführen.</value></data>
   <data name="Split_HeaderlessPagesJoined" xml:space="preserve"><value>'{0}': Seite(n) {1} haben keinen eigenen Modell-Kopf und wurden dem Modell davor zugeordnet - prüfen, ob sie dazugehören.</value></data>
+  <data name="Split_PageNumberingMismatch" xml:space="preserve"><value>'{0}': Die Teile ab Seite(n) {1} enthalten nicht genau die Seiten, die ihre Fußzeile nummeriert („Page x of y“) - prüfen, ob eine Seite fehlt oder zu einem anderen Modell gehört.</value></data>
   <data name="Split_PagesNotAssigned" xml:space="preserve"><value>'{0}': Seite(n) {1} passen zu keinem Modell und sind in keinem Teil enthalten - prüfen, ob ein Modell fehlt.</value></data>
   <data name="ListBrands_Column_Group" xml:space="preserve"><value>Konzern</value></data>
   <data name="Group_VolkswagenGroup" xml:space="preserve"><value>Volkswagen-Konzern</value></data>
