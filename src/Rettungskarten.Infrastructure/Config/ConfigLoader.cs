@@ -4,7 +4,7 @@ using Rettungskarten.Core.Config;
 
 namespace Rettungskarten.Infrastructure.Config;
 
-/// <summary>Loads the hand-curated sibling-models/model-aliases/kba-unlisted-models JSON files bundled with the app.</summary>
+/// <summary>Loads the hand-curated JSON config files bundled with the app (see the Config folder).</summary>
 public static class ConfigLoader
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -33,6 +33,12 @@ public static class ConfigLoader
         return await JsonSerializer.DeserializeAsync<T>(stream, JsonOptions, ct) ?? empty;
     }
 
+    /// <summary>Synchronous, since the split layouts are plain synchronous objects; read once per run.</summary>
+    public static PorscheHeaderlessSheetsConfig LoadPorscheHeaderlessSheets(string path) =>
+        File.Exists(path)
+            ? JsonSerializer.Deserialize<PorscheHeaderlessSheetsConfig>(File.ReadAllText(path), JsonOptions) ?? PorscheHeaderlessSheetsConfig.Empty
+            : PorscheHeaderlessSheetsConfig.Empty;
+
     /// <summary>Resolves the default bundled config path next to the running assembly.</summary>
     public static string DefaultSiblingModelsPath() =>
         Path.Combine(AppContext.BaseDirectory, "Config", "sibling-models.json");
@@ -42,4 +48,16 @@ public static class ConfigLoader
 
     public static string DefaultKbaUnlistedModelsPath() =>
         Path.Combine(AppContext.BaseDirectory, "Config", "kba-unlisted-models.json");
+
+    public static string DefaultPorscheHeaderlessSheetsPath() =>
+        Path.Combine(AppContext.BaseDirectory, "Config", "porsche-headerless-sheets.json");
+}
+
+/// <summary>A Porsche combined-PDF sheet without a model header, named by hand by its document ID
+/// (see PorscheCombinedPdfLayout).</summary>
+public sealed record PorscheHeaderlessSheet(string DocumentId, string ModelName, string? BodyType);
+
+public sealed record PorscheHeaderlessSheetsConfig(IReadOnlyList<PorscheHeaderlessSheet> Sheets)
+{
+    public static readonly PorscheHeaderlessSheetsConfig Empty = new([]);
 }

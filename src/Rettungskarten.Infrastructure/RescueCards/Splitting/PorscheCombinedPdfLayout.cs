@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using Rettungskarten.Core.Models;
+using Rettungskarten.Infrastructure.Config;
 using Rettungskarten.Infrastructure.RescueCards.Parsing;
 
 namespace Rettungskarten.Infrastructure.RescueCards.Splitting;
@@ -54,17 +55,13 @@ public sealed class PorscheCombinedPdfLayout : PageTextCombinedPdfLayout
     ];
 
     // Sheets whose pages never carry the "Porsche AG," header - the model appears only in the photos
-    // and, for the E-Hybrid supplements, in a heading PdfPig scrambles (see ParseHeader). Identified
-    // by looking at each document (2025 edition, checked 2026-10-07); an ID that isn't listed here
-    // still falls back to the ID itself instead of a guess.
-    private static readonly IReadOnlyDictionary<string, (string ModelName, string? BodyType)> HeaderlessSheets =
-        new Dictionary<string, (string, string?)>
-        {
-            ["ENUS-01-710-0037"] = ("Panamera Sport Turismo E-Hybrid", "Sport Turismo"),
-            ["ENUS-01-710-0039"] = ("Cayenne E-Hybrid", "SUV"),
-            ["ENUS-01-710-0077"] = ("911 Speedster", null),
-            ["ENUS-01-710-0079"] = ("911", "Cabriolet")
-        };
+    // and, for the E-Hybrid supplements, in a heading PdfPig scrambles (see ParseHeader). Named by hand
+    // in Config/porsche-headerless-sheets.json after looking at each document, so a change on Porsche's
+    // side is a config edit; an ID that isn't listed there still falls back to the ID itself instead
+    // of a guess (and `inspect quality` reports it as an unmatched model).
+    private static readonly Lazy<IReadOnlyDictionary<string, PorscheHeaderlessSheet>> HeaderlessSheets = new(() =>
+        ConfigLoader.LoadPorscheHeaderlessSheets(ConfigLoader.DefaultPorscheHeaderlessSheetsPath())
+            .Sheets.ToDictionary(s => s.DocumentId, StringComparer.OrdinalIgnoreCase));
 
     public override Brand Brand => Brand.Porsche;
 
@@ -101,7 +98,7 @@ public sealed class PorscheCombinedPdfLayout : PageTextCombinedPdfLayout
 
         // Only for a sheet that really has no header: should Porsche reuse one of these IDs for a sheet
         // with a header, the header wins over the hand-made name.
-        if (string.IsNullOrWhiteSpace(headerText) && HeaderlessSheets.TryGetValue(key, out var sheet))
+        if (string.IsNullOrWhiteSpace(headerText) && HeaderlessSheets.Value.TryGetValue(key, out var sheet))
         {
             return new ParsedModelInfo(sheet.ModelName, null, sheet.BodyType, null, null, null, null, "EN", ParseConfidence.High);
         }
