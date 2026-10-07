@@ -14,6 +14,7 @@
   <ItemGroup>
     <None Include="Config\sibling-models.json" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Config\model-aliases.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Config\kba-unlisted-models.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

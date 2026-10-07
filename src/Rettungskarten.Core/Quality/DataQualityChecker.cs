@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using Rettungskarten.Core.Config;
 using Rettungskarten.Core.Localization;
 using Rettungskarten.Core.Matching;
 using Rettungskarten.Core.Models;
@@ -10,11 +11,19 @@ public enum DataQualityIssueKind
     BodyTypeLooksLikeYear,
     FuelTypeIsBareDigits,
     DuplicateId,
-    BrandEntirelyUnknownPriority,
-    BrandUnknownPriorityCountAboveBaseline
+    UnmatchedModel,
+    UnlistedModelMatched
 }
 
-public sealed record DataQualityIssue(string CardId, Brand Brand, DataQualityIssueKind Kind, string Description);
+public enum DataQualityIssueSeverity
+{
+    Error,
+    Warning
+}
+
+public sealed record DataQualityIssue(
+    string CardId, Brand Brand, DataQualityIssueKind Kind, string Description,
+    DataQualityIssueSeverity Severity = DataQualityIssueSeverity.Error);
 
 /// <summary>
 /// Checks already-persisted rescue-card metadata for the kind of anomaly that, this session, was only
@@ -23,35 +32,21 @@ public sealed record DataQualityIssue(string CardId, Brand Brand, DataQualityIss
 /// "2019-2023" - see AudiFilenameParser's doc comment for the fix). Pure logic, no I/O: the caller loads
 /// the cards (e.g. via IRescueCardFileStore.LoadAllAsync) and passes them in.
 ///
-/// The BrandEntirelyUnknownPriority check only means anything once <c>prioritize</c> has actually run
-/// (BundlePriority stays Unknown for every brand until then) - it only fires when at least one *other*
-/// brand in the same list has a non-Unknown priority, so a dataset where prioritize simply hasn't run
-/// yet at all doesn't itself look like a bug. This is the shape of a real bug this session found (Cupra
-/// matching zero KBA stock rows because KBA tracks it under "SEAT", not "CUPRA" - see BrandNames.cs).
-///
 /// The DuplicateId check is cheap defense-in-depth, not something that can observe an id collision
 /// within a single FileSystemRescueCardStore run: that store derives each card's on-disk path directly
 /// from its Id, so two cards that hash-collide to the same Id would already have overwritten each other
 /// on disk by the time LoadAllAsync runs - only one card, one Id, survives to be loaded. This check only
 /// has something to find if the caller passes in cards merged from more than one store/run.
 ///
-/// The BrandUnknownPriorityCountAboveBaseline check covers the gap BrandEntirelyUnknownPriority can't
-/// see: a brand that is *partially*, permanently unmatched by design rather than 100% unmatched by bug.
-/// Porsche is the known case (see model-aliases.json and commit b19a397's message) - its ultra-low-
-/// volume specials (GT2/GT2 RS/GT3/GT3 RS/R/Turbo, 718 Cayman GT4) are deliberately NOT aliased to a
-/// base KBA series, since lumping them into that series' aggregate fleet count would overstate their
-/// real commonality far more than for an ordinary trim. KnownUnknownBaselines records the expected
-/// count so a *further* increase (a new unmatched model, or an alias that broke) gets flagged instead of
-/// silently blending into "business as usual", which is exactly the kind of partial, permanent gap
-/// that only firing at 100% would miss.
-///
-/// Porsche: 34 of 85 split parts, recounted 2026-10-01 against the 2025 editions of both combined PDFs
-/// (now on files.porsche.com): 10 deliberately unaliased specials (GT2, GT2 RS, GT3, GT3 RS, R, Turbo,
-/// 718 Cayman GT4), 5 more of the same kind (911 G-Model Turbo, Boxster Spyder), 14 classics FZ12
-/// doesn't list (356, 550, 912, 914, 924, 944, 959, 918 Spyder, 980) and 5 E-Hybrid supplement pages
-/// without a header (named by document id). The earlier baseline of 19 (commit b19a397) can't be
-/// reproduced from these documents - the code as of 8cb6089 gives 34 on them as well - so it was either
-/// counted on an older edition of the PDFs or miscounted.
+/// The UnmatchedModel check covers KBA matching: every model whose cards stayed
+/// BundlePriority.Unknown must either be listed in kba-unlisted-models.json (FZ12 doesn't list it - see
+/// <see cref="KbaUnlistedModelConfig"/>) or is reported, because then a model-aliases.json entry or a
+/// BrandNames alias is missing (the shape of real bugs this found: Cupra matching nothing because KBA
+/// counts it under "SEAT", a parser leaving a document id as the model name). The reverse - a listed
+/// model that matched after all - is only a warning (UnlistedModelMatched): a new FZ12 edition may
+/// have started listing it, so the entry should be reviewed. Both only run once <c>prioritize</c> has
+/// assigned any priority at all, so a dataset that simply hasn't been prioritized yet doesn't look
+/// like a bug. One issue per model, not per card, so a model with ten sheets isn't reported ten times.
 /// </summary>
 public static class DataQualityChecker
 {
@@ -59,12 +54,8 @@ public static class DataQualityChecker
         @"^(19|20)\d{2}(-(19|20)\d{2})?$", RegexOptions.Compiled);
     private static readonly Regex BareDigitsPattern = new(@"^\d+$", RegexOptions.Compiled);
 
-    private static readonly IReadOnlyDictionary<Brand, int> KnownUnknownBaselines = new Dictionary<Brand, int>
-    {
-        [Brand.Porsche] = 34
-    };
-
-    public static IReadOnlyList<DataQualityIssue> CheckAll(IReadOnlyList<RescueCardMetadata> cards)
+    public static IReadOnlyList<DataQualityIssue> CheckAll(
+        IReadOnlyList<RescueCardMetadata> cards, KbaUnlistedModelConfig unlistedModels)
     {
         var issues = new List<DataQualityIssue>();
 
@@ -93,27 +84,26 @@ public static class DataQualityChecker
         var anyPriorityAssigned = cards.Any(c => c.BundlePriority != BundlePriority.Unknown);
         if (anyPriorityAssigned)
         {
-            // Combined multi-model documents carry no single model name (their split parts do), and
-            // brands KBA never lists stay Unknown by design - neither says anything about matching.
-            foreach (var brandGroup in cards
-                         .Where(c => c.DocumentScope != DocumentScope.Combined && BrandNames.IsListedInKbaStock(c.Brand))
-                         .GroupBy(c => c.Brand))
+            // Combined multi-model documents carry no single model name (their split parts do), so
+            // they say nothing about matching.
+            foreach (var model in cards
+                         .Where(c => c.DocumentScope != DocumentScope.Combined)
+                         .GroupBy(c => (c.Brand, Model: ModelNameNormalizer.Normalize(c.ModelName ?? string.Empty))))
             {
-                if (brandGroup.All(c => c.BundlePriority == BundlePriority.Unknown))
+                var first = model.First();
+                var matched = model.Any(c => c.BundlePriority != BundlePriority.Unknown);
+                var listed = unlistedModels.Contains(first.Brand, first.ModelName);
+
+                if (!matched && !listed)
                 {
-                    issues.Add(new DataQualityIssue(brandGroup.Key.ToString(), brandGroup.Key,
-                        DataQualityIssueKind.BrandEntirelyUnknownPriority,
-                        Strings.Get("Quality_BrandEntirelyUnknownPriority", brandGroup.Count(), brandGroup.Key)));
+                    issues.Add(new DataQualityIssue(first.Id, first.Brand, DataQualityIssueKind.UnmatchedModel,
+                        Strings.Get("Quality_UnmatchedModel", model.Count(), first.ModelName ?? string.Empty)));
                 }
-                else if (KnownUnknownBaselines.TryGetValue(brandGroup.Key, out var baseline))
+                else if (matched && listed)
                 {
-                    var unknownCount = brandGroup.Count(c => c.BundlePriority == BundlePriority.Unknown);
-                    if (unknownCount > baseline)
-                    {
-                        issues.Add(new DataQualityIssue(brandGroup.Key.ToString(), brandGroup.Key,
-                            DataQualityIssueKind.BrandUnknownPriorityCountAboveBaseline,
-                            Strings.Get("Quality_BrandUnknownPriorityCountAboveBaseline", brandGroup.Key, unknownCount, baseline)));
-                    }
+                    issues.Add(new DataQualityIssue(first.Id, first.Brand, DataQualityIssueKind.UnlistedModelMatched,
+                        Strings.Get("Quality_UnlistedModelMatched", first.ModelName ?? string.Empty, model.Count(c => c.BundlePriority != BundlePriority.Unknown)),
+                        DataQualityIssueSeverity.Warning));
                 }
             }
         }

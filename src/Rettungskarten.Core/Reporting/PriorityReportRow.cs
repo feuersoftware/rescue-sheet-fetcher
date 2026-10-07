@@ -1,3 +1,4 @@
+using Rettungskarten.Core.Matching;
 using Rettungskarten.Core.Models;
 
 namespace Rettungskarten.Core.Reporting;
@@ -28,6 +29,10 @@ public sealed record PriorityReportRow(
 /// is still available in each model's own JSON sidecars under data/rescue-cards/{brand}/{model}/, this
 /// report just doesn't need to repeat it.
 ///
+/// Model names are grouped the way BundlePriorityCalculator matches them
+/// (<see cref="ModelNameNormalizer"/>), so the same model spelled "NAVARA" on one sheet and "Navara" on
+/// another is one row, shown under the first card's spelling.
+///
 /// <see cref="DocumentScope.Combined"/> documents are left out: they cover many models (their model
 /// name is a placeholder like "All Models"), so they'd show up as a pseudo-model with an Unknown priority
 /// and count once more next to the split parts cut from them. The parts are what the report is about.
@@ -37,7 +42,7 @@ public static class PriorityReportAggregator
     public static IReadOnlyList<PriorityReportRow> Aggregate(IEnumerable<RescueCardMetadata> cards) =>
         cards
             .Where(c => c.DocumentScope != DocumentScope.Combined)
-            .GroupBy(c => (c.Brand, c.ModelName))
+            .GroupBy(c => (c.Brand, Model: ModelNameNormalizer.Normalize(c.ModelName ?? string.Empty)))
             .Select(g =>
             {
                 var distinctMatches = g.Select(c => (c.EstimatedFleetSize, c.BundlePriority)).Distinct().ToList();
@@ -48,7 +53,7 @@ public static class PriorityReportAggregator
                     // data/aliases, silently picking one card's values would misreport the rest -
                     // surfacing this loudly is safer than a wrong report nobody notices is wrong.
                     throw new InvalidOperationException(
-                        $"Cards for {g.Key.Brand}/{g.Key.ModelName} disagree on EstimatedFleetSize/BundlePriority " +
+                        $"Cards for {g.Key.Brand}/{g.First().ModelName} disagree on EstimatedFleetSize/BundlePriority " +
                         $"({distinctMatches.Count} distinct combinations) - are these cards from more than one prioritize run?");
                 }
 
@@ -56,7 +61,7 @@ public static class PriorityReportAggregator
                 return new PriorityReportRow(
                     Brand: g.Key.Brand,
                     ManufacturerGroup: g.First().EffectiveManufacturerGroup,
-                    ModelName: g.Key.ModelName,
+                    ModelName: g.First().ModelName,
                     CardCount: g.Count(),
                     NotDownloadedCount: g.Count(c => c.Status != RescueCardStatus.Downloaded),
                     EstimatedFleetSize: fleetSize,

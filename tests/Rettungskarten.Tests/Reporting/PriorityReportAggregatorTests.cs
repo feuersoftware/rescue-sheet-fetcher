@@ -35,6 +35,22 @@ public class PriorityReportAggregatorTests
     }
 
     [Fact]
+    public void Aggregate_SameModelInDifferentSpelling_IsOneRow()
+    {
+        // Regression: Nissan's sheets spell "NAVARA" and "Navara", which showed up as two rows.
+        var cards = new[]
+        {
+            Card("a", Brand.Nissan, "NAVARA", null, BundlePriority.Unknown),
+            Card("b", Brand.Nissan, "Navara", null, BundlePriority.Unknown),
+        };
+
+        var row = Assert.Single(PriorityReportAggregator.Aggregate(cards));
+
+        Assert.Equal("NAVARA", row.ModelName);
+        Assert.Equal(2, row.CardCount);
+    }
+
+    [Fact]
     public void Aggregate_CollapsesMultipleVariantsOfSameModelIntoOneRow()
     {
         // Regression test for the reported problem: "Golf" appearing many times in the report with

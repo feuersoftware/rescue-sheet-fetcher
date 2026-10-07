@@ -49,16 +49,6 @@ public static class BrandNames
         "ALFA ROMEO", "ASTON MARTIN", "LAND ROVER", "LYNK & CO", "MG ROEWE", "MG ROVER", "ROLLS ROYCE"
     ];
 
-    /// <summary>
-    /// Brands whose German fleet is below KBA's 1,000-vehicle publication threshold for every model, so
-    /// FZ12 never lists them (verified against fz12_2026.xlsx) - their cards staying
-    /// BundlePriority.Unknown is expected, not a matching bug.
-    /// </summary>
-    private static readonly HashSet<Brand> NotListedInKbaStock =
-    [
-        Brand.RollsRoyce, Brand.Ruf, Brand.Maxus, Brand.Streetscooter, Brand.Isuzu
-    ];
-
     public static bool Matches(Brand brand, string brandLabel)
     {
         var normalized = ModelNameNormalizer.Normalize(brandLabel);
@@ -70,8 +60,6 @@ public static class BrandNames
         return BrandGroups.ParentBrandOf(brand) is { } parent
             && OwnAliases(parent).Any(alias => ModelNameNormalizer.Normalize(alias) == normalized);
     }
-
-    public static bool IsListedInKbaStock(Brand brand) => !NotListedInKbaStock.Contains(brand);
 
     private static string[] OwnAliases(Brand brand) =>
         Aliases.TryGetValue(brand, out var aliases) ? aliases : [brand.ToString().ToUpperInvariant()];

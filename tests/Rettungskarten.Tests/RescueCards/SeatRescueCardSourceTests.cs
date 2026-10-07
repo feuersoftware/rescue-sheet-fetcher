@@ -7,7 +7,7 @@ namespace Rettungskarten.Tests.RescueCards;
 public sealed class SeatRescueCardSourceTests
 {
     [Fact]
-    public async Task DiscoverAsync_FindsGeneralGuideAndModelPagePdfs()
+    public async Task DiscoverAsync_FindsModelPagePdfs_SkipsEmergencyResponseGuide()
     {
         const string overviewUrl = "https://www.seat.de/kontakt/downloads/rettungsblaetter";
         const string modelPageUrl = "https://www.seat.de/kontakt/downloads/rettungsblaetter/ateca";
@@ -23,10 +23,9 @@ public sealed class SeatRescueCardSourceTests
         var source = new SeatRescueCardSource(factory, NullLogger<SeatRescueCardSource>.Instance);
         var entries = await source.DiscoverAsync(CancellationToken.None);
 
-        Assert.Equal(2, entries.Count);
-        Assert.Contains(entries, e => e.Parsed.ModelName == "General Guide");
-
-        var ateca = Assert.Single(entries, e => e.Parsed.ModelName == "Ateca");
+        // The overview fixture links the general Emergency Response Guide too; ERGs aren't collected.
+        var ateca = Assert.Single(entries);
+        Assert.Equal("Ateca", ateca.Parsed.ModelName);
         Assert.Equal("SUV", ateca.Parsed.BodyType);
         Assert.Equal("DE", ateca.Parsed.LanguageCode);
     }

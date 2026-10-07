@@ -4,7 +4,7 @@ using Rettungskarten.Core.Config;
 
 namespace Rettungskarten.Infrastructure.Config;
 
-/// <summary>Loads the hand-curated sibling-models/model-aliases JSON files bundled with the app.</summary>
+/// <summary>Loads the hand-curated sibling-models/model-aliases/kba-unlisted-models JSON files bundled with the app.</summary>
 public static class ConfigLoader
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -13,28 +13,24 @@ public static class ConfigLoader
         Converters = { new JsonStringEnumConverter() }
     };
 
-    public static async Task<SiblingModelsConfig> LoadSiblingModelsAsync(string path, CancellationToken ct)
+    public static Task<SiblingModelsConfig> LoadSiblingModelsAsync(string path, CancellationToken ct) =>
+        LoadAsync(path, SiblingModelsConfig.Empty, ct);
+
+    public static Task<ModelAliasConfig> LoadModelAliasesAsync(string path, CancellationToken ct) =>
+        LoadAsync(path, ModelAliasConfig.Empty, ct);
+
+    public static Task<KbaUnlistedModelConfig> LoadKbaUnlistedModelsAsync(string path, CancellationToken ct) =>
+        LoadAsync(path, KbaUnlistedModelConfig.Empty, ct);
+
+    private static async Task<T> LoadAsync<T>(string path, T empty, CancellationToken ct)
     {
         if (!File.Exists(path))
         {
-            return SiblingModelsConfig.Empty;
+            return empty;
         }
 
         await using var stream = File.OpenRead(path);
-        var config = await JsonSerializer.DeserializeAsync<SiblingModelsConfig>(stream, JsonOptions, ct);
-        return config ?? SiblingModelsConfig.Empty;
-    }
-
-    public static async Task<ModelAliasConfig> LoadModelAliasesAsync(string path, CancellationToken ct)
-    {
-        if (!File.Exists(path))
-        {
-            return ModelAliasConfig.Empty;
-        }
-
-        await using var stream = File.OpenRead(path);
-        var config = await JsonSerializer.DeserializeAsync<ModelAliasConfig>(stream, JsonOptions, ct);
-        return config ?? ModelAliasConfig.Empty;
+        return await JsonSerializer.DeserializeAsync<T>(stream, JsonOptions, ct) ?? empty;
     }
 
     /// <summary>Resolves the default bundled config path next to the running assembly.</summary>
@@ -43,4 +39,7 @@ public static class ConfigLoader
 
     public static string DefaultModelAliasesPath() =>
         Path.Combine(AppContext.BaseDirectory, "Config", "model-aliases.json");
+
+    public static string DefaultKbaUnlistedModelsPath() =>
+        Path.Combine(AppContext.BaseDirectory, "Config", "kba-unlisted-models.json");
 }

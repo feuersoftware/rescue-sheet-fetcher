@@ -2,6 +2,7 @@ using Rettungskarten.Core.Config;
 using Rettungskarten.Core.Matching;
 using Rettungskarten.Core.Models;
 using Rettungskarten.Core.Priority;
+using Rettungskarten.Infrastructure.Config;
 using Rettungskarten.Infrastructure.Stock;
 
 namespace Rettungskarten.Tests.Matching;
@@ -124,10 +125,14 @@ public class BrandMappingTests
     }
 
     [Fact]
-    public void BrandsNotListedByKba_AreDeclaredSo()
+    public async Task BrandsFlaggedAsUnlisted_HaveNoKbaRows()
     {
-        Assert.False(BrandNames.IsListedInKbaStock(Brand.RollsRoyce));
-        Assert.DoesNotContain(StockRows.Value, r => BrandNames.Matches(Brand.RollsRoyce, r.BrandLabel));
-        Assert.True(BrandNames.IsListedInKbaStock(Brand.VW));
+        // kba-unlisted-models.json flags these brands as a whole ("*") because FZ12 has no row for them;
+        // if one appears in a newer FZ12 edition, the flag hides real matches and has to go.
+        var unlisted = await ConfigLoader.LoadKbaUnlistedModelsAsync(ConfigLoader.DefaultKbaUnlistedModelsPath(), CancellationToken.None);
+        var flaggedBrands = unlisted.Models.Where(m => m.ModelName == ModelAliasConfig.AnyModel).Select(m => m.Brand).ToList();
+
+        Assert.Contains(Brand.RollsRoyce, flaggedBrands);
+        Assert.All(flaggedBrands, brand => Assert.DoesNotContain(StockRows.Value, r => BrandNames.Matches(brand, r.BrandLabel)));
     }
 }

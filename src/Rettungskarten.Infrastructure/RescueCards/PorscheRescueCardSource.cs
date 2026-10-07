@@ -42,8 +42,7 @@ public sealed class PorscheRescueCardSource(
         var entries = links.Select(l =>
         {
             // ModelName is a fixed label, not a real model - it's domain data (feeds the persisted
-            // id/folder name), so it must stay invariant across --lang rather than being localized,
-            // same reasoning as SEAT's general guide entry.
+            // id/folder name), so it must stay invariant across --lang rather than being localized.
             var isClassic = l.Text.Contains("Classic", StringComparison.OrdinalIgnoreCase);
             var modelName = isClassic ? "All Models Classic" : "All Models";
 

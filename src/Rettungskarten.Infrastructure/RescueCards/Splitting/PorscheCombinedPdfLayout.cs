@@ -14,6 +14,13 @@ namespace Rettungskarten.Infrastructure.RescueCards.Splitting;
 /// belong to one model (some models span several pages - the ID is what actually groups them, "Page x
 /// of y" is corroborating but not required). The one page without an ID (the leading legal-notice
 /// page) is simply skipped.
+///
+/// The 2025 edition appends sheets in the newer Euro NCAP layout, which differ in three ways (all
+/// verified against the real document, 2026-10-07): their ID is a filename-like
+/// "WP0_Porsche_911__Coupé_2025_2d_GD_GB_V001"; the Panamera (G3) sheets print a placeholder "ID no.
+/// GB-?" instead of an ID, so they're keyed by their header (which every one of their pages repeats);
+/// and the header reads "Porsche AG, 911 2 door, 4 seater Coupe, as from model year 2025", which
+/// PdfPig glues to "9112 door" - the door count is cut off the model name.
 /// </summary>
 public sealed class PorscheCombinedPdfLayout : PageTextCombinedPdfLayout
 {
@@ -21,8 +28,11 @@ public sealed class PorscheCombinedPdfLayout : PageTextCombinedPdfLayout
     // the classic file "ENGB-01-710-041" - three digits, not four, in the last group) so each numeric
     // segment's length is left flexible rather than hardcoded.
     private static readonly Regex IdPattern = new(
-        @"ID\s*no\.?\s*([A-Za-z]{2,4}\s*-\s*\d{1,4}\s*-\s*\d{1,4}\s*-\s*\d{1,4})",
+        @"ID\s*no\.?\s*(WP0_\w+?_V\d{3}|[A-Za-z]{2,4}\s*-\s*\d{1,4}\s*-\s*\d{1,4}\s*-\s*\d{1,4})",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex HeaderKeyPattern = new(
+        @"Porsche AG,\s*(.{1,150}?as from model year\s*\d{4})", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex TrailingDoorCount = new(@"\d\s*door$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private const string HeaderMarker = "Porsche AG,";
     private const int HeaderWindowLength = 200;
 
@@ -35,6 +45,27 @@ public sealed class PorscheCombinedPdfLayout : PageTextCombinedPdfLayout
         "Sedan", "SUV"
     ];
 
+    // Porsche typed the wrong ID into the footer of one page: page 3 of 6 of the Cayenne E-Hybrid
+    // sheet (ENUS-01-710-0039) says "ENUS-01-710-0040", an ID no other page uses. Matched together with
+    // its page marker, so a real future sheet under that ID isn't merged into the Cayenne.
+    private static readonly IReadOnlyList<(string WrongId, string PageMarker, string Id)> PageKeyCorrections =
+    [
+        ("ENUS-01-710-0040", "Page 3 of 6", "ENUS-01-710-0039")
+    ];
+
+    // Sheets whose pages never carry the "Porsche AG," header - the model appears only in the photos
+    // and, for the E-Hybrid supplements, in a heading PdfPig scrambles (see ParseHeader). Identified
+    // by looking at each document (2025 edition, checked 2026-10-07); an ID that isn't listed here
+    // still falls back to the ID itself instead of a guess.
+    private static readonly IReadOnlyDictionary<string, (string ModelName, string? BodyType)> HeaderlessSheets =
+        new Dictionary<string, (string, string?)>
+        {
+            ["ENUS-01-710-0037"] = ("Panamera Sport Turismo E-Hybrid", "Sport Turismo"),
+            ["ENUS-01-710-0039"] = ("Cayenne E-Hybrid", "SUV"),
+            ["ENUS-01-710-0077"] = ("911 Speedster", null),
+            ["ENUS-01-710-0079"] = ("911", "Cabriolet")
+        };
+
     public override Brand Brand => Brand.Porsche;
 
     /// <summary>Also recognizes combined entries fetched before sources marked them
@@ -46,14 +77,37 @@ public sealed class PorscheCombinedPdfLayout : PageTextCombinedPdfLayout
         (entry.DocumentScope == DocumentScope.Single && entry.Variant is not null &&
             entry.Variant.StartsWith("Rescue Data Sheets", StringComparison.OrdinalIgnoreCase));
 
-    protected override string? TryGetPageKey(string pageText)
+    protected override string? TryGetPageKey(string pageText) => GetPageKey(pageText);
+
+    protected override ParsedModelInfo ParseGroup(string key, IReadOnlyList<string> pageTexts) => Parse(key, pageTexts);
+
+    internal static string? GetPageKey(string pageText)
     {
         var idMatch = IdPattern.Match(pageText);
-        return idMatch.Success ? NormalizeId(idMatch.Groups[1].Value) : null;
+        if (idMatch.Success)
+        {
+            var id = NormalizeId(idMatch.Groups[1].Value);
+            var correction = PageKeyCorrections.FirstOrDefault(c => c.WrongId == id && pageText.Contains(c.PageMarker, StringComparison.Ordinal));
+            return correction.Id ?? id;
+        }
+
+        var headerMatch = HeaderKeyPattern.Match(pageText);
+        return headerMatch.Success ? headerMatch.Groups[1].Value : null;
     }
 
-    protected override ParsedModelInfo ParseGroup(string key, IReadOnlyList<string> pageTexts) =>
-        ParseHeader(key, pageTexts.Select(ExtractHeaderText).FirstOrDefault(h => h is not null));
+    internal static ParsedModelInfo Parse(string key, IReadOnlyList<string> pageTexts)
+    {
+        var headerText = pageTexts.Select(ExtractHeaderText).FirstOrDefault(h => h is not null);
+
+        // Only for a sheet that really has no header: should Porsche reuse one of these IDs for a sheet
+        // with a header, the header wins over the hand-made name.
+        if (string.IsNullOrWhiteSpace(headerText) && HeaderlessSheets.TryGetValue(key, out var sheet))
+        {
+            return new ParsedModelInfo(sheet.ModelName, null, sheet.BodyType, null, null, null, null, "EN", ParseConfidence.High);
+        }
+
+        return ParseHeader(key, headerText);
+    }
 
     private static string? ExtractHeaderText(string pageText)
     {
@@ -61,6 +115,13 @@ public sealed class PorscheCombinedPdfLayout : PageTextCombinedPdfLayout
         if (markerIndex < 0)
         {
             return null;
+        }
+
+        // Some 2025 sheets print their header twice, glued: "Porsche AG, 911Porsche AG, 9112 door, ...".
+        var repeatedIndex = pageText.IndexOf(HeaderMarker, markerIndex + HeaderMarker.Length, StringComparison.Ordinal);
+        if (repeatedIndex >= 0 && repeatedIndex - markerIndex < 40)
+        {
+            markerIndex = repeatedIndex;
         }
 
         var start = markerIndex + HeaderMarker.Length;
@@ -83,7 +144,8 @@ public sealed class PorscheCombinedPdfLayout : PageTextCombinedPdfLayout
             // features'" pattern would misreport as the model name). Guessing wrong here is worse than
             // this honest fallback to the document's own id: a firefighter trusting a mislabeled
             // rescue card is a real safety risk that an "unparsed" card asking for manual lookup is
-            // not. The PDF content itself is still complete and correctly saved either way.
+            // not. The PDF content itself is still complete and correctly saved either way. The sheets
+            // known today are named by hand in HeaderlessSheets; this fallback only catches new ones.
             return new ParsedModelInfo(id, null, null, null, null, null, null, "EN", ParseConfidence.Unparsed);
         }
 
@@ -105,7 +167,7 @@ public sealed class PorscheCombinedPdfLayout : PageTextCombinedPdfLayout
     {
         var delimiterIndex = headerText.IndexOfAny([',', '/', '(']);
         var name = delimiterIndex > 0 ? headerText[..delimiterIndex] : headerText;
-        return FixKnownTypo(name.Trim());
+        return FixKnownTypo(TrailingDoorCount.Replace(name.Trim(), string.Empty).Trim());
     }
 
     // Porsche's own combined PDF misspells "Boxster" as "Boxter" on several of its pages (verified

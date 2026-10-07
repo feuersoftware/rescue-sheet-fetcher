@@ -117,4 +117,54 @@ public class PorscheCombinedPdfLayoutTests
         // hypothetical). "911 Carrera" is included to confirm the fix doesn't touch unrelated names.
         Assert.Equal(expectedModelName, PorscheCombinedPdfLayout.ExtractModelName(headerText));
     }
+
+    // Page texts below are PdfPig's page.Text of the real 2025 combined PDF (trimmed), including its
+    // glued words.
+    [Theory]
+    [InlineData("07/20241 of 4Porsche AG, 9112 door, 4 seaterCoupe, as from model year 2025VersionPageID no. WP0_Porsche_911__Coupé_2025_2d_GD_GB_V001Additional information", "WP0_PORSCHE_911__COUPÉ_2025_2D_GD_GB_V001")]
+    [InlineData("Page 3 of 6ID no. ENUS-01-710-0040Version no. 1Marking of the hybrid components", "ENUS-01-710-0039")]
+    [InlineData("Porsche AG, Panamera (G3)All derivatives, except E-HybridSedan, as from model year 202412/2023ID no. GB-?Additional information", "Panamera (G3)All derivatives, except E-HybridSedan, as from model year 2024")]
+    [InlineData("Page 1ID no. ENUS-01-710-0040Version no. 1Airbag", "ENUS-01-710-0040")]
+    [InlineData("Page 1AirbagGas generator", null)]
+    public void GetPageKey_HandlesNewIdsMisprintedIdsAndPlaceholderIds(string pageText, string? expectedKey)
+    {
+        Assert.Equal(expectedKey, PorscheCombinedPdfLayout.GetPageKey(pageText));
+    }
+
+    [Theory]
+    [InlineData("07/20241 of 4Porsche AG, 9112 door, 4 seaterCoupe, as from model year 2025VersionPage", "911", 2025)]
+    [InlineData("1 of 4Porsche AG, 911Porsche AG, 9112 door, 4 seater2 door, 4 seaterCoupe THEV, as from model year 2025Coupe THEV", "911", 2025)]
+    [InlineData("12/2023ID no. GB-?1 of 4Porsche AG, Panamera E-Hybrid (G3)All derivativesSedan, as from model year 2024Additional", "Panamera E-Hybrid", 2024)]
+    public void Parse_NewLayoutHeaders_ExtractModelAndYear(string pageText, string expectedModel, int expectedFrom)
+    {
+        var parsed = PorscheCombinedPdfLayout.Parse("key", [pageText]);
+
+        Assert.Equal(expectedModel, parsed.ModelName);
+        Assert.Equal(expectedFrom, parsed.BuildYearFrom);
+    }
+
+    [Fact]
+    public void Parse_KnownHeaderlessSheet_UsesItsCheckedModelName()
+    {
+        var parsed = PorscheCombinedPdfLayout.Parse("ENUS-01-710-0039", ["ID no. ENUS-01-710-0039Version no. 1Page 1 of 6Airbag"]);
+
+        Assert.Equal("Cayenne E-Hybrid", parsed.ModelName);
+    }
+
+    [Fact]
+    public void Parse_KnownIdWithAHeader_UsesTheHeader()
+    {
+        var parsed = PorscheCombinedPdfLayout.Parse("ENUS-01-710-0077", ["ID no. ENUS-01-710-0077Version no. 1Page 1Porsche AG, Macan (95B) all derivatives, SUVfrom Model Year 2014"]);
+
+        Assert.Equal("Macan", parsed.ModelName);
+    }
+
+    [Fact]
+    public void Parse_UnknownHeaderlessSheet_FallsBackToItsId()
+    {
+        var parsed = PorscheCombinedPdfLayout.Parse("ENUS-01-710-0999", ["ID no. ENUS-01-710-0999Version no. 1Page 1Airbag"]);
+
+        Assert.Equal("ENUS-01-710-0999", parsed.ModelName);
+        Assert.Equal(Rettungskarten.Core.Models.ParseConfidence.Unparsed, parsed.ParseConfidence);
+    }
 }
