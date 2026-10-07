@@ -158,7 +158,7 @@ Translations live in `src/Rettungskarten.Core/Localization/Strings.resx` (Englis
 data/
   rescue-cards/
     <brand>/<model>/<id>.json   (+ .pdf if the download succeeded)
-    <brand>/_manifest.json      (derived, aggregates that brand's sidecars)
+    <brand>/_manifest.json      (derived, aggregates that brand's sidecars; rewritten by fetch, split and prioritize)
   stock/
     <year>/fz12_<year>.xlsx     (raw download)
     <year>/fz12_<year>.json     (parsed)
@@ -418,7 +418,7 @@ dotnet run --project src/Rettungskarten.Cli -- --lang de list brands
 data/
   rescue-cards/
     <marke>/<modell>/<id>.json   (+ .pdf, falls Download erfolgreich)
-    <marke>/_manifest.json       (abgeleitet, aggregiert alle Sidecars dieser Marke)
+    <marke>/_manifest.json       (abgeleitet, aggregiert alle Sidecars dieser Marke; neu geschrieben von fetch, split und prioritize)
   stock/
     <jahr>/fz12_<jahr>.xlsx      (Rohdatei)
     <jahr>/fz12_<jahr>.json      (geparst)
