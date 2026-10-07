@@ -35,7 +35,8 @@ public static class HttpServiceCollectionExtensions
     ///    exactly the flaky/rate-limited hosts the retries exist for;
     /// 5. <see cref="SendTimeoutDelegatingHandler"/> - the per-attempt timeout, started only once the
     ///    slot is acquired, so queueing behind other brands' requests to a shared host (or KBA's 30 s
-    ///    crawl-delay) is never mistaken for a slow server.
+    ///    crawl-delay) is never mistaken for a slow server. It also reads the response body into memory
+    ///    within the total budget, since nothing above it bounds the body (see its doc comment).
     ///
     /// The resilience handler's own attempt timeout would wrap 2-5 including the queue, so it is set to
     /// the total budget, where it never fires first (Polly can't switch it off). AddStandardResilienceHandler
@@ -119,7 +120,7 @@ public static class HttpServiceCollectionExtensions
         builder.AddHttpMessageHandler<RedirectDelegatingHandler>();
         builder.AddHttpMessageHandler<RobotsTxtDelegatingHandler>();
         builder.AddHttpMessageHandler<PoliteDelegatingHandler>();
-        builder.AddHttpMessageHandler(() => new SendTimeoutDelegatingHandler(sendTimeout));
+        builder.AddHttpMessageHandler(() => new SendTimeoutDelegatingHandler(sendTimeout, bodyTimeout: totalTimeout));
     }
 }
 

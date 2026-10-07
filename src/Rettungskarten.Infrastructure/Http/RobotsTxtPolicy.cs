@@ -20,7 +20,8 @@ namespace Rettungskarten.Infrastructure.Http;
 /// (e.g. fiat.de's <c>Disallow: *.pdf$</c>) for the rest of the run.
 ///
 /// The fetch itself runs through the inner handlers - the per-host rate limiter and
-/// <see cref="SendTimeoutDelegatingHandler"/>, which bounds it - and follows redirects like any request
+/// <see cref="SendTimeoutDelegatingHandler"/>, which bounds it, body included (the body is already
+/// buffered when <c>send</c> returns, so the read below can't stall) - and follows redirects like any request
 /// (RFC 9309 asks for at least five).
 /// </summary>
 public sealed class RobotsTxtPolicy(ILogger<RobotsTxtPolicy> logger)

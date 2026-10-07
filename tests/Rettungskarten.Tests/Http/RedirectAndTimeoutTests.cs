@@ -110,12 +110,75 @@ public class SendTimeoutDelegatingHandlerTests
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => client.GetAsync("https://slow.test/", cts.Token));
     }
 
+    [Fact]
+    public async Task HeadersThenStalledBody_ThrowsTimeoutRejectedException()
+    {
+        // Regression (PR review): the send timeout ended with the headers, and the clients'
+        // HttpClient.Timeout is infinite, so a host that sent headers and then stalled hung the body
+        // read forever - including the shared robots.txt fetch every request to that host waits on.
+        var handler = new SendTimeoutDelegatingHandler(TimeSpan.FromSeconds(30), bodyTimeout: TimeSpan.FromMilliseconds(100))
+        {
+            InnerHandler = new StalledBodyHandler()
+        };
+        using var invoker = new HttpMessageInvoker(handler);
+
+        await Assert.ThrowsAsync<TimeoutRejectedException>(() =>
+            invoker.SendAsync(new HttpRequestMessage(HttpMethod.Get, "https://stalled.test/robots.txt"), CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task WithBodyTimeout_BodyIsBufferedBeforeReturning()
+    {
+        var handler = new SendTimeoutDelegatingHandler(TimeSpan.FromSeconds(30), bodyTimeout: TimeSpan.FromSeconds(30))
+        {
+            InnerHandler = new FixedBodyHandler("User-agent: *")
+        };
+        using var invoker = new HttpMessageInvoker(handler);
+
+        using var response = await invoker.SendAsync(new HttpRequestMessage(HttpMethod.Get, "https://ok.test/robots.txt"), CancellationToken.None);
+
+        Assert.Equal("User-agent: *", await response.Content.ReadAsStringAsync(CancellationToken.None));
+    }
+
     private sealed class SlowHandler : HttpMessageHandler
     {
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             await Task.Delay(TimeSpan.FromSeconds(10), cancellationToken);
             return new HttpResponseMessage(HttpStatusCode.OK);
+        }
+    }
+
+    private sealed class StalledBodyHandler : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) =>
+            Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StreamContent(new StalledStream()) });
+    }
+
+    private sealed class FixedBodyHandler(string body) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) =>
+            Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(body) });
+    }
+
+    /// <summary>A body whose first read never completes until cancelled.</summary>
+    private sealed class StalledStream : Stream
+    {
+        public override bool CanRead => true;
+        public override bool CanSeek => false;
+        public override bool CanWrite => false;
+        public override long Length => throw new NotSupportedException();
+        public override long Position { get => throw new NotSupportedException(); set => throw new NotSupportedException(); }
+        public override void Flush() { }
+        public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+        public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+        public override void SetLength(long value) => throw new NotSupportedException();
+        public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+
+        public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            await Task.Delay(Timeout.Infinite, cancellationToken);
+            return 0;
         }
     }
 }
