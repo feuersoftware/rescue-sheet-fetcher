@@ -64,7 +64,7 @@ inspectCommand.Add(InspectXlsxCommand.Build());
 inspectCommand.Add(InspectQualityCommand.Build());
 
 var splitCommand = new Command("split", Strings.Get("Command_Split_Description"));
-splitCommand.Add(SplitPorscheCommand.Build());
+SplitCombinedCommand.Configure(splitCommand);
 
 var rootCommand = new RootCommand(Strings.Get("App_Description"));
 rootCommand.Add(verboseOption);

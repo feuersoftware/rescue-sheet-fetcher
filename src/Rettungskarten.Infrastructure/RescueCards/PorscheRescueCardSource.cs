@@ -11,7 +11,7 @@ namespace Rettungskarten.Infrastructure.RescueCards;
 /// second covering classic/older models - unlike every other brand there is no per-model file. Found
 /// via the "Weitere Dokumente"/"Further Documents" page (linked from Porsche's German site, which
 /// redirects to the same international URL), under a "Rescue Data Sheets" entry; both PDFs are served
-/// directly from Porsche's own asset CDN (assets-v2.porsche.com), not a third-party mirror. See
+/// directly from Porsche's own asset CDN (files.porsche.com, formerly assets-v2.porsche.com), not a third-party mirror. See
 /// <see cref="PorscheDocumentsPageParser"/> for how the links are actually extracted from the page.
 /// </summary>
 public sealed class PorscheRescueCardSource(
@@ -29,7 +29,7 @@ public sealed class PorscheRescueCardSource(
 
     public override async Task<IReadOnlyList<RescueCardEntry>> DiscoverAsync(CancellationToken ct)
     {
-        var client = HttpClientFactory.CreateClient(RettungskartenHttpClient.Name);
+        var client = CreateDiscoveryClient();
         var html = await client.GetStringAsync(DocumentsPageUrl, ct);
 
         var links = await PorscheDocumentsPageParser.ParseRescueDataSheetLinksAsync(html, ct);
@@ -42,8 +42,7 @@ public sealed class PorscheRescueCardSource(
         var entries = links.Select(l =>
         {
             // ModelName is a fixed label, not a real model - it's domain data (feeds the persisted
-            // id/folder name), so it must stay invariant across --lang rather than being localized,
-            // same reasoning as SEAT's general guide entry.
+            // id/folder name), so it must stay invariant across --lang rather than being localized.
             var isClassic = l.Text.Contains("Classic", StringComparison.OrdinalIgnoreCase);
             var modelName = isClassic ? "All Models Classic" : "All Models";
 
@@ -54,7 +53,7 @@ public sealed class PorscheRescueCardSource(
                 BuildYearFrom: null, BuildYearTo: null, Doors: null, FuelType: null,
                 LanguageCode: "EN", ParseConfidence.Heuristic);
 
-            return new RescueCardEntry(Brand.Porsche, DocumentsPageUrl, l.Href, l.Text, parsed);
+            return new RescueCardEntry(Brand.Porsche, DocumentsPageUrl, l.Href, l.Text, parsed, DocumentScope.Combined);
         }).ToList();
 
         logger.LogInformation("{Message}", Strings.Get("RescueCards_Porsche_DiscoveredCount", entries.Count));

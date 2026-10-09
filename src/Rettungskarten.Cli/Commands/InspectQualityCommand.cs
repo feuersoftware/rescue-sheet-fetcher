@@ -1,6 +1,7 @@
 using System.CommandLine;
 using Rettungskarten.Core.Localization;
 using Rettungskarten.Core.Quality;
+using Rettungskarten.Infrastructure.Config;
 using Rettungskarten.Infrastructure.Storage;
 
 namespace Rettungskarten.Cli.Commands;
@@ -32,20 +33,28 @@ public static class InspectQualityCommand
             var store = new FileSystemRescueCardStore(new RescueCardStoreOptions { RootPath = rescueCardsPath });
 
             var cards = await store.LoadAllAsync(ct);
-            var issues = DataQualityChecker.CheckAll(cards);
+            var unlistedModels = await ConfigLoader.LoadKbaUnlistedModelsAsync(ConfigLoader.DefaultKbaUnlistedModelsPath(), ct);
+            var issues = DataQualityChecker.CheckAll(cards, unlistedModels);
 
-            if (issues.Count == 0)
+            // Warnings (a flagged model that matched after all) ask for a review, they don't fail the run.
+            foreach (var warning in issues.Where(i => i.Severity == DataQualityIssueSeverity.Warning))
+            {
+                Console.Error.WriteLine(Strings.Get("InspectQuality_WarningLine", warning.Brand, warning.CardId, warning.Description));
+            }
+
+            var errors = issues.Where(i => i.Severity == DataQualityIssueSeverity.Error).ToList();
+            if (errors.Count == 0)
             {
                 Console.WriteLine(Strings.Get("InspectQuality_NoIssuesFound", cards.Count));
                 return 0;
             }
 
-            foreach (var issue in issues)
+            foreach (var error in errors)
             {
-                Console.Error.WriteLine(Strings.Get("InspectQuality_IssueLine", issue.Brand, issue.CardId, issue.Description));
+                Console.Error.WriteLine(Strings.Get("InspectQuality_IssueLine", error.Brand, error.CardId, error.Description));
             }
 
-            Console.Error.WriteLine(Strings.Get("InspectQuality_IssuesFound", issues.Count, cards.Count));
+            Console.Error.WriteLine(Strings.Get("InspectQuality_IssuesFound", errors.Count, cards.Count));
             return 1;
         });
 

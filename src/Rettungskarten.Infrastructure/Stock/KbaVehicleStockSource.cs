@@ -75,7 +75,7 @@ public sealed class KbaVehicleStockSource(
 
     /// <summary>
     /// Every other brand source routes its HTTP calls through <see cref="HttpDownloadHelper"/>, which
-    /// turns HttpRequestException/TaskCanceledException into a clean result instead of an exception.
+    /// turns request failures (<see cref="HttpRequestFailures"/>) into a clean result instead of an exception.
     /// This class's own calls (product-page HTML, then the XLSX bytes) bypassed that entirely, so a
     /// brief KBA outage during `fetch stock` surfaced as a raw, un-localized stack trace via
     /// System.CommandLine's default exception handler instead of FetchStockCommand's existing
@@ -89,11 +89,7 @@ public sealed class KbaVehicleStockSource(
         {
             return await fetch();
         }
-        catch (HttpRequestException ex)
-        {
-            throw new InvalidOperationException(Strings.Get("Stock_NetworkError", url, ex.Message), ex);
-        }
-        catch (TaskCanceledException ex) when (!ct.IsCancellationRequested)
+        catch (Exception ex) when (HttpRequestFailures.IsRequestFailure(ex, ct))
         {
             throw new InvalidOperationException(Strings.Get("Stock_NetworkError", url, ex.Message), ex);
         }

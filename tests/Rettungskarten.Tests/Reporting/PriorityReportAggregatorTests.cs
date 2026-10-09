@@ -17,6 +17,40 @@ public class PriorityReportAggregatorTests
             EstimatedFleetSize: fleetSize, BundlePriority: priority);
 
     [Fact]
+    public void Aggregate_LeavesOutCombinedDocuments()
+    {
+        // Regression: after `split`, the combined source PDF showed up as an "All Models" row with an
+        // Unknown priority, counted next to the parts cut from it.
+        var cards = new[]
+        {
+            Card("ford-all", Brand.Ford, "All Models", null, BundlePriority.Unknown) with { DocumentScope = DocumentScope.Combined },
+            Card("ford-kuga-part", Brand.Ford, "Kuga", 600_000, BundlePriority.High) with { DocumentScope = DocumentScope.SplitPart, SplitSourceId = "ford-all" },
+            Card("ford-kuga-portal", Brand.Ford, "Kuga", 600_000, BundlePriority.High),
+        };
+
+        var row = Assert.Single(PriorityReportAggregator.Aggregate(cards));
+
+        Assert.Equal("Kuga", row.ModelName);
+        Assert.Equal(2, row.CardCount);
+    }
+
+    [Fact]
+    public void Aggregate_SameModelInDifferentSpelling_IsOneRow()
+    {
+        // Regression: Nissan's sheets spell "NAVARA" and "Navara", which showed up as two rows.
+        var cards = new[]
+        {
+            Card("a", Brand.Nissan, "NAVARA", null, BundlePriority.Unknown),
+            Card("b", Brand.Nissan, "Navara", null, BundlePriority.Unknown),
+        };
+
+        var row = Assert.Single(PriorityReportAggregator.Aggregate(cards));
+
+        Assert.Equal("NAVARA", row.ModelName);
+        Assert.Equal(2, row.CardCount);
+    }
+
+    [Fact]
     public void Aggregate_CollapsesMultipleVariantsOfSameModelIntoOneRow()
     {
         // Regression test for the reported problem: "Golf" appearing many times in the report with

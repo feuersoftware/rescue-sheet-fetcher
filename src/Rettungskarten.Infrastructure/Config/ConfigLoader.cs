@@ -4,7 +4,7 @@ using Rettungskarten.Core.Config;
 
 namespace Rettungskarten.Infrastructure.Config;
 
-/// <summary>Loads the hand-curated sibling-models/model-aliases JSON files bundled with the app.</summary>
+/// <summary>Loads the hand-curated JSON config files bundled with the app (see the Config folder).</summary>
 public static class ConfigLoader
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -13,29 +13,31 @@ public static class ConfigLoader
         Converters = { new JsonStringEnumConverter() }
     };
 
-    public static async Task<SiblingModelsConfig> LoadSiblingModelsAsync(string path, CancellationToken ct)
+    public static Task<SiblingModelsConfig> LoadSiblingModelsAsync(string path, CancellationToken ct) =>
+        LoadAsync(path, SiblingModelsConfig.Empty, ct);
+
+    public static Task<ModelAliasConfig> LoadModelAliasesAsync(string path, CancellationToken ct) =>
+        LoadAsync(path, ModelAliasConfig.Empty, ct);
+
+    public static Task<KbaUnlistedModelConfig> LoadKbaUnlistedModelsAsync(string path, CancellationToken ct) =>
+        LoadAsync(path, KbaUnlistedModelConfig.Empty, ct);
+
+    private static async Task<T> LoadAsync<T>(string path, T empty, CancellationToken ct)
     {
         if (!File.Exists(path))
         {
-            return SiblingModelsConfig.Empty;
+            return empty;
         }
 
         await using var stream = File.OpenRead(path);
-        var config = await JsonSerializer.DeserializeAsync<SiblingModelsConfig>(stream, JsonOptions, ct);
-        return config ?? SiblingModelsConfig.Empty;
+        return await JsonSerializer.DeserializeAsync<T>(stream, JsonOptions, ct) ?? empty;
     }
 
-    public static async Task<ModelAliasConfig> LoadModelAliasesAsync(string path, CancellationToken ct)
-    {
-        if (!File.Exists(path))
-        {
-            return ModelAliasConfig.Empty;
-        }
-
-        await using var stream = File.OpenRead(path);
-        var config = await JsonSerializer.DeserializeAsync<ModelAliasConfig>(stream, JsonOptions, ct);
-        return config ?? ModelAliasConfig.Empty;
-    }
+    /// <summary>Synchronous, since the split layouts are plain synchronous objects; read once per run.</summary>
+    public static PorscheHeaderlessSheetsConfig LoadPorscheHeaderlessSheets(string path) =>
+        File.Exists(path)
+            ? JsonSerializer.Deserialize<PorscheHeaderlessSheetsConfig>(File.ReadAllText(path), JsonOptions) ?? PorscheHeaderlessSheetsConfig.Empty
+            : PorscheHeaderlessSheetsConfig.Empty;
 
     /// <summary>Resolves the default bundled config path next to the running assembly.</summary>
     public static string DefaultSiblingModelsPath() =>
@@ -43,4 +45,19 @@ public static class ConfigLoader
 
     public static string DefaultModelAliasesPath() =>
         Path.Combine(AppContext.BaseDirectory, "Config", "model-aliases.json");
+
+    public static string DefaultKbaUnlistedModelsPath() =>
+        Path.Combine(AppContext.BaseDirectory, "Config", "kba-unlisted-models.json");
+
+    public static string DefaultPorscheHeaderlessSheetsPath() =>
+        Path.Combine(AppContext.BaseDirectory, "Config", "porsche-headerless-sheets.json");
+}
+
+/// <summary>A Porsche combined-PDF sheet without a model header, named by hand by its document ID
+/// (see PorscheCombinedPdfLayout).</summary>
+public sealed record PorscheHeaderlessSheet(string DocumentId, string ModelName, string? BodyType);
+
+public sealed record PorscheHeaderlessSheetsConfig(IReadOnlyList<PorscheHeaderlessSheet> Sheets)
+{
+    public static readonly PorscheHeaderlessSheetsConfig Empty = new([]);
 }

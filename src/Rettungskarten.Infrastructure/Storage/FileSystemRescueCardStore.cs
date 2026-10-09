@@ -90,7 +90,15 @@ public sealed class FileSystemRescueCardStore(RescueCardStoreOptions options) : 
             }
         }
 
-        await WriteJsonAsync(Path.Combine(brandFolder, ManifestFileName), all, ct);
+        await WriteBrandManifestAsync(brand, all, ct);
+    }
+
+    /// <summary>Writes the brand's manifest from cards the caller already holds, without re-reading the sidecars.</summary>
+    public async Task WriteBrandManifestAsync(Brand brand, IReadOnlyList<RescueCardMetadata> cards, CancellationToken ct)
+    {
+        var brandFolder = GetBrandFolder(brand);
+        Directory.CreateDirectory(brandFolder);
+        await WriteJsonAsync(Path.Combine(brandFolder, ManifestFileName), cards, ct);
     }
 
     public async Task<IReadOnlyList<RescueCardMetadata>> LoadAllAsync(CancellationToken ct)

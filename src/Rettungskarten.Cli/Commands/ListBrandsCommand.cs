@@ -6,23 +6,23 @@ namespace Rettungskarten.Cli.Commands;
 
 public static class ListBrandsCommand
 {
-    private static (Brand Brand, string Status, string Source)[] BuildInfo() =>
-    [
-        (Brand.VW, Strings.Get("Status_FullyFunctional"), Strings.Get("Brand_VW_Source")),
-        (Brand.Audi, Strings.Get("Status_FullyFunctional"), Strings.Get("Brand_Audi_Source")),
-        (Brand.Skoda, Strings.Get("Status_FullyFunctional"), Strings.Get("Brand_Skoda_Source")),
-        (Brand.Seat, Strings.Get("Status_FullyFunctional"), Strings.Get("Brand_Seat_Source")),
-        (Brand.Cupra, Strings.Get("Brand_Cupra_Status"), Strings.Get("Brand_Cupra_Source")),
-        (Brand.Porsche, Strings.Get("Brand_Porsche_Status"), Strings.Get("Brand_Porsche_Source")),
-        // Porsche: functional but coarser-grained than every other brand - one combined PDF for all
-        // current models plus a second for classic models, not a file per model (see
-        // PorscheRescueCardSource); status text reflects that distinction rather than reusing
-        // Status_FullyFunctional, which would imply the same per-model granularity as the rest.
-        (Brand.Bentley, Strings.Get("Status_FullyFunctional"), Strings.Get("Brand_Bentley_Source")),
-        (Brand.Lamborghini, Strings.Get("Brand_Lamborghini_Status"), Strings.Get("Brand_Lamborghini_Source"))
-        // Lamborghini: same "English only, no German file" situation as Porsche - status text calls
-        // that out instead of reusing Status_FullyFunctional.
-    ];
+    /// <summary>
+    /// One row per <see cref="Brand"/> value, driven by resource keys instead of a hand-maintained
+    /// list: <c>Brand_{Brand}_Source</c> (every implemented brand has one; a brand without it is shown
+    /// as not implemented) and an optional <c>Brand_{Brand}_Status</c> for brands whose coverage
+    /// differs from the per-model, German-language norm (e.g. Porsche's combined PDFs, Lamborghini's English-only sheets), falling
+    /// back to Status_FullyFunctional.
+    /// </summary>
+    internal static (Brand Brand, string Group, string Status, string Source)[] BuildInfo() =>
+        Enum.GetValues<Brand>()
+            .Select(brand =>
+            {
+                var source = Strings.TryGet($"Brand_{brand}_Source");
+                var status = Strings.TryGet($"Brand_{brand}_Status")
+                    ?? Strings.Get(source is null ? "Outcome_NotImplemented" : "Status_FullyFunctional");
+                return (brand, DisplayText.For(BrandGroups.GroupOf(brand)), status, source ?? "-");
+            })
+            .ToArray();
 
     public static Command Build()
     {
@@ -30,6 +30,7 @@ public static class ListBrandsCommand
         command.SetAction(_ =>
         {
             var brandCol = Strings.Get("Summary_Column_Brand");
+            var groupCol = Strings.Get("ListBrands_Column_Group");
             var statusCol = Strings.Get("Summary_Column_Status");
             var sourceCol = Strings.Get("ListBrands_Column_Source");
 
@@ -38,13 +39,14 @@ public static class ListBrandsCommand
             // brand name) got longer than the others (see RunSummaryPrinter's identical fix) -
             // compute from actual content instead.
             var brandWidth = Math.Max(brandCol.Length, info.Max(i => i.Brand.ToString().Length));
+            var groupWidth = Math.Max(groupCol.Length, info.Max(i => i.Group.Length));
             var statusWidth = Math.Max(statusCol.Length, info.Max(i => i.Status.Length));
 
-            Console.WriteLine($"{brandCol.PadRight(brandWidth)} {statusCol.PadRight(statusWidth)} {sourceCol,-40}");
-            Console.WriteLine(new string('-', brandWidth + 1 + statusWidth + 1 + 40));
-            foreach (var (brand, status, source) in info)
+            Console.WriteLine($"{brandCol.PadRight(brandWidth)} {groupCol.PadRight(groupWidth)} {statusCol.PadRight(statusWidth)} {sourceCol}");
+            Console.WriteLine(new string('-', brandWidth + 1 + groupWidth + 1 + statusWidth + 1 + 40));
+            foreach (var (brand, group, status, source) in info)
             {
-                Console.WriteLine($"{brand.ToString().PadRight(brandWidth)} {status.PadRight(statusWidth)} {source,-40}");
+                Console.WriteLine($"{brand.ToString().PadRight(brandWidth)} {group.PadRight(groupWidth)} {status.PadRight(statusWidth)} {source}");
             }
 
             return 0;

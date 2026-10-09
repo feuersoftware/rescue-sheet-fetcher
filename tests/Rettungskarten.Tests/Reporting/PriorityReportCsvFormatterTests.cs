@@ -7,7 +7,7 @@ public class PriorityReportCsvFormatterTests
 {
     private static PriorityReportRow Row(
         string modelName, int cardCount, int? fleetSize, BundlePriority priority, int notDownloadedCount = 0) =>
-        new(Brand.VW, modelName, cardCount, notDownloadedCount, fleetSize, priority);
+        new(Brand.VW, ManufacturerGroup.VolkswagenGroup, modelName, cardCount, notDownloadedCount, fleetSize, priority);
 
     [Fact]
     public void Format_IncludesHeaderAndOneRowPerModel()
@@ -15,8 +15,8 @@ public class PriorityReportCsvFormatterTests
         var csv = PriorityReportCsvFormatter.Format([Row("Golf", 8, 3_231_990, BundlePriority.High)]);
 
         var lines = csv.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
-        Assert.Equal("Brand,ModelName,CardCount,NotDownloadedCount,EstimatedFleetSize,BundlePriority", lines[0]);
-        Assert.Equal("VW,Golf,8,0,3231990,High", lines[1]);
+        Assert.Equal("Brand,ManufacturerGroup,ModelName,CardCount,NotDownloadedCount,EstimatedFleetSize,BundlePriority", lines[0]);
+        Assert.Equal("VW,VolkswagenGroup,Golf,8,0,3231990,High", lines[1]);
     }
 
     [Fact]
@@ -38,10 +38,10 @@ public class PriorityReportCsvFormatterTests
     [Fact]
     public void Format_NullModelNameAndFleetSize_RenderAsEmptyField()
     {
-        var csv = PriorityReportCsvFormatter.Format([new PriorityReportRow(Brand.VW, null, 1, 0, null, BundlePriority.Unknown)]);
+        var csv = PriorityReportCsvFormatter.Format([new PriorityReportRow(Brand.VW, ManufacturerGroup.VolkswagenGroup, null, 1, 0, null, BundlePriority.Unknown)]);
 
         var dataLine = csv.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)[1];
-        Assert.Equal("VW,,1,0,,Unknown", dataLine);
+        Assert.Equal("VW,VolkswagenGroup,,1,0,,Unknown", dataLine);
     }
 
     [Fact]
@@ -50,7 +50,7 @@ public class PriorityReportCsvFormatterTests
         var csv = PriorityReportCsvFormatter.Format([Row("Golf", 8, 3_231_990, BundlePriority.High, notDownloadedCount: 2)]);
 
         var dataLine = csv.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)[1];
-        Assert.Equal("VW,Golf,8,2,3231990,High", dataLine);
+        Assert.Equal("VW,VolkswagenGroup,Golf,8,2,3231990,High", dataLine);
     }
 
     [Fact]

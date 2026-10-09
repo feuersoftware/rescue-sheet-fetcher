@@ -72,6 +72,13 @@ public static class PrioritizeCommand
                 updated.Add(newCard);
             }
 
+            // Each brand's _manifest.json aggregates its sidecars and would otherwise keep the old
+            // priorities until the brand is fetched again.
+            foreach (var brandCards in updated.GroupBy(c => c.Brand))
+            {
+                await store.WriteBrandManifestAsync(brandCards.Key, brandCards.ToList(), ct);
+            }
+
             await WriteReportAsync(rescueCardsPath, updated, ct);
 
             Console.WriteLine(Strings.Get("Prioritize_Result", updated.Count, stock.Year));

@@ -13,6 +13,11 @@ namespace Rettungskarten.Infrastructure.RescueCards.Parsing;
 /// attribute then holds a JSON-like array using single quotes instead of double quotes; none of this
 /// page's actual link text/URLs contain an apostrophe, so a straight quote substitution reliably
 /// turns it into parseable JSON.
+///
+/// In 2026 Porsche rebuilt the page with Astro: the same links are now plain server-rendered anchors
+/// (<c>a.link-list-item</c>, label in <c>p.link-list-text</c>) served from files.porsche.com. Both
+/// layouts are supported - the template path first, the plain anchors when it finds nothing - so a
+/// partial rollout or a rollback of the rebuild doesn't break discovery again.
 /// </summary>
 public static class PorscheDocumentsPageParser
 {
@@ -27,7 +32,7 @@ public static class PorscheDocumentsPageParser
         var templateScript = document.QuerySelectorAll("script[type='text/x-template']").FirstOrDefault();
         if (templateScript is null)
         {
-            return [];
+            return ParsePlainAnchors(document);
         }
 
         var templateDocument = await context.OpenAsync(req => req.Content(templateScript.TextContent), ct);
@@ -65,8 +70,18 @@ public static class PorscheDocumentsPageParser
             }
         }
 
-        return results;
+        return results.Count > 0 ? results : ParsePlainAnchors(document);
     }
+
+    private static List<(string Text, string Href)> ParsePlainAnchors(AngleSharp.Dom.IDocument document) =>
+        document.QuerySelectorAll("a[href]")
+            .Select(a => (
+                Text: (a.QuerySelector(".link-list-text")?.TextContent ?? a.TextContent).Trim(),
+                Href: a.GetAttribute("href") ?? string.Empty))
+            .Where(l => l.Text.StartsWith("Rescue Data Sheets", StringComparison.OrdinalIgnoreCase) &&
+                l.Href.Split('?')[0].EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
+            .DistinctBy(l => l.Href)
+            .ToList();
 
     private sealed record LinkListItem(LinkInfo? Link);
     private sealed record LinkInfo(string? Href, string? Text);

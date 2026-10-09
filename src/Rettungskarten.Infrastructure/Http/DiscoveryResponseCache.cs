@@ -1,0 +1,39 @@
+using System.Collections.Concurrent;
+
+namespace Rettungskarten.Infrastructure.Http;
+
+/// <summary>
+/// Process-wide cache for discovery responses that several brand sources share - one portal page or
+/// API response serving several brands (Mercedes' rk.mb-qr.com overview for Mercedes-Benz, AMG, EQ,
+/// Maybach and smart; IFZ Berlin's list for Opel, Chevrolet, Cadillac and Saab). With every brand
+/// running in parallel, each brand instance fetching the same (up to ~1.5MB) response again would
+/// only add load on the manufacturer's server and wait time behind its per-host rate limit. The first
+/// caller fetches, everyone else awaits the same task; a failed fetch is evicted so a later caller
+/// retries instead of inheriting the failure.
+///
+/// Callers inside a <see cref="RobotsTxtBypass"/> scope get their own cache entry: the shared fetch runs
+/// in the first caller's async flow, so one entry for both would hand a bypassed response to a brand
+/// that honours robots.txt (or a robots.txt refusal to a brand that bypasses it).
+/// </summary>
+public sealed class DiscoveryResponseCache
+{
+    private readonly ConcurrentDictionary<string, Lazy<Task<string>>> _responses = new(StringComparer.Ordinal);
+
+    public async Task<string> GetStringAsync(
+        HttpClient client, string url, CancellationToken ct)
+    {
+        // The shared fetch isn't tied to the first caller's token (its cancellation would otherwise
+        // fail every other brand awaiting the same response); each caller only stops waiting.
+        var key = RobotsTxtBypass.IsActive ? "robots.txt-bypass " + url : url;
+        var lazy = _responses.GetOrAdd(key, _ => new Lazy<Task<string>>(() => client.GetStringAsync(url, CancellationToken.None)));
+        try
+        {
+            return await lazy.Value.WaitAsync(ct);
+        }
+        catch (Exception) when (!ct.IsCancellationRequested)
+        {
+            _responses.TryRemove(new KeyValuePair<string, Lazy<Task<string>>>(key, lazy));
+            throw;
+        }
+    }
+}

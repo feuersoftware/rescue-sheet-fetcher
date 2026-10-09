@@ -16,7 +16,8 @@ actual behavior of the app.
 ## Keep the weekly link check current
 
 `.github/workflows/link-check.yml` runs a scheduled, discovery-only check against every live source
-this app depends on — all rescue-card brand sources (`fetch rescue-cards --brand all --dry-run`) and
+this app depends on that GitHub's runners can reach — all rescue-card brand sources
+(`fetch rescue-cards --brand all --dry-run`) except the ones in the workflow's `EXCLUDED_BRANDS`, and
 the KBA stock source (`fetch stock`) — so a manufacturer moving or restructuring a page gets caught
 within a week instead of silently rotting until someone runs the app and wonders why discovery came
 back empty. Whenever you add a new *kind* of external source this CLI fetches or discovers over the
@@ -25,6 +26,11 @@ network:
 - A new rescue-card brand (a new `IRescueCardSource` + `Brand` value) needs **no workflow change** —
   `--brand all` iterates the `Brand` enum, so it's covered automatically once the source is
   registered in `CompositionRoot.cs`.
+- `EXCLUDED_BRANDS` is only for brands whose sites block GitHub's runners outright (bot protection,
+  IP ranges) — never for a brand whose check is red because its page changed; fix that instead. The
+  workflow's informational probe step warns when an excluded brand is reachable again; take it off
+  the list then. Excluded brands have no scheduled check, so dry-run them locally (see the README's
+  "Known limitations") before a release.
 - Anything not already exercised by one of the workflow's existing steps (a new stock/data feed, a
   new CLI subcommand that resolves its own external URL) needs a **new step added to
   `link-check.yml`** that exercises it — prefer a discovery-only/dry-run path over a full download so

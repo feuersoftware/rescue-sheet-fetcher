@@ -1,3 +1,4 @@
+using Rettungskarten.Core.Config;
 using Rettungskarten.Core.Models;
 using Rettungskarten.Core.Quality;
 
@@ -7,14 +8,15 @@ public class DataQualityCheckerTests
 {
     private static RescueCardMetadata Card(
         string id, Brand brand = Brand.Audi, string? bodyType = null, string? fuelType = null,
-        BundlePriority priority = BundlePriority.Unknown) =>
+        BundlePriority priority = BundlePriority.Unknown, DocumentScope scope = DocumentScope.Single,
+        string modelName = "Test") =>
         new(
-            Id: id, Brand: brand, ModelName: "Test", Variant: null, BodyType: bodyType,
+            Id: id, Brand: brand, ModelName: modelName, Variant: null, BodyType: bodyType,
             BuildYearFrom: null, BuildYearTo: null, Doors: null, FuelType: fuelType,
             LanguageCode: "DE", Status: RescueCardStatus.Downloaded, SourcePageUrl: "https://example.test",
             DownloadUrl: null, FailureReason: null, ParseConfidence: ParseConfidence.Heuristic,
             DiscoveredAtUtc: DateTimeOffset.UtcNow, DownloadedAtUtc: null, LocalPdfRelativePath: null,
-            SiblingModelIds: [], EstimatedFleetSize: null, BundlePriority: priority);
+            SiblingModelIds: [], EstimatedFleetSize: null, BundlePriority: priority, DocumentScope: scope);
 
     [Fact]
     public void CheckAll_BodyTypeIsAYear_ReportsIssue()
@@ -23,7 +25,7 @@ public class DataQualityCheckerTests
         // off-by-one shifted the model year into BodyType (e.g. "2018", "2019-2023").
         var cards = new[] { Card("audi-a6-1", bodyType: "2018") };
 
-        var issues = DataQualityChecker.CheckAll(cards);
+        var issues = DataQualityChecker.CheckAll(cards, KbaUnlistedModelConfig.Empty);
 
         var issue = Assert.Single(issues);
         Assert.Equal(DataQualityIssueKind.BodyTypeLooksLikeYear, issue.Kind);
@@ -35,7 +37,7 @@ public class DataQualityCheckerTests
     {
         var cards = new[] { Card("audi-etron-1", bodyType: "2019-2023") };
 
-        var issues = DataQualityChecker.CheckAll(cards);
+        var issues = DataQualityChecker.CheckAll(cards, KbaUnlistedModelConfig.Empty);
 
         Assert.Single(issues, i => i.Kind == DataQualityIssueKind.BodyTypeLooksLikeYear);
     }
@@ -45,7 +47,7 @@ public class DataQualityCheckerTests
     {
         var cards = new[] { Card("audi-a6-2", bodyType: "Sedan") };
 
-        var issues = DataQualityChecker.CheckAll(cards);
+        var issues = DataQualityChecker.CheckAll(cards, KbaUnlistedModelConfig.Empty);
 
         Assert.Empty(issues);
     }
@@ -55,7 +57,7 @@ public class DataQualityCheckerTests
     {
         var cards = new[] { Card("audi-etron-2", fuelType: "1") };
 
-        var issues = DataQualityChecker.CheckAll(cards);
+        var issues = DataQualityChecker.CheckAll(cards, KbaUnlistedModelConfig.Empty);
 
         var issue = Assert.Single(issues);
         Assert.Equal(DataQualityIssueKind.FuelTypeIsBareDigits, issue.Kind);
@@ -66,7 +68,7 @@ public class DataQualityCheckerTests
     {
         var cards = new[] { Card("audi-etron-3", fuelType: "Electric") };
 
-        var issues = DataQualityChecker.CheckAll(cards);
+        var issues = DataQualityChecker.CheckAll(cards, KbaUnlistedModelConfig.Empty);
 
         Assert.Empty(issues);
     }
@@ -76,113 +78,75 @@ public class DataQualityCheckerTests
     {
         var cards = new[] { Card("vw-golf-1"), Card("vw-golf-1") };
 
-        var issues = DataQualityChecker.CheckAll(cards);
+        var issues = DataQualityChecker.CheckAll(cards, KbaUnlistedModelConfig.Empty);
 
         var issue = Assert.Single(issues);
         Assert.Equal(DataQualityIssueKind.DuplicateId, issue.Kind);
         Assert.Equal("vw-golf-1", issue.CardId);
     }
 
+    private static readonly KbaUnlistedModelConfig Unlisted = new(
+    [
+        new KbaUnlistedModel(Brand.Porsche, "911 GT3", "special"),
+        new KbaUnlistedModel(Brand.RollsRoyce, ModelAliasConfig.AnyModel, "brand not in FZ12")
+    ]);
+
     [Fact]
-    public void CheckAll_BrandEntirelyUnknown_WhileOtherBrandMatched_ReportsIssue()
+    public void CheckAll_UnmatchedModelNotListed_ReportsOneErrorPerModel()
     {
-        // Regression test for the shape of a real bug this session found: every Cupra card had
-        // BundlePriority.Unknown because KBA tracks Cupra models under "SEAT", not "CUPRA" - a
-        // brand-matching gap, not genuinely 100% untracked models (proven by VW matching fine).
+        // The shape of real bugs this caught: every Cupra card stayed Unknown because KBA counts Cupra
+        // under "SEAT", and Porsche split parts named by their document id instead of the model.
         var cards = new[]
         {
-            Card("cupra-leon-1", brand: Brand.Cupra, priority: BundlePriority.Unknown),
-            Card("cupra-ateca-1", brand: Brand.Cupra, priority: BundlePriority.Unknown),
-            Card("vw-golf-1", brand: Brand.VW, priority: BundlePriority.High),
+            Card("cupra-leon-1", brand: Brand.Cupra, modelName: "Leon"),
+            Card("cupra-leon-2", brand: Brand.Cupra, modelName: "LEON"),
+            Card("vw-golf-1", brand: Brand.VW, priority: BundlePriority.High, modelName: "Golf"),
         };
 
-        var issues = DataQualityChecker.CheckAll(cards);
+        var issue = Assert.Single(DataQualityChecker.CheckAll(cards, Unlisted));
 
-        var issue = Assert.Single(issues);
-        Assert.Equal(DataQualityIssueKind.BrandEntirelyUnknownPriority, issue.Kind);
+        Assert.Equal(DataQualityIssueKind.UnmatchedModel, issue.Kind);
+        Assert.Equal(DataQualityIssueSeverity.Error, issue.Severity);
         Assert.Equal(Brand.Cupra, issue.Brand);
     }
 
     [Fact]
-    public void CheckAll_AllBrandsUnknown_PrioritizeNeverRan_NoIssue()
+    public void CheckAll_UnmatchedModelListed_NoIssue()
     {
-        // If nothing in the whole dataset has a priority yet, `prioritize` simply hasn't run - that's
-        // not itself a sign of a brand-matching bug, unlike one brand being the only holdout.
         var cards = new[]
         {
-            Card("cupra-leon-1", brand: Brand.Cupra, priority: BundlePriority.Unknown),
-            Card("vw-golf-1", brand: Brand.VW, priority: BundlePriority.Unknown),
+            Card("vw-golf-1", brand: Brand.VW, priority: BundlePriority.High, modelName: "Golf"),
+            Card("porsche-gt3-1", brand: Brand.Porsche, modelName: "911 GT3"),
+            Card("rr-ghost-1", brand: Brand.RollsRoyce, modelName: "Ghost"),
         };
 
-        var issues = DataQualityChecker.CheckAll(cards);
-
-        Assert.Empty(issues);
+        Assert.Empty(DataQualityChecker.CheckAll(cards, Unlisted));
     }
 
     [Fact]
-    public void CheckAll_PorscheUnknownCountExceedsBaseline_ReportsIssue()
+    public void CheckAll_ListedModelMatchedAfterAll_ReportsWarning()
     {
-        // Porsche's ultra-low-volume specials (GT2/GT3/Turbo/...) are deliberately left unmatched
-        // (see commit b19a397: 65/85 -> 19/85 Unknown), so 19 Unknown is expected. If that count grows
-        // - a new unmatched model, or a broken alias - this should surface instead of blending in.
-        var cards = new List<RescueCardMetadata>
-        {
-            Card("vw-golf-1", brand: Brand.VW, priority: BundlePriority.High)
-        };
-        for (var i = 0; i < 66; i++)
-        {
-            cards.Add(Card($"porsche-matched-{i}", brand: Brand.Porsche, priority: BundlePriority.Medium));
-        }
-        for (var i = 0; i < 20; i++)
-        {
-            cards.Add(Card($"porsche-unknown-{i}", brand: Brand.Porsche, priority: BundlePriority.Unknown));
-        }
+        // A new FZ12 edition may start listing a model - the flag should then be reviewed, not
+        // silently kept, but that's no reason to fail the run.
+        var cards = new[] { Card("porsche-gt3-1", brand: Brand.Porsche, priority: BundlePriority.Low, modelName: "911 GT3") };
 
-        var issues = DataQualityChecker.CheckAll(cards);
+        var issue = Assert.Single(DataQualityChecker.CheckAll(cards, Unlisted));
 
-        var issue = Assert.Single(issues);
-        Assert.Equal(DataQualityIssueKind.BrandUnknownPriorityCountAboveBaseline, issue.Kind);
-        Assert.Equal(Brand.Porsche, issue.Brand);
+        Assert.Equal(DataQualityIssueKind.UnlistedModelMatched, issue.Kind);
+        Assert.Equal(DataQualityIssueSeverity.Warning, issue.Severity);
     }
 
     [Fact]
-    public void CheckAll_PorscheUnknownCountAtBaseline_NoIssue()
+    public void CheckAll_AllUnknown_PrioritizeNeverRan_NoIssue()
     {
-        var cards = new List<RescueCardMetadata>
+        // If nothing in the whole dataset has a priority yet, `prioritize` simply hasn't run.
+        var cards = new[]
         {
-            Card("vw-golf-1", brand: Brand.VW, priority: BundlePriority.High)
+            Card("cupra-leon-1", brand: Brand.Cupra, modelName: "Leon"),
+            Card("vw-golf-1", brand: Brand.VW, modelName: "Golf"),
         };
-        for (var i = 0; i < 66; i++)
-        {
-            cards.Add(Card($"porsche-matched-{i}", brand: Brand.Porsche, priority: BundlePriority.Medium));
-        }
-        for (var i = 0; i < 19; i++)
-        {
-            cards.Add(Card($"porsche-unknown-{i}", brand: Brand.Porsche, priority: BundlePriority.Unknown));
-        }
 
-        var issues = DataQualityChecker.CheckAll(cards);
-
-        Assert.Empty(issues);
-    }
-
-    [Fact]
-    public void CheckAll_BrandWithoutBaseline_ManyUnknownButNotAll_NoIssue()
-    {
-        // No baseline is configured for VW, so a partial-Unknown mix (unlike Porsche) doesn't trigger
-        // BrandUnknownPriorityCountAboveBaseline - only brands with a known, deliberate gap do.
-        var cards = new List<RescueCardMetadata>
-        {
-            Card("vw-golf-1", brand: Brand.VW, priority: BundlePriority.High)
-        };
-        for (var i = 0; i < 30; i++)
-        {
-            cards.Add(Card($"vw-unknown-{i}", brand: Brand.VW, priority: BundlePriority.Unknown));
-        }
-
-        var issues = DataQualityChecker.CheckAll(cards);
-
-        Assert.Empty(issues);
+        Assert.Empty(DataQualityChecker.CheckAll(cards, Unlisted));
     }
 
     [Fact]
@@ -190,8 +154,21 @@ public class DataQualityCheckerTests
     {
         var cards = new[] { Card("vw-golf-1", bodyType: "Hatchback", fuelType: "GD"), Card("vw-golf-2", bodyType: "Sedan") };
 
-        var issues = DataQualityChecker.CheckAll(cards);
+        var issues = DataQualityChecker.CheckAll(cards, KbaUnlistedModelConfig.Empty);
 
         Assert.Empty(issues);
+    }
+    [Fact]
+    public void CheckAll_CombinedDocuments_DoNotCountAsUnmatchedCards()
+    {
+        // A combined all-models PDF has no single model name; its split parts are what gets matched.
+        var cards = new[]
+        {
+            Card("vw-1", Brand.VW, priority: BundlePriority.High),
+            Card("ford-all", Brand.Ford, scope: DocumentScope.Combined, modelName: "All Models"),
+            Card("ford-kuga", Brand.Ford, priority: BundlePriority.High, scope: DocumentScope.SplitPart, modelName: "Kuga")
+        };
+
+        Assert.Empty(DataQualityChecker.CheckAll(cards, KbaUnlistedModelConfig.Empty));
     }
 }
