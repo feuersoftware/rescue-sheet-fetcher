@@ -36,30 +36,14 @@ public sealed class KgmRescueCardSource(IHttpClientFactory httpClientFactory, IL
     }
 
     /// <summary>
-    /// Sheets that are English although the German page lists them like every other one - found by
-    /// checking the text layer of every downloaded PDF (2026-09-29): all of KGM's newer sheets
-    /// (Torres, Actyon J120, Korando e-Motion, Musso EV/Q300) are the English edition, and neither
-    /// the page nor the filename says so. KGM offers no German edition of them, so they stay in, but
-    /// recorded as "EN". A sheet added later is assumed German until someone checks it.
+    /// Every KGM sheet is the English edition, although the German page lists them as German
+    /// "Rettungsdatenblatt" and neither page nor filename says otherwise - checked 2026-10-09 on all 19
+    /// (newer ones by their text layer, the older SsangYong ones, which have almost no text layer, by
+    /// their English legends and the "Rescue Sheet standard translation (English)" template). KGM
+    /// offers no German edition, so they stay in, recorded as "EN".
     /// </summary>
-    private static readonly HashSet<string> EnglishOnlyFiles = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "Rettungsdatenblatt-Actyon_J120_2025.pdf",
-        "Rettungsdatenblatt-Korando-e-Motion-E100.pdf",
-        "Rettungsdatenblatt-Musso_EV_(O100).pdf",
-        "Rettungsdatenblatt-Musso_Q300.pdf",
-        "Rettungsdatenblatt_Torres_(J100)_ab_09_2022.pdf",
-        "Rettungsdatenblatt-Torres EVX_U100.pdf",
-        "Rettungsdatenblatt_Torres_HEV_(J140).pdf",
-        "Rettungsdatenblatt-Torres EVX_U105.pdf"
-    };
-
-    protected override ParsedModelInfo Parse(string label, string absoluteUrl)
-    {
-        var fileName = HttpDownloadHelper.GetFileName(absoluteUrl);
-        var parsed = KgmLabelParser.Parse(label, fileName);
-        return EnglishOnlyFiles.Contains(fileName) ? parsed with { LanguageCode = "EN" } : parsed;
-    }
+    protected override ParsedModelInfo Parse(string label, string absoluteUrl) =>
+        KgmLabelParser.Parse(label, HttpDownloadHelper.GetFileName(absoluteUrl)) with { LanguageCode = "EN" };
 
     protected override string LanguageGroupKey(RescueCardEntry entry) => entry.RawFileNameOrLabel;
 }

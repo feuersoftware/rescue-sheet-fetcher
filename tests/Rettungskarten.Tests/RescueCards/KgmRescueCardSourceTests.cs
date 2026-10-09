@@ -33,9 +33,7 @@ public sealed class KgmRescueCardSourceTests
         Assert.Equal("Torres", evxVan.Parsed.ModelName);
         Assert.Equal("Elektro", evxVan.Parsed.FuelType);
         Assert.Equal("Van", evxVan.Parsed.BodyType);
-        Assert.Equal("EN", evxVan.Parsed.LanguageCode); // verified English edition, see the source
-        Assert.Equal("DE", tivoli.Parsed.LanguageCode);
-        Assert.Equal(8, entries.Count(e => e.Parsed.LanguageCode == "EN"));
+        Assert.All(entries, e => Assert.Equal("EN", e.Parsed.LanguageCode)); // every KGM sheet is English, see the source
 
         var musso = Assert.Single(entries, e => e.Parsed.ChassisCode == "Q300");
         Assert.Equal("Musso", musso.Parsed.ModelName);
