@@ -14,7 +14,8 @@ namespace Rettungskarten.Infrastructure.RescueCards;
 /// (polestartechhub.com), which hosts the extrication guides, is a client-rendered app whose robots.txt
 /// disallows everything - and those are ERGs, not rescue sheets, anyway. The asset URLs embed an upload
 /// timestamp, so they can't be derived either, and hard-coding the handful known today would silently
-/// go stale. Discovery therefore throws <see cref="NotSupportedException"/> (brand outcome "not
+/// go stale. A headless browser wouldn't help: rendered in a real browser (2026-10-07), the support pages
+/// still link no rescue sheet. Polestar is a known limitation (README). Discovery therefore throws <see cref="NotSupportedException"/> (brand outcome "not
 /// implemented", with this reason) without making any request.
 /// </summary>
 public sealed class PolestarRescueCardSource(IHttpClientFactory httpClientFactory) : RescueCardSourceBase(httpClientFactory)

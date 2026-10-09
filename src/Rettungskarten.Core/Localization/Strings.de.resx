@@ -279,7 +279,7 @@
   <data name="Brand_Streetscooter_Source" xml:space="preserve"><value>streetscooter.com Bestandskunden-Supportseite</value></data>
   <data name="Brand_Polestar_Source" xml:space="preserve"><value>polestar.com (nur einzelne PDFs, keine Seite verlinkt sie)</value></data>
   <data name="Brand_Polestar_Status" xml:space="preserve"><value>Nicht implementiert (keine auffindbare Übersichtsseite)</value></data>
-  <data name="RescueCards_Polestar_NoOverviewPage" xml:space="preserve"><value>Polestar veröffentlicht seine Rettungsdatenblätter nur als einzelne PDFs auf polestar.com, die von keiner Seite verlinkt werden; ohne Headless-Browser sind sie nicht auffindbar</value></data>
+  <data name="RescueCards_Polestar_NoOverviewPage" xml:space="preserve"><value>Polestar veröffentlicht seine Rettungsdatenblätter nur als einzelne PDFs auf polestar.com, die von keiner Seite verlinkt werden; sie sind daher nicht auffindbar</value></data>
   <data name="Brand_Peugeot_Source" xml:space="preserve"><value>public.servicebox-parts.com statisches Frameset (Modellseiten)</value></data>
   <data name="Brand_Citroen_Source" xml:space="preserve"><value>public.servicebox-parts.com statisches Frameset (Modellseiten)</value></data>
   <data name="Brand_DS_Source" xml:space="preserve"><value>public.servicebox-parts.com statisches Frameset (Modellseiten)</value></data>
