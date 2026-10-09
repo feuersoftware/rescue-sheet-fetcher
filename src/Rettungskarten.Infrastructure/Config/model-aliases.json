@@ -75,6 +75,7 @@
     {"brand": "AlfaRomeo", "modelName": "Giulietta", "kbaModelSeries": "ALFA GIULIETTA"},
     {"brand": "AlfaRomeo", "modelName": "GT", "kbaModelSeries": "ALFA GT"},
     {"brand": "AlfaRomeo", "modelName": "MiTo", "kbaModelSeries": "ALFA MITO"},
+    {"brand": "Maserati", "modelName": "GranCabrio", "kbaModelSeries": "GRANTURISMO"},
 
     {"brand": "MercedesBenz", "modelName": "CL", "kbaModelSeries": "CL-KLASSE"},
     {"brand": "MercedesBenz", "modelName": "CLA", "kbaModelSeries": "CLA-KLASSE"},
@@ -180,8 +181,6 @@
     {"brand": "Nissan", "modelName": "Qashqai+2", "kbaModelSeries": "QASHQAI"},
     {"brand": "Nissan", "modelName": "e-NV200", "kbaModelSeries": "NV200"},
     {"brand": "Nissan", "modelName": "Evalia", "kbaModelSeries": "NV200"},
-    {"brand": "Ford", "modelName": "Streetka", "kbaModelSeries": "KA"},
-    {"brand": "Maserati", "modelName": "GranCabrio", "kbaModelSeries": "GRANTURISMO"},
     {"brand": "Ford", "modelName": "Tourneo Custom", "kbaModelSeries": "TRANSIT CUSTOM"},
     {"brand": "Ford", "modelName": "E-Transit Custom", "kbaModelSeries": "TRANSIT CUSTOM"},
     {"brand": "Ford", "modelName": "E-Tourneo Custom", "kbaModelSeries": "TRANSIT CUSTOM"},
@@ -191,6 +190,7 @@
     {"brand": "Ford", "modelName": "E-Transit Courier", "kbaModelSeries": "TRANSIT COURIER"},
     {"brand": "Ford", "modelName": "E-Tourneo Courier", "kbaModelSeries": "TRANSIT COURIER"},
     {"brand": "Ford", "modelName": "Transit Tourneo", "kbaModelSeries": "TRANSIT, TOURNEO"},
-    {"brand": "Ford", "modelName": "E-Transit", "kbaModelSeries": "TRANSIT, TOURNEO"}
+    {"brand": "Ford", "modelName": "E-Transit", "kbaModelSeries": "TRANSIT, TOURNEO"},
+    {"brand": "Ford", "modelName": "Streetka", "kbaModelSeries": "KA"}
   ]
 }
